@@ -3,7 +3,8 @@ import { toggleTheme } from '@/redux/slices/themeSlice';
 import { RootState } from '@/redux/store';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { FlatList, Image, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { useState } from 'react';
+import { FlatList, Image, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -12,6 +13,13 @@ export default function HomeScreen() {
   const theme = useSelector((state: RootState) => state.theme.mode);
   const dispatch = useDispatch();
   const isDark = theme === 'dark';
+
+  const [search, setSearch] = useState('');
+
+  // Filtrage des gachas selon la recherche (insensible à la casse)
+  const filteredGachas = GACHAS.filter(g =>
+    g.name.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#181818' : '#fff' }}>
@@ -31,8 +39,26 @@ export default function HomeScreen() {
           {isDark ? 'Mode clair' : 'Mode sombre'}
         </Text>
       </TouchableOpacity>
+
+      {/* Champ de recherche */}
+      <TextInput
+        placeholder="Rechercher un gacha..."
+        placeholderTextColor={isDark ? '#aaa' : '#888'}
+        value={search}
+        onChangeText={setSearch}
+        style={{
+          backgroundColor: isDark ? '#232323' : '#f2f2f2',
+          color: isDark ? '#fff' : '#181818',
+          borderRadius: 8,
+          padding: 10,
+          marginBottom: 16,
+          borderWidth: 1,
+          borderColor: isDark ? '#333' : '#ccc',
+        }}
+      />
+
       <FlatList
-        data={GACHAS}
+        data={filteredGachas}
         keyExtractor={item => item.id}
         renderItem={({ item }) => (
           <TouchableOpacity
@@ -45,7 +71,9 @@ export default function HomeScreen() {
             ]}
             onPress={() => router.push(`/gacha/${item.id}`)}
           >
-            <Image source={item.logo} style={styles.logo} resizeMode='contain' />
+            <Image source={item.logo} style={[styles.logo, {
+              backgroundColor: isDark ? "transparent" : 'gray',
+            }]} resizeMode='contain' />
             <Text style={[styles.gachaName, { color: isDark ? '#fff' : '#181818' }]}>{item.name}</Text>
           </TouchableOpacity>
         )}

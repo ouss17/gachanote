@@ -22,7 +22,7 @@ export const GACHAS: Gacha[] = [
   },
   {
     id: "dokkan",
-    name: "Dokkan Battle",
+    name: "Dragon Ball Z : Dokkan Battle",
     logo: require("@/assets/logos/dokkan.png"),
   },
   {
