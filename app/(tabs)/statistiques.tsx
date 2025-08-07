@@ -34,6 +34,7 @@ export default function StatistiquesScreen() {
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
+  const [tooltip, setTooltip] = useState<{ value: number; x: number; y: number } | null>(null);
 
   useFocusEffect(
     // Réinitialise à chaque focus
@@ -237,6 +238,11 @@ export default function StatistiquesScreen() {
                   }}
                   bezier
                   style={{ borderRadius: 16 }}
+                  onDataPointClick={({ value, x, y }) => {
+                    setTooltip({ value, x, y });
+                    // Optionnel : pour fermer le tooltip après 2s
+                    setTimeout(() => setTooltip(null), 2000);
+                  }}
                 />
               </ScrollView>
             </ScrollView>
@@ -358,6 +364,32 @@ export default function StatistiquesScreen() {
             );
           })()}
         </View>
+
+        {tooltip && (
+          <View
+            style={{
+              position: 'absolute',
+              left: tooltip.x - 40,
+              top: tooltip.y + 10,
+              backgroundColor: isDark ? '#232323' : '#fff',
+              borderRadius: 8,
+              paddingVertical: 4,
+              paddingHorizontal: 12,
+              borderWidth: 1,
+              borderColor: isDark ? '#444' : '#ccc',
+              zIndex: 10,
+              shadowColor: '#000',
+              shadowOpacity: 0.2,
+              shadowRadius: 4,
+              elevation: 4,
+            }}
+            pointerEvents="none"
+          >
+            <Text style={{ color: isDark ? '#fff' : '#181818', fontWeight: 'bold' }}>
+              {tooltip.value.toLocaleString('fr-FR')} €
+            </Text>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
