@@ -9,7 +9,9 @@ export type Roll = {
   currency: '€' | '$' | '¥' | '₩';
   featuredCount: number;
   spookCount: number;
-  date: string; // ISO string
+  sideUnit: number; // ← AJOUT ICI
+  date: string; 
+  nameFeatured?: string; 
 };
 
 type RollsState = {
