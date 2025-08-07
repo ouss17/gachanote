@@ -1,50 +1,82 @@
-# Welcome to your Expo app 👋
+# GachaNote
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Bienvenue sur **GachaNote** 👋
 
-## Get started
+GachaNote est une application mobile Expo/React Native qui permet de **suivre et visualiser toutes vos dépenses et statistiques sur vos jeux gacha** favoris (Dragon Ball Legends, FGO, Dokkan, etc.).  
+L’application vous aide à garder un historique clair de vos tirages, à analyser vos habitudes de dépense, et à visualiser vos statistiques par jeu, par période, ou globalement.
 
-1. Install dependencies
+---
+
+## Fonctionnalités principales
+
+- **Ajout de tirages (rolls)** : enregistrez chaque dépense ou tirage sur vos différents jeux gacha.
+- **Statistiques détaillées** : visualisez vos dépenses par jeu, par mois, par année, ou sur une période personnalisée.
+- **Graphiques interactifs** : suivez l’évolution de vos dépenses avec des graphiques colorés et dynamiques.
+- **Répartition visuelle** : voyez en un coup d’œil la part de chaque jeu dans vos dépenses totales.
+- **Mode clair/sombre** : l’interface s’adapte automatiquement à votre thème préféré.
+- **Navigation simple** : accédez rapidement à l’accueil, aux statistiques, et à la gestion de vos jeux.
+
+---
+
+## Prise en main
+
+1. **Installer les dépendances**
 
    ```bash
    npm install
    ```
 
-2. Start the app
+2. **Lancer l’application**
 
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+Vous pourrez alors ouvrir l’application sur :
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- un build de développement
+- un émulateur Android
+- un simulateur iOS
+- [Expo Go](https://expo.dev/go) (pour tester rapidement)
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+---
 
-## Get a fresh project
+## Structure du projet
 
-When you're ready, run:
+- Le code source principal se trouve dans le dossier **app**.
+- La navigation utilise le système de routing par fichiers d’Expo.
+- Les données des jeux gacha sont dans **/data/gachas.ts**.
+- Les statistiques et graphiques sont accessibles via l’onglet "Statistiques".
+
+---
+
+## Pour repartir de zéro
+
+Pour réinitialiser le projet et repartir d’une base vierge :
 
 ```bash
 npm run reset-project
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+---
 
-## Learn more
+## En savoir plus
 
-To learn more about developing your project with Expo, look at the following resources:
+- [Documentation Expo (FR)](https://docs.expo.dev/)
+- [Tutoriel Expo](https://docs.expo.dev/tutorial/introduction/)
+- [Communauté Discord Expo](https://chat.expo.dev)
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+---
 
-## Join the community
+## À quoi sert GachaNote ?
 
-Join our community of developers creating universal apps.
+GachaNote est l’outil idéal pour tous les joueurs de jeux gacha qui souhaitent :
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- Suivre précisément leurs dépenses et tirages sur chaque jeu.
+- Visualiser leur historique et leurs statistiques de façon claire et graphique.
+- Prendre conscience de leurs habitudes de consommation sur les gachas.
+- Comparer leurs dépenses entre plusieurs jeux et sur différentes périodes.
+
+---
+
+**Commencez à suivre vos gachas et maîtrisez vos statistiques avec GachaNote

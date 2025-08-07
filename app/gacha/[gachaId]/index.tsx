@@ -170,6 +170,22 @@ export default function GachaRollsScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#181818' : '#fff' }}>
       <View style={{ height: insets.top, backgroundColor: isDark ? '#181818' : '#fff' }} />
       <StatusBar style={isDark ? 'light' : 'dark'} />
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+  <TouchableOpacity
+    onPress={() => router.replace('/')}
+    style={{
+      padding: 8,
+      borderRadius: 8,
+      backgroundColor: isDark ? '#232323' : '#eee',
+      marginRight: 8,
+    }}
+  >
+    <AntDesign name="arrowleft" size={24} color={isDark ? '#fff' : '#181818'} />
+  </TouchableOpacity>
+  <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: 18, fontWeight: 'bold' }}>
+    Retour à l'accueil
+  </Text>
+</View>
       <TextInput
         style={[
           styles.input,

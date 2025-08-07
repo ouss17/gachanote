@@ -1,12 +1,13 @@
 import { GACHAS } from '@/data/gachas';
 import { RootState } from '@/redux/store';
+import { MaterialIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Picker } from '@react-native-picker/picker';
+import { useFocusEffect } from '@react-navigation/native';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
-import { Dimensions, Text, View } from 'react-native';
+import { useCallback, useState } from 'react';
+import { Dimensions, ScrollView, Text, View } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, G } from 'react-native-svg';
@@ -33,6 +34,14 @@ export default function StatistiquesScreen() {
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
+
+  useFocusEffect(
+    // Réinitialise à chaque focus
+    useCallback(() => {
+      setStartDate(null);
+      setEndDate(null);
+    }, [])
+  );
 
   // Génère la liste complète des mois/années entre le plus ancien et le plus récent roll
   function getMonthKey(date: string) {
@@ -126,30 +135,6 @@ export default function StatistiquesScreen() {
         Statistiques globales
       </Text>
       <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 16 }}>
-        <Picker
-          selectedValue={selectedMonth}
-          style={{ width: 140, color: isDark ? '#fff' : '#181818' }}
-          onValueChange={setSelectedMonth}
-          prompt="Mois"
-        >
-          <Picker.Item label="Tous les mois" value={null} />
-          {monthsList.map(m => (
-            <Picker.Item key={m.value} label={m.label} value={m.value} />
-          ))}
-        </Picker>
-        <Picker
-          selectedValue={selectedYear}
-          style={{ width: 120, color: isDark ? '#fff' : '#181818' }}
-          onValueChange={setSelectedYear}
-          prompt="Année"
-        >
-          <Picker.Item label="Toutes les années" value={null} />
-          {yearsList.map(y => (
-            <Picker.Item key={y} label={y} value={y} />
-          ))}
-        </Picker>
-      </View>
-      <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 16 }}>
         <View style={{ alignItems: 'center', marginRight: 16 }}>
           <Text style={{ color: isDark ? '#aaa' : '#888', fontSize: 12 }}>Date de Début</Text>
           <Text
@@ -213,136 +198,167 @@ export default function StatistiquesScreen() {
           )}
         </View>
       </View>
-      {filteredMonths.length > 0 && datasets.length > 0 ? (
-        <LineChart
-          data={{
-            labels: filteredMonths.map(month => {
-              const [m, y] = month.split('/').map(Number);
-              return format(new Date(y, m - 1, 1), 'MMM yy', { locale: fr });
-            }),
-            datasets,
-            legend: gachas.map(g => g.toUpperCase()),
-          }}
-          width={Dimensions.get('window').width - 32}
-          height={260}
-          yAxisSuffix="€"
-          chartConfig={{
-            backgroundColor: isDark ? '#181818' : '#fff',
-            backgroundGradientFrom: isDark ? '#232323' : '#fff',
-            backgroundGradientTo: isDark ? '#232323' : '#fff',
-            decimalPlaces: 0,
-            color: (opacity = 1) => isDark
-              ? `rgba(108, 71, 255, ${opacity})`
-              : `rgba(108, 71, 255, ${opacity})`,
-            labelColor: () => isDark ? '#fff' : '#181818',
-            style: { borderRadius: 16 },
-            propsForBackgroundLines: { stroke: isDark ? '#444' : '#ddd' },
-          }}
-          bezier
-          style={{ borderRadius: 16 }}
-        />
-      ) : (
-        <Text style={{ color: isDark ? '#aaa' : '#888', textAlign: 'center', marginTop: 32 }}>
-          Aucune donnée à afficher.
-        </Text>
-      )}
-      {/* Total dépensé et barre de répartition */}
-      <View style={{ marginTop: 32, alignItems: 'center' }}>
-        {(() => {
-          // Somme totale par gacha
-          const totalByGacha: Record<string, number> = {};
-          rolls.forEach(r => {
-            totalByGacha[r.gachaId] = (totalByGacha[r.gachaId] || 0) + (r.currencyAmount || 0);
-          });
-          const total = Object.values(totalByGacha).reduce((a, b) => a + b, 0);
+      <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
+        {filteredMonths.length > 0 && datasets.length > 0 ? (
+          <>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{ maxHeight: 340 }} // Limite la hauteur visible du graphique
+            >
+              <ScrollView
+                style={{ minWidth: Dimensions.get('window').width - 32 }}
+                contentContainerStyle={{ minHeight: 260 }}
+                showsVerticalScrollIndicator={true}
+              >
+                <LineChart
+                  data={{
+                    labels: filteredMonths.map(month => {
+                      const [m, y] = month.split('/').map(Number);
+                      return format(new Date(y, m - 1, 1), 'MMM yy', { locale: fr });
+                    }),
+                    datasets,
+                    legend: gachas.map(g => g.toUpperCase()),
+                  }}
+                  width={Math.max(Dimensions.get('window').width - 32, filteredMonths.length * 70)}
+                  height={Math.max(260, gachas.length * 40)} // Hauteur dynamique si beaucoup de gachas
+                  yAxisSuffix="€"
+                  chartConfig={{
+                    backgroundColor: isDark ? '#181818' : '#fff',
+                    backgroundGradientFrom: isDark ? '#232323' : '#fff',
+                    backgroundGradientTo: isDark ? '#232323' : '#fff',
+                    decimalPlaces: 0,
+                    color: (opacity = 1) => isDark
+                      ? `rgba(108, 71, 255, ${opacity})`
+                      : `rgba(108, 71, 255, ${opacity})`,
+                    labelColor: () => isDark ? '#fff' : '#181818',
+                    style: { borderRadius: 16 },
+                    propsForBackgroundLines: { stroke: isDark ? '#444' : '#ddd' },
+                  }}
+                  bezier
+                  style={{ borderRadius: 16 }}
+                />
+              </ScrollView>
+            </ScrollView>
+            {/* Flèche d'indication de scroll */}
+            <View style={{ alignItems: 'center', marginTop: 4, marginBottom: 8 }}>
+              <MaterialIcons name="arrow-forward-ios" size={20} color={isDark ? '#aaa' : '#888'} />
+              <Text style={{ color: isDark ? '#aaa' : '#888', fontSize: 12 }}>Glissez pour voir plus</Text>
+            </View>
+          </>
+        ) : (
+          <Text style={{ color: isDark ? '#aaa' : '#888', textAlign: 'center', marginTop: 32 }}>
+            Aucune donnée à afficher.
+          </Text>
+        )}
 
-          // Prépare les segments pour le cercle
-          const radius = 60;
-          const strokeWidth = 24;
-          const center = radius + strokeWidth / 2;
-          const circumference = 2 * Math.PI * radius;
-          let prevPercent = 0;
-
-          const segments = Object.entries(totalByGacha)
-            .filter(([_, v]) => v > 0)
-            .map(([gachaId, value]) => {
-              const percent = total ? value / total : 0;
-              const dasharray = `${percent * circumference} ${circumference - percent * circumference}`;
-              const rotate = prevPercent * 360;
-              prevPercent += percent;
-              return { gachaId, dasharray, rotate };
+        {/* Total dépensé et barre de répartition */}
+        <View style={{ marginTop: 32, alignItems: 'center' }}>
+          {(() => {
+            // Filtrer les rolls selon la tranche de dates sélectionnée
+            const filteredRolls = rolls.filter(r => {
+              const d = new Date(r.date);
+              let afterStart = true, beforeEnd = true;
+              if (startDate) afterStart = d >= new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+              if (endDate) beforeEnd = d <= new Date(endDate.getFullYear(), endDate.getMonth(), 1);
+              return afterStart && beforeEnd;
             });
 
-          return (
-            <>
-              <View style={{ alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-                <Svg width={center * 2} height={center * 2}>
-                  <G rotation={-90} origin={`${center},${center}`}>
-                    {segments.map((seg, i) => (
-                      <Circle
-                        key={seg.gachaId}
-                        cx={center}
-                        cy={center}
-                        r={radius}
-                        stroke={GACHA_COLORS[seg.gachaId] || '#888'}
-                        strokeWidth={strokeWidth}
-                        strokeDasharray={seg.dasharray}
-                        strokeLinecap="butt"
-                        fill="none"
-                        rotation={seg.rotate}
-                        origin={`${center},${center}`}
-                      />
-                    ))}
-                  </G>
-                </Svg>
-                <View style={{
-                  position: 'absolute',
-                  left: 0, right: 0, top: 0, bottom: 0,
-                  alignItems: 'center', justifyContent: 'center',
-                  height: center * 2,
-                }}>
-                  <Text style={{
-                    color: isDark ? '#fff' : '#181818',
-                    fontWeight: 'bold',
-                    fontSize: 20,
-                    textAlign: 'center',
+            // Somme totale par gacha sur la période filtrée
+            const totalByGacha: Record<string, number> = {};
+            filteredRolls.forEach(r => {
+              totalByGacha[r.gachaId] = (totalByGacha[r.gachaId] || 0) + (r.currencyAmount || 0);
+            });
+            const total = Object.values(totalByGacha).reduce((a, b) => a + b, 0);
+
+            // Prépare les segments pour le cercle
+            const radius = 60;
+            const strokeWidth = 24;
+            const center = radius + strokeWidth / 2;
+            const circumference = 2 * Math.PI * radius;
+            let prevPercent = 0;
+
+            const segments = Object.entries(totalByGacha)
+              .filter(([_, v]) => v > 0)
+              .map(([gachaId, value]) => {
+                const percent = total ? value / total : 0;
+                const dasharray = `${percent * circumference} ${circumference - percent * circumference}`;
+                const rotate = prevPercent * 360;
+                prevPercent += percent;
+                return { gachaId, dasharray, rotate };
+              });
+
+            return (
+              <>
+                <View style={{ alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                  <Svg width={center * 2} height={center * 2}>
+                    <G rotation={-90} origin={`${center},${center}`}>
+                      {segments.map((seg, i) => (
+                        <Circle
+                          key={seg.gachaId}
+                          cx={center}
+                          cy={center}
+                          r={radius}
+                          stroke={GACHA_COLORS[seg.gachaId] || '#888'}
+                          strokeWidth={strokeWidth}
+                          strokeDasharray={seg.dasharray}
+                          strokeLinecap="butt"
+                          fill="none"
+                          rotation={seg.rotate}
+                          origin={`${center},${center}`}
+                        />
+                      ))}
+                    </G>
+                  </Svg>
+                  <View style={{
+                    position: 'absolute',
+                    left: 0, right: 0, top: 0, bottom: 0,
+                    alignItems: 'center', justifyContent: 'center',
+                    height: center * 2,
                   }}>
-                    {total.toLocaleString('fr-FR')} €
-                  </Text>
-                  <Text style={{
-                    color: isDark ? '#aaa' : '#888',
-                    fontSize: 13,
-                    textAlign: 'center',
-                  }}>
-                    Total dépensé
-                  </Text>
+                    <Text style={{
+                      color: isDark ? '#fff' : '#181818',
+                      fontWeight: 'bold',
+                      fontSize: 20,
+                      textAlign: 'center',
+                    }}>
+                      {total.toLocaleString('fr-FR')} €
+                    </Text>
+                    <Text style={{
+                      color: isDark ? '#aaa' : '#888',
+                      fontSize: 13,
+                      textAlign: 'center',
+                    }}>
+                      Total dépensé
+                    </Text>
+                  </View>
                 </View>
-              </View>
-              {/* Légende */}
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
-                {Object.entries(totalByGacha)
-                  .filter(([_, v]) => v > 0)
-                  .map(([gachaId, value]) => {
-                    const percent = total ? ((value / total) * 100).toFixed(1) : 0;
-                    const gacha = GACHAS.find(g => g.id === gachaId);
-                    return (
-                      <View key={gachaId} style={{ flexDirection: 'row', alignItems: 'center', marginHorizontal: 8, marginVertical: 2 }}>
-                        <View style={{
-                          width: 14, height: 14, borderRadius: 7,
-                          backgroundColor: GACHA_COLORS[gachaId] || '#888',
-                          marginRight: 4,
-                        }} />
-                        <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: 13 }}>
-                          {gacha?.name || gachaId} ({percent}%)
-                        </Text>
-                      </View>
-                    );
-                  })}
-              </View>
-            </>
-          );
-        })()}
-      </View>
+                {/* Légende */}
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
+                  {Object.entries(totalByGacha)
+                    .filter(([_, v]) => v > 0)
+                    .map(([gachaId, value]) => {
+                      const percent = total ? ((value / total) * 100).toFixed(1) : 0;
+                      const gacha = GACHAS.find(g => g.id === gachaId);
+                      return (
+                        <View key={gachaId} style={{ flexDirection: 'row', alignItems: 'center', marginHorizontal: 8, marginVertical: 2 }}>
+                          <View style={{
+                            width: 14, height: 14, borderRadius: 7,
+                            backgroundColor: GACHA_COLORS[gachaId] || '#888',
+                            marginRight: 4,
+                          }} />
+                          <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: 13 }}>
+                            {gacha?.name || gachaId} ({percent}%)
+                          </Text>
+                        </View>
+                      );
+                    })}
+                </View>
+              </>
+            );
+          })()}
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }

@@ -2,30 +2,26 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform } from 'react-native';
+import { useSelector } from 'react-redux';
 
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const theme = useSelector((state : any) => state.theme.mode); // 'light' ou 'dark'
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: theme === 'dark' ? '#6C47FF' : '#007AFF',
         headerShown: false,
         tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
-          },
-          default: {},
-        }),
+        tabBarStyle: {
+          backgroundColor: theme === 'dark' ? '#181818' : '#fff',
+          borderTopWidth: 0.5,
+          borderTopColor: theme === 'dark' ? '#333' : '#eee',
+          position: Platform.OS === 'ios' ? 'absolute' : 'relative',
+        },
       }}>
       <Tabs.Screen
         name="index"
