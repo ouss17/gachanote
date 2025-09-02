@@ -1,12 +1,16 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import { persistReducer, persistStore } from 'redux-persist';
 import { persistConfig } from './persistConfig';
+import moneyReducer from './slices/moneySlice';
+import nationalityReducer from './slices/nationalitySlice';
 import rollsReducer from './slices/rollsSlice';
 import themeReducer from './slices/themeSlice'; // <-- Ajoute cette ligne
 
 const rootReducer = combineReducers({
   rolls: rollsReducer,
   theme: themeReducer, // <-- Ajoute cette ligne
+  money: moneyReducer,           // <-- Ajoute cette ligne
+  nationality: nationalityReducer, // <-- Ajoute cette ligne
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

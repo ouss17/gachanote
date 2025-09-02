@@ -5,8 +5,6 @@ export type Roll = {
   gachaId: string;
   resourceAmount: number;
   resourceType?: string;
-  currencyAmount: number;
-  currency: '€' | '$' | '¥' | '₩';
   featuredCount: number;
   spookCount: number;
   sideUnit: number; // ← AJOUT ICI

@@ -25,11 +25,10 @@ GACHAS.forEach((gacha, idx) => {
 });
 
 export default function StatistiquesScreen() {
-  const rolls = useSelector((state: RootState) => state.rolls.rolls);
+  const moneyEntries = useSelector((state: RootState) => state.money.entries);
   const theme = useSelector((state: RootState) => state.theme.mode);
+  const currency = useSelector((state: RootState) => state.nationality.currency);
   const isDark = theme === 'dark';
-  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
-  const [selectedYear, setSelectedYear] = useState<string | null>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [showStartPicker, setShowStartPicker] = useState(false);
@@ -37,14 +36,13 @@ export default function StatistiquesScreen() {
   const [tooltip, setTooltip] = useState<{ value: number; x: number; y: number } | null>(null);
 
   useFocusEffect(
-    // Réinitialise à chaque focus
     useCallback(() => {
       setStartDate(null);
       setEndDate(null);
     }, [])
   );
 
-  // Génère la liste complète des mois/années entre le plus ancien et le plus récent roll
+  // Génère la liste complète des mois/années entre le plus ancien et le plus récent moneyEntry
   function getMonthKey(date: string) {
     const d = new Date(date);
     return format(d, 'MM/yyyy');
@@ -56,9 +54,9 @@ export default function StatistiquesScreen() {
   }
 
   // Trouver le min et max date
-  const allRollDates = rolls.map(r => new Date(r.date));
-  const minDate = allRollDates.length ? new Date(Math.min(...allRollDates.map(d => d.getTime()))) : new Date();
-  const maxDate = allRollDates.length ? new Date(Math.max(...allRollDates.map(d => d.getTime()))) : new Date();
+  const allMoneyDates = moneyEntries.map(r => new Date(r.date));
+  const minDate = allMoneyDates.length ? new Date(Math.min(...allMoneyDates.map(d => d.getTime()))) : new Date();
+  const maxDate = allMoneyDates.length ? new Date(Math.max(...allMoneyDates.map(d => d.getTime()))) : new Date();
 
   // Génère tous les mois entre minDate et maxDate
   function getAllMonthsBetween(min: Date, max: Date) {
@@ -73,8 +71,8 @@ export default function StatistiquesScreen() {
   }
   const allMonths = getAllMonthsBetween(minDate, maxDate);
 
-  // Liste des gachas présents dans les rolls
-  const gachas = Array.from(new Set(rolls.map(r => r.gachaId)));
+  // Liste des gachas présents dans les moneyEntries
+  const gachas = Array.from(new Set(moneyEntries.map(r => r.gachaId)));
 
   // Filtrage par mois/année si sélectionné
   const filteredMonths = allMonths.filter(month => {
@@ -85,12 +83,12 @@ export default function StatistiquesScreen() {
     return afterStart && beforeEnd;
   });
 
-  // Datasets pour chaque gacha, pour chaque mois (0 si pas de roll ce mois)
+  // Datasets pour chaque gacha, pour chaque mois (0 si pas d'entrée ce mois)
   const datasets = gachas.map(gachaId => {
     const data = filteredMonths.map(month => {
-      const sum = rolls
+      const sum = moneyEntries
         .filter(r => r.gachaId === gachaId && getMonthKey(r.date) === month)
-        .reduce((acc, r) => acc + (r.currencyAmount || 0), 0);
+        .reduce((acc, r) => acc + (r.amount || 0), 0);
       return sum;
     });
     return {
@@ -101,26 +99,23 @@ export default function StatistiquesScreen() {
     };
   });
 
-  // Pour les pickers
-  const monthsList = [
-    { label: 'Janvier', value: '01' },
-    { label: 'Février', value: '02' },
-    { label: 'Mars', value: '03' },
-    { label: 'Avril', value: '04' },
-    { label: 'Mai', value: '05' },
-    { label: 'Juin', value: '06' },
-    { label: 'Juillet', value: '07' },
-    { label: 'Août', value: '08' },
-    { label: 'Septembre', value: '09' },
-    { label: 'Octobre', value: '10' },
-    { label: 'Novembre', value: '11' },
-    { label: 'Décembre', value: '12' },
-  ];
-  const yearsList = Array.from(
-    new Set(allMonths.map(m => m.split('/')[1]))
-  ).sort();
-
   const insets = useSafeAreaInsets();
+
+  // Filtrer les entrées money selon la tranche de dates sélectionnée
+  const filteredMoneyEntries = moneyEntries.filter(entry => {
+    const d = new Date(entry.date);
+    let afterStart = true, beforeEnd = true;
+    if (startDate) afterStart = d >= new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+    if (endDate) beforeEnd = d <= new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+    return afterStart && beforeEnd;
+  });
+
+  // Somme totale par gacha sur la période filtrée
+  const totalByGacha: Record<string, number> = {};
+  filteredMoneyEntries.forEach(entry => {
+    totalByGacha[entry.gachaId] = (totalByGacha[entry.gachaId] || 0) + entry.amount;
+  });
+  const total = Object.values(totalByGacha).reduce((a, b) => a + b, 0);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#181818' : '#fff', padding: 16 }}>
@@ -205,7 +200,7 @@ export default function StatistiquesScreen() {
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              style={{ maxHeight: 340 }} // Limite la hauteur visible du graphique
+              style={{ maxHeight: 340 }}
             >
               <ScrollView
                 style={{ minWidth: Dimensions.get('window').width - 32 }}
@@ -222,8 +217,8 @@ export default function StatistiquesScreen() {
                     legend: gachas.map(g => g.toUpperCase()),
                   }}
                   width={Math.max(Dimensions.get('window').width - 32, filteredMonths.length * 70)}
-                  height={Math.max(260, gachas.length * 40)} // Hauteur dynamique si beaucoup de gachas
-                  yAxisSuffix="€"
+                  height={Math.max(260, gachas.length * 40)}
+                  yAxisSuffix={currency}
                   chartConfig={{
                     backgroundColor: isDark ? '#181818' : '#fff',
                     backgroundGradientFrom: isDark ? '#232323' : '#fff',
@@ -240,13 +235,11 @@ export default function StatistiquesScreen() {
                   style={{ borderRadius: 16 }}
                   onDataPointClick={({ value, x, y }) => {
                     setTooltip({ value, x, y });
-                    // Optionnel : pour fermer le tooltip après 2s
                     setTimeout(() => setTooltip(null), 2000);
                   }}
                 />
               </ScrollView>
             </ScrollView>
-            {/* Flèche d'indication de scroll */}
             <View style={{ alignItems: 'center', marginTop: 4, marginBottom: 8 }}>
               <MaterialIcons name="arrow-forward-ios" size={20} color={isDark ? '#aaa' : '#888'} />
               <Text style={{ color: isDark ? '#aaa' : '#888', fontSize: 12 }}>Glissez pour voir plus</Text>
@@ -261,23 +254,7 @@ export default function StatistiquesScreen() {
         {/* Total dépensé et barre de répartition */}
         <View style={{ marginTop: 32, alignItems: 'center' }}>
           {(() => {
-            // Filtrer les rolls selon la tranche de dates sélectionnée
-            const filteredRolls = rolls.filter(r => {
-              const d = new Date(r.date);
-              let afterStart = true, beforeEnd = true;
-              if (startDate) afterStart = d >= new Date(startDate.getFullYear(), startDate.getMonth(), 1);
-              if (endDate) beforeEnd = d <= new Date(endDate.getFullYear(), endDate.getMonth(), 1);
-              return afterStart && beforeEnd;
-            });
-
             // Somme totale par gacha sur la période filtrée
-            const totalByGacha: Record<string, number> = {};
-            filteredRolls.forEach(r => {
-              totalByGacha[r.gachaId] = (totalByGacha[r.gachaId] || 0) + (r.currencyAmount || 0);
-            });
-            const total = Object.values(totalByGacha).reduce((a, b) => a + b, 0);
-
-            // Prépare les segments pour le cercle
             const radius = 60;
             const strokeWidth = 24;
             const center = radius + strokeWidth / 2;
@@ -328,7 +305,7 @@ export default function StatistiquesScreen() {
                       fontSize: 20,
                       textAlign: 'center',
                     }}>
-                      {total.toLocaleString('fr-FR')} €
+                      {total.toLocaleString('fr-FR')} {currency}
                     </Text>
                     <Text style={{
                       color: isDark ? '#aaa' : '#888',
@@ -386,7 +363,7 @@ export default function StatistiquesScreen() {
             pointerEvents="none"
           >
             <Text style={{ color: isDark ? '#fff' : '#181818', fontWeight: 'bold' }}>
-              {tooltip.value.toLocaleString('fr-FR')} €
+              {tooltip.value.toLocaleString('fr-FR')} {currency}
             </Text>
           </View>
         )}
