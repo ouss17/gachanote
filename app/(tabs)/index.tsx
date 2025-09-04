@@ -1,5 +1,6 @@
 import { GACHAS } from '@/data/gachas';
 import { setNationality } from '@/redux/slices/nationalitySlice';
+import { setOnboardingSeen } from '@/redux/slices/onboardingSlice';
 import { toggleTheme } from '@/redux/slices/themeSlice';
 import { RootState } from '@/redux/store';
 import { useRouter } from 'expo-router';
@@ -8,6 +9,7 @@ import { useState } from 'react';
 import { FlatList, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
+import DemoScreen from '../DemoScreen';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -31,6 +33,11 @@ export default function HomeScreen() {
     { country: 'jp', currency: '¥', label: 'Japon', icon: require('@/assets/flags/jp.png') },
     // Ajoute d'autres pays si besoin
   ];
+
+  const onboardingSeen = useSelector((state: RootState) => state.onboarding.seen);
+  if (!onboardingSeen) {
+    return <DemoScreen onFinish={() => dispatch(setOnboardingSeen())} />;
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#181818' : '#fff' }}>

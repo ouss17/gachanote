@@ -3,6 +3,7 @@ import { persistReducer, persistStore } from 'redux-persist';
 import { persistConfig } from './persistConfig';
 import moneyReducer from './slices/moneySlice';
 import nationalityReducer from './slices/nationalitySlice';
+import onboardingReducer from './slices/onboardingSlice'; // <-- Ajoute cette ligne
 import rollsReducer from './slices/rollsSlice';
 import themeReducer from './slices/themeSlice'; // <-- Ajoute cette ligne
 
@@ -11,6 +12,7 @@ const rootReducer = combineReducers({
   theme: themeReducer, // <-- Ajoute cette ligne
   money: moneyReducer,           // <-- Ajoute cette ligne
   nationality: nationalityReducer, // <-- Ajoute cette ligne
+  onboarding: onboardingReducer, // <-- Ajoute cette ligne
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
