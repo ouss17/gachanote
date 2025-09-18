@@ -3,6 +3,7 @@ import { setNationality } from '@/redux/slices/nationalitySlice';
 import { setOnboardingSeen } from '@/redux/slices/onboardingSlice';
 import { toggleTheme } from '@/redux/slices/themeSlice';
 import { RootState } from '@/redux/store';
+import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
@@ -11,6 +12,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import DemoScreen from '../DemoScreen';
 
+/**
+ * Écran d'accueil principal de l'application.
+ * Permet de sélectionner la nationalité, de changer le thème, de rechercher un gacha
+ * et d'accéder à la démo si l'utilisateur ne l'a pas encore vue.
+ */
 export default function HomeScreen() {
   const router = useRouter();
   const theme = useSelector((state: RootState) => state.theme.mode);
@@ -27,6 +33,7 @@ export default function HomeScreen() {
 
   const nationality = useSelector((state: RootState) => state.nationality);
 
+  // Liste des nationalités disponibles avec leurs drapeaux et devises
   const flags = [
     { country: 'fr', currency: '€', label: 'France', icon: require('@/assets/flags/fr.png') },
     { country: 'us', currency: '$', label: 'USA', icon: require('@/assets/flags/us.png') },
@@ -34,6 +41,7 @@ export default function HomeScreen() {
     // Ajoute d'autres pays si besoin
   ];
 
+  // Affiche la démo si l'utilisateur ne l'a pas encore vue
   const onboardingSeen = useSelector((state: RootState) => state.onboarding.seen);
   if (!onboardingSeen) {
     return <DemoScreen onFinish={() => dispatch(setOnboardingSeen())} />;
@@ -43,11 +51,12 @@ export default function HomeScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#181818' : '#fff' }}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
 
-      {/* Titre au-dessus */}
+      {/* Titre principal */}
       <Text style={[styles.title, { color: isDark ? '#fff' : '#181818', marginTop: 8 }]}>
         Gachanote
       </Text>
 
+      {/* Sélecteur de nationalité et bouton de thème */}
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
         {/* Sélecteur de nationalité */}
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -83,14 +92,16 @@ export default function HomeScreen() {
               backgroundColor: isDark ? '#333' : '#eee',
             }}
           >
-            <Text style={{ color: isDark ? '#fff' : '#181818' }}>
-              {isDark ? 'Mode clair' : 'Mode sombre'}
-            </Text>
+            {isDark ? (
+              <Feather name="sun" size={24} color="#FFD700" />
+            ) : (
+              <Feather name="moon" size={24} color="#181818" />
+            )}
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* Modal select nationalité */}
+      {/* Modal pour sélectionner la nationalité */}
       {showSelect && (
         <View style={{
           position: 'absolute',
@@ -124,7 +135,7 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {/* Champ de recherche */}
+      {/* Champ de recherche pour filtrer les gachas */}
       <TextInput
         placeholder="Rechercher un gacha..."
         placeholderTextColor={isDark ? '#aaa' : '#888'}
@@ -141,6 +152,7 @@ export default function HomeScreen() {
         }}
       />
 
+      {/* Liste des gachas filtrés */}
       <FlatList
         data={filteredGachas}
         keyExtractor={item => item.id}
@@ -166,6 +178,9 @@ export default function HomeScreen() {
   );
 }
 
+/**
+ * Styles pour l'écran d'accueil.
+ */
 const styles = StyleSheet.create({
   title: { fontSize: 32, fontWeight: 'bold', marginBottom: 24, textAlign: 'center' },
   gachaItem: {

@@ -6,17 +6,28 @@ import * as Crypto from 'expo-crypto';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useMemo, useRef, useState } from 'react';
-import { Button, FlatList, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Button, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import MoneyTab from './MoneyTab';
+import RollsTab from './RollsTab';
+import StatsTab from './StatsTab';
 
+/**
+ * Écran principal pour la gestion des rolls d'un gacha.
+ * Permet de naviguer entre la liste des rolls, les statistiques et l'onglet argent.
+ */
 export default function GachaRollsScreen() {
+  // Récupère l'identifiant du gacha depuis l'URL
   const { gachaId } = useLocalSearchParams();
   const router = useRouter();
+
+  // Sélectionne tous les rolls depuis le store Redux
   const allRolls = useSelector((state: RootState) => state.rolls.rolls);
   const theme = useSelector((state: RootState) => state.theme.mode);
   const isDark = theme === 'dark';
+
+  // États pour la gestion du formulaire d'ajout/modification de roll
   const [showModal, setShowModal] = useState(false);
   const today = new Date();
   const [resourceAmount, setResourceAmount] = useState('');
@@ -35,12 +46,15 @@ export default function GachaRollsScreen() {
     sideUnit: false,
   });
 
+  // Références pour la navigation entre les champs du formulaire
   const nameFeaturedRef = useRef<TextInput>(null);
   const featuredCountRef = useRef<TextInput>(null);
   const spookCountRef = useRef<TextInput>(null);
   const sideUnitRef = useRef<TextInput>(null);
 
-  // Mémoïse le filtrage pour éviter le warning
+  /**
+   * Mémoïse la liste des rolls filtrés par gacha et recherche.
+   */
   const rolls = useMemo(
     () =>
       allRolls
@@ -55,6 +69,9 @@ export default function GachaRollsScreen() {
     [allRolls, gachaId, search]
   );
 
+  /**
+   * Calcule les statistiques à partir des rolls filtrés.
+   */
   const stats = useMemo(() => {
     return rolls.reduce(
       (acc, roll) => {
@@ -68,6 +85,10 @@ export default function GachaRollsScreen() {
     );
   }, [rolls]);
 
+  /**
+   * Retourne le type de ressource utilisé selon le gacha.
+   * @param gachaId Identifiant du gacha
+   */
   function getResourceType(gachaId: string) {
     switch (gachaId) {
       case 'dbl':
@@ -81,12 +102,29 @@ export default function GachaRollsScreen() {
       case 'opbr':
         return 'diamants';
       default:
-        return 'ressource';
+        return 'gemmes';
     }
   }
 
   const dispatch = useDispatch();
 
+  /**
+   * Réinitialise tous les champs du formulaire d'ajout/modification de roll.
+   */
+  const resetForm = () => {
+    setEditRoll(null);
+    setResourceAmount('');
+    setNameFeatured('');
+    setFeaturedCount('');
+    setSpookCount('');
+    setSideUnit('');
+    setDate(today);
+  };
+
+  /**
+   * Ajoute ou modifie un roll selon le contexte du formulaire.
+   * Vide les champs à la confirmation.
+   */
   const handleAdd = async () => {
     if (!resourceAmount || !featuredCount || !date) {
       alert('Merci de remplir tous les champs obligatoires.');
@@ -94,7 +132,7 @@ export default function GachaRollsScreen() {
     }
 
     if (editRoll) {
-      // Modification
+      // Modification d'un roll existant
       const updated: Roll = {
         ...editRoll,
         resourceAmount: Number(resourceAmount),
@@ -107,7 +145,7 @@ export default function GachaRollsScreen() {
       };
       dispatch(updateRoll(updated));
     } else {
-      // Ajout
+      // Ajout d'un nouveau roll
       let id: string;
       if (typeof Crypto.randomUUID === 'function') {
         id = Crypto.randomUUID();
@@ -131,45 +169,39 @@ export default function GachaRollsScreen() {
       dispatch(addRoll(roll));
     }
     setShowModal(false);
-    setEditRoll(null);
-    setResourceAmount('');
-    setNameFeatured('');
-    setFeaturedCount('');
-    setSpookCount('');
-    setSideUnit('');
-    setDate(today);
+    resetForm(); // Vide les champs après confirmation
   };
 
+  // Type de ressource pour le gacha courant
   const resourceType = getResourceType(String(gachaId));
   const insets = useSafeAreaInsets();
   const { cost: multiCost, label: multiLabel } = getMultiCost(String(gachaId));
   const multiCount = multiCost > 0 ? stats.resource / multiCost : 0;
 
+  // Calculs pour les taux de drop par multi
   const featuredPerMulti = multiCount > 0 ? (stats.featured / multiCount).toFixed(2) : '0';
   const spookPerMulti = multiCount > 0 ? (stats.spook / multiCount).toFixed(2) : '0';
   const sideUnitPerMulti = multiCount > 0 ? (stats.sideUnit / multiCount).toFixed(2) : '0';
 
-  // Ajout pour stats argent
+  // Sélectionne les entrées d'argent pour ce gacha
   const moneyEntries = useSelector((state: RootState) =>
     state.money.entries.filter(e => e.gachaId === gachaId)
   );
   const currency = useSelector((state: RootState) => state.nationality.currency);
 
-  // Filtrage par date si tu veux (optionnel)
-  // const [startDate, setStartDate] = useState<Date | null>(null);
-  // const [endDate, setEndDate] = useState<Date | null>(null);
-  // const filteredMoneyEntries = moneyEntries.filter(...);
-
-  // Calcul du total dépensé
+  // Calcul du total d'argent dépensé pour ce gacha
   const totalMoney = moneyEntries.reduce((sum, entry) => sum + entry.amount, 0);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#181818' : '#fff' }}>
+      {/* Espace pour la barre de statut */}
       <View style={{ height: insets.top, backgroundColor: isDark ? '#181818' : '#fff' }} />
       <StatusBar style={isDark ? 'light' : 'dark'} />
+
+      {/* Bouton retour */}
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
         <TouchableOpacity
-          onPress={() => router.replace('/')}
+          onPress={() => router.back()}
           style={{
             padding: 8,
             borderRadius: 8,
@@ -177,26 +209,14 @@ export default function GachaRollsScreen() {
             marginRight: 8,
           }}
         >
-          <AntDesign name="arrowleft" size={24} color={isDark ? '#fff' : '#181818'} />
+          <AntDesign name="arrow-left" size={24} color={isDark ? '#fff' : '#181818'} />
         </TouchableOpacity>
         <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: 18, fontWeight: 'bold' }}>
           Retour à l'accueil
         </Text>
       </View>
-      <TextInput
-        style={[
-          styles.input,
-          {
-            marginBottom: 24,
-            backgroundColor: isDark ? '#232323' : '#fff',
-            color: isDark ? '#fff' : '#181818',
-          },
-        ]}
-        placeholder="Rechercher par vedette"
-        placeholderTextColor={isDark ? '#aaa' : '#888'}
-        value={search}
-        onChangeText={setSearch}
-      />
+
+      {/* Menu d'onglets */}
       <View style={{ flexDirection: 'row', marginBottom: 16 }}>
         <TouchableOpacity
           style={{
@@ -241,172 +261,45 @@ export default function GachaRollsScreen() {
           </Text>
         </TouchableOpacity>
       </View>
+
+      {/* Affichage du contenu selon l'onglet sélectionné */}
       {tab === 'list' ? (
-        <FlatList
-          data={rolls}
-          keyExtractor={item => item.id}
-          renderItem={({ item }) => (
-            <View
-              style={{
-                marginVertical: 8,
-                padding: 8,
-                borderWidth: 1,
-                borderRadius: 8,
-                borderColor: isDark ? '#333' : '#ccc',
-                backgroundColor: isDark ? '#232323' : '#fff',
-              }}
-            >
-              {item.nameFeatured ? (
-                <Text style={{
-                  fontWeight: 'bold',
-                  fontSize: 18,
-                  textAlign: 'center',
-                  color: isDark ? '#fff' : '#181818',
-                  marginBottom: 8,
-                }}>
-                  {item.nameFeatured}
-                </Text>
-              ) : null}
-              <Text style={{ color: isDark ? '#fff' : '#181818' }}>
-                Date : <Text style={{ fontWeight: 'bold' }}>
-                  {new Date(item.date).toLocaleDateString('fr-FR')}
-                </Text>
-              </Text>
-              <Text style={{ color: isDark ? '#fff' : '#181818' }}>
-                Ressource : <Text style={{ fontWeight: 'bold' }}>
-                  {item.resourceAmount} {item.resourceType?.toUpperCase() ?? ''}
-                </Text>
-              </Text>
-              <Text style={{ color: isDark ? '#fff' : '#181818' }}>
-                Vedette : <Text style={{ fontWeight: 'bold' }}>{item.featuredCount}</Text>
-              </Text>
-              {item.spookCount > 0 && (
-                <Text style={{ color: isDark ? '#fff' : '#181818' }}>
-                  Spook : <Text style={{ fontWeight: 'bold' }}>{item.spookCount}</Text>
-                </Text>
-              )}
-              <Text style={{ color: isDark ? '#fff' : '#181818' }}>
-                Side units : <Text style={{ fontWeight: 'bold' }}>{item.sideUnit > 0 ? item.sideUnit : 0}</Text>
-              </Text>
-              <View style={{ flexDirection: 'row', marginTop: 8 }}>
-                <TouchableOpacity
-                  onPress={() => {
-                    setEditRoll(item);
-                    setResourceAmount(item.resourceAmount.toString());
-                    setNameFeatured(item.nameFeatured ?? '');
-                    setFeaturedCount(item.featuredCount.toString());
-                    setSpookCount(item.spookCount.toString());
-                    setSideUnit(item.sideUnit?.toString() ?? '');
-                    setDate(new Date(item.date));
-                    setShowModal(true);
-                  }}
-                  style={{ marginRight: 16 }}
-                >
-                  <AntDesign name="edit" size={20} color="#007AFF" />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => dispatch(removeRoll(item.id))}
-                >
-                  <AntDesign name="delete" size={20} color="#FF3B30" />
-                </TouchableOpacity>
-              </View>
-            </View>
-          )}
-          ListEmptyComponent={
-            <Text style={{ color: isDark ? '#fff' : '#181818' }}>Aucun roll enregistré.</Text>
-          }
-          contentContainerStyle={{ paddingBottom: 80 }}
+        <RollsTab
+          rolls={rolls}
+          isDark={isDark}
+          search={search}
+          setSearch={setSearch}
+          setEditRoll={setEditRoll}
+          setResourceAmount={setResourceAmount}
+          setNameFeatured={setNameFeatured}
+          setFeaturedCount={setFeaturedCount}
+          setSpookCount={setSpookCount}
+          setSideUnit={setSideUnit}
+          setDate={setDate}
+          setShowModal={setShowModal}
+          dispatch={dispatch}
+          removeRoll={removeRoll}
+          nameFeaturedRef={nameFeaturedRef}
+          featuredCountRef={featuredCountRef}
+          spookCountRef={spookCountRef}
+          sideUnitRef={sideUnitRef}
         />
       ) : tab === 'stats' ? (
-        <View style={{
-          padding: 24,
-          borderRadius: 16,
-          backgroundColor: isDark ? '#232323' : '#fff',
-          marginBottom: 24,
-          alignItems: 'center'
-        }}>
-          <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
-            Statistiques
-          </Text>
-          <View style={{
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            justifyContent: 'center',
-            alignItems: 'center',
-            marginVertical: 32,
-            rowGap: 24,
-            columnGap: 0,
-            maxWidth: 400,
-            alignSelf: 'center',
-          }}>
-            <StatCircle
-              label={`Ressources\n(${resourceType.toUpperCase()})`}
-              value={stats.resource.toString()}
-              color={isDark ? '#232323' : '#fff'}
-              borderColor="#007AFF"
-            />
-            <StatCircle
-              label="Vedettes"
-              value={
-                showStatsPercent.featured && stats.resource > 0
-                  ? `${((stats.featured / stats.resource) * 100).toFixed(2)}%`
-                  : stats.featured.toString()
-              }
-              color={isDark ? '#232323' : '#fff'}
-              borderColor="#FF9500"
-              onPress={() =>
-                setShowStatsPercent(s => ({ ...s, featured: !s.featured }))
-              }
-            />
-            <StatCircle
-              label="Spooks"
-              value={
-                showStatsPercent.spook && stats.resource > 0
-                  ? `${((stats.spook / stats.resource) * 100).toFixed(2)}%`
-                  : stats.spook.toString()
-              }
-              color={isDark ? '#232323' : '#fff'}
-              borderColor="#00B894"
-              onPress={() =>
-                setShowStatsPercent(s => ({ ...s, spook: !s.spook }))
-              }
-            />
-            <StatCircle
-              label="Side units"
-              value={
-                showStatsPercent.sideUnit && stats.resource > 0
-                  ? `${((stats.sideUnit / stats.resource) * 100).toFixed(2)}%`
-                  : stats.sideUnit?.toString()
-              }
-              color={isDark ? '#232323' : '#fff'}
-              borderColor="#6C47FF"
-              onPress={() =>
-                setShowStatsPercent(s => ({ ...s, sideUnit: !s.sideUnit }))
-              }
-            />
-          </View>
-          {/* Ajout du total argent mis */}
-          <View style={{
-            marginTop: 24,
-            alignItems: 'center',
-            backgroundColor: isDark ? '#232323' : '#f2f2f2',
-            borderRadius: 12,
-            padding: 16,
-            width: '100%',
-            maxWidth: 320,
-          }}>
-            <Text style={{ color: isDark ? '#fff' : '#181818', fontWeight: 'bold', fontSize: 16 }}>
-              Argent dépensé
-            </Text>
-            <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: 22, fontWeight: 'bold', marginTop: 8 }}>
-              {totalMoney.toLocaleString('fr-FR')} {currency}
-            </Text>
-          </View>
-        </View>
+        <StatsTab
+          stats={stats}
+          resourceType={resourceType}
+          showStatsPercent={showStatsPercent}
+          setShowStatsPercent={setShowStatsPercent}
+          isDark={isDark}
+          totalMoney={totalMoney}
+          currency={currency}
+        />
       ) : tab === 'money' ? (
         <MoneyTab gachaId={String(gachaId)} isDark={isDark} />
       ) : null}
-      {(['dbl', 'fgo', 'dokkan', 'sevenDS', 'opbr', 'nikke'].includes(String(gachaId))) && multiCost > 0 && (
+
+      {/* Affichage des taux de drop par multi (hors onglet Argent) */}
+      {(['dbl', 'fgo', 'dokkan', 'sevenDS', 'opbr', 'nikke'].includes(String(gachaId))) && multiCost > 0 && tab !== 'money' && (
         <View style={{ marginTop: 24 }}>
           <Text style={{ color: isDark ? '#fff' : '#181818', fontWeight: 'bold', fontSize: 16, textAlign: 'center', marginBottom: 4 }}>
             Taux de drop par {multiLabel} :
@@ -438,32 +331,24 @@ export default function GachaRollsScreen() {
               {(Number(spookPerMulti) * 20).toFixed(2)}
             </Text> / {multiLabel}
           </Text>
-
-          <Text style={{ color: isDark ? '#fff' : '#181818', textAlign: 'center' }}>
-            Side units : <Text style={{ fontWeight: 'bold' }}>{sideUnitPerMulti}</Text> / {multiLabel}
-          </Text>
-          <Text style={{ color: isDark ? '#aaa' : '#888', textAlign: 'center', fontSize: 13 }}>
-            ×10 : <Text style={{ fontWeight: 'bold', color: isDark ? '#fff' : '#181818' }}>
-              {(Number(sideUnitPerMulti) * 10).toFixed(2)}
-            </Text> / {multiLabel}
-          </Text>
-          <Text style={{ color: isDark ? '#aaa' : '#888', textAlign: 'center', fontSize: 13 }}>
-            ×20 : <Text style={{ fontWeight: 'bold', color: isDark ? '#fff' : '#181818' }}>
-              {(Number(sideUnitPerMulti) * 20).toFixed(2)}
-            </Text> / {multiLabel}
-          </Text>
         </View>
       )}
-      <TouchableOpacity
-        style={[
-          styles.fab,
-          { backgroundColor: isDark ? '#444' : '#007AFF' }
-        ]}
-        onPress={() => setShowModal(true)}
-        activeOpacity={0.7}
-      >
-        <AntDesign name="plus" size={32} color="#fff" />
-      </TouchableOpacity>
+
+      {/* Bouton flottant "+" pour ajouter un roll, uniquement dans l'onglet Liste */}
+      {tab === 'list' && (
+        <TouchableOpacity
+          style={[
+            styles.fab,
+            { backgroundColor: isDark ? '#444' : '#007AFF' }
+          ]}
+          onPress={() => setShowModal(true)}
+          activeOpacity={0.7}
+        >
+          <AntDesign name="plus" size={32} color="#fff" />
+        </TouchableOpacity>
+      )}
+
+      {/* Modal pour ajouter ou modifier un roll */}
       <Modal
         visible={showModal}
         animationType="slide"
@@ -485,6 +370,7 @@ export default function GachaRollsScreen() {
             <Text style={[styles.title, { color: isDark ? '#fff' : '#181818' }]}>
               {editRoll ? 'Modifier le tirage' : 'Ajouter un tirage'}
             </Text>
+            {/* Champ Montant de la ressource */}
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
               <Text style={{ color: isDark ? '#fff' : '#181818', marginRight: 4 }}>
                 Montant de la ressource <Text style={{ color: '#FF3B30' }}>*</Text>
@@ -506,6 +392,7 @@ export default function GachaRollsScreen() {
               </Text>
             </View>
 
+            {/* Champ Nom de la vedette */}
             <Text style={{ color: isDark ? '#fff' : '#181818', marginBottom: 4 }}>
               Nom de la vedette
             </Text>
@@ -520,6 +407,7 @@ export default function GachaRollsScreen() {
               blurOnSubmit={false}
             />
 
+            {/* Champ Nombre de vedettes */}
             <Text style={{ color: isDark ? '#fff' : '#181818', marginBottom: 4 }}>
               Nombre de vedettes <Text style={{ color: '#FF3B30' }}>*</Text>
             </Text>
@@ -535,6 +423,7 @@ export default function GachaRollsScreen() {
               blurOnSubmit={false}
             />
 
+            {/* Champ Nombre de spooks */}
             <Text style={{ color: isDark ? '#fff' : '#181818', marginBottom: 4 }}>
               Nombre de spooks
             </Text>
@@ -550,6 +439,7 @@ export default function GachaRollsScreen() {
               blurOnSubmit={false}
             />
 
+            {/* Champ Nombre de side units featuré */}
             <Text style={{ color: isDark ? '#fff' : '#181818', marginBottom: 4 }}>
               Nombre de side units featuré
             </Text>
@@ -562,6 +452,7 @@ export default function GachaRollsScreen() {
               returnKeyType="done"
             />
 
+            {/* Champ Date */}
             <Text style={{ color: isDark ? '#fff' : '#181818', marginBottom: 4 }}>
               Date <Text style={{ color: '#FF3B30' }}>*</Text>
             </Text>
@@ -586,8 +477,18 @@ export default function GachaRollsScreen() {
                 maximumDate={today}
               />
             )}
+
+            {/* Bouton de validation */}
             <Button title={editRoll ? 'Modifier' : 'Ajouter'} onPress={handleAdd} />
-            <TouchableOpacity style={{ marginTop: 16 }} onPress={() => setShowModal(false)}>
+
+            {/* Bouton Annuler */}
+            <TouchableOpacity
+              style={{ marginTop: 16 }}
+              onPress={() => {
+                setShowModal(false);
+                resetForm(); // Vide les champs aussi sur Annuler
+              }}
+            >
               <Text style={{ color: '#007AFF', textAlign: 'center' }}>Annuler</Text>
             </TouchableOpacity>
           </View>
@@ -597,6 +498,9 @@ export default function GachaRollsScreen() {
   );
 }
 
+/**
+ * Styles pour le composant GachaRollsScreen.
+ */
 const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
@@ -630,43 +534,10 @@ const styles = StyleSheet.create({
   },
 });
 
-function StatCircle({
-  label,
-  value,
-  color,
-  borderColor,
-  onPress,
-}: {
-  label: string,
-  value: string,
-  color: string,
-  borderColor: string,
-  onPress?: () => void,
-}) {
-  return (
-    <TouchableOpacity
-      activeOpacity={onPress ? 0.7 : 1}
-      onPress={onPress}
-      style={{ alignItems: 'center', marginHorizontal: 12 }}
-    >
-      <View style={{
-        width: 90,
-        height: 90,
-        borderRadius: 45,
-        borderWidth: 5,
-        borderColor,
-        backgroundColor: color,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 8,
-      }}>
-        <Text style={{ fontWeight: 'bold', fontSize: 20, color: borderColor }}>{value}</Text>
-      </View>
-      <Text style={{ color: borderColor, fontWeight: 'bold', textAlign: 'center' }}>{label}</Text>
-    </TouchableOpacity>
-  );
-}
-
+/**
+ * Retourne le coût d'un multi selon le gacha.
+ * @param gachaId Identifiant du gacha
+ */
 function getMultiCost(gachaId: string) {
   switch (gachaId) {
     case 'dbl':

@@ -1,6 +1,12 @@
 import { Image } from 'react-native';
 import Onboarding from 'react-native-onboarding-swiper';
 
+/**
+ * Composant d'onboarding/démo affiché au premier lancement de l'application.
+ * Présente les principales fonctionnalités de Gachanote à l'utilisateur.
+ *
+ * @param onFinish Fonction appelée à la fin ou lors du skip de la démo.
+ */
 export default function DemoScreen({ onFinish }: { onFinish: () => void }) {
   return (
     <Onboarding

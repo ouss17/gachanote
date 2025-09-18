@@ -6,9 +6,19 @@ import { useSelector } from 'react-redux';
 
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { setOnboardingSeen } from '@/redux/slices/onboardingSlice';
+import { useDispatch } from 'react-redux';
+import DemoScreen from '../DemoScreen';
 
 export default function TabLayout() {
   const theme = useSelector((state : any) => state.theme.mode); // 'light' ou 'dark'
+  const onboardingSeen = useSelector((state: any) => state.onboarding.seen);
+  const dispatch = useDispatch();
+
+  if (!onboardingSeen) {
+    // Cache le menu (tabs) pendant la démo
+    return <DemoScreen onFinish={() => dispatch(setOnboardingSeen())} />;
+  }
 
   return (
     <Tabs

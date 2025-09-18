@@ -3,20 +3,29 @@ import { persistReducer, persistStore } from 'redux-persist';
 import { persistConfig } from './persistConfig';
 import moneyReducer from './slices/moneySlice';
 import nationalityReducer from './slices/nationalitySlice';
-import onboardingReducer from './slices/onboardingSlice'; // <-- Ajoute cette ligne
+import onboardingReducer from './slices/onboardingSlice';
 import rollsReducer from './slices/rollsSlice';
-import themeReducer from './slices/themeSlice'; // <-- Ajoute cette ligne
+import themeReducer from './slices/themeSlice';
 
+/**
+ * Combine tous les reducers de l'application.
+ */
 const rootReducer = combineReducers({
   rolls: rollsReducer,
-  theme: themeReducer, // <-- Ajoute cette ligne
-  money: moneyReducer,           // <-- Ajoute cette ligne
-  nationality: nationalityReducer, // <-- Ajoute cette ligne
-  onboarding: onboardingReducer, // <-- Ajoute cette ligne
+  theme: themeReducer,
+  money: moneyReducer,
+  nationality: nationalityReducer,
+  onboarding: onboardingReducer,
 });
 
+/**
+ * Applique la persistance Redux sur le rootReducer.
+ */
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
+/**
+ * Configure le store Redux avec la persistance et désactive le serializableCheck.
+ */
 export const store = configureStore({
   reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
@@ -25,7 +34,15 @@ export const store = configureStore({
     }),
 });
 
+/**
+ * Persiste le store Redux (sauvegarde/restaure l'état).
+ */
 export const persistor = persistStore(store);
 
+/**
+ * Types utilitaires pour l'application.
+ * - RootState : type de l'état global Redux
+ * - AppDispatch : type du dispatch Redux
+ */
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

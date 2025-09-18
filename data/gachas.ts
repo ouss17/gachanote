@@ -1,7 +1,7 @@
 export type Gacha = {
   id: string;
   name: string;
-  logo: any; // Remplace par ImageSourcePropType si tu utilises React Native Image
+  logo: any;
 };
 
 export const GACHAS: Gacha[] = [

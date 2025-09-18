@@ -13,7 +13,9 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import Svg, { Circle, G } from 'react-native-svg';
 import { useSelector } from 'react-redux';
 
-// Génère dynamiquement les couleurs (tu peux personnaliser)
+/**
+ * Génère dynamiquement les couleurs pour chaque gacha.
+ */
 const GACHA_COLORS: Record<string, string> = {};
 const colorPalette = [
   '#6C47FF', '#007AFF', '#FF9500', '#00B894', '#FF3B30', '#FFB300',
@@ -24,17 +26,25 @@ GACHAS.forEach((gacha, idx) => {
   GACHA_COLORS[gacha.id] = colorPalette[idx % colorPalette.length];
 });
 
+/**
+ * Écran des statistiques globales d'argent dépensé sur tous les gachas.
+ * Affiche un graphique, un camembert de répartition et permet de filtrer par période.
+ */
 export default function StatistiquesScreen() {
+  // Sélection des données Redux et gestion du thème
   const moneyEntries = useSelector((state: RootState) => state.money.entries);
   const theme = useSelector((state: RootState) => state.theme.mode);
   const currency = useSelector((state: RootState) => state.nationality.currency);
   const isDark = theme === 'dark';
+
+  // États pour le filtrage par date et l'affichage du tooltip
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
   const [tooltip, setTooltip] = useState<{ value: number; x: number; y: number } | null>(null);
 
+  // Réinitialise les dates au focus de l'écran
   useFocusEffect(
     useCallback(() => {
       setStartDate(null);
@@ -42,23 +52,30 @@ export default function StatistiquesScreen() {
     }, [])
   );
 
-  // Génère la liste complète des mois/années entre le plus ancien et le plus récent moneyEntry
+  /**
+   * Retourne la clé mois/année à partir d'une date.
+   */
   function getMonthKey(date: string) {
     const d = new Date(date);
     return format(d, 'MM/yyyy');
   }
 
+  /**
+   * Convertit une clé mois/année en objet Date.
+   */
   function monthKeyToDate(monthKey: string) {
     const [m, y] = monthKey.split('/').map(Number);
     return new Date(y, m - 1, 1);
   }
 
-  // Trouver le min et max date
+  // Récupère les dates min et max des entrées money
   const allMoneyDates = moneyEntries.map(r => new Date(r.date));
   const minDate = allMoneyDates.length ? new Date(Math.min(...allMoneyDates.map(d => d.getTime()))) : new Date();
   const maxDate = allMoneyDates.length ? new Date(Math.max(...allMoneyDates.map(d => d.getTime()))) : new Date();
 
-  // Génère tous les mois entre minDate et maxDate
+  /**
+   * Génère tous les mois entre deux dates.
+   */
   function getAllMonthsBetween(min: Date, max: Date) {
     const months = [];
     let d = new Date(min.getFullYear(), min.getMonth(), 1);
@@ -71,10 +88,10 @@ export default function StatistiquesScreen() {
   }
   const allMonths = getAllMonthsBetween(minDate, maxDate);
 
-  // Liste des gachas présents dans les moneyEntries
+  // Liste des gachas présents dans les entrées money
   const gachas = Array.from(new Set(moneyEntries.map(r => r.gachaId)));
 
-  // Filtrage par mois/année si sélectionné
+  // Filtrage des mois selon la période sélectionnée
   const filteredMonths = allMonths.filter(month => {
     const date = monthKeyToDate(month);
     let afterStart = true, beforeEnd = true;
@@ -83,7 +100,7 @@ export default function StatistiquesScreen() {
     return afterStart && beforeEnd;
   });
 
-  // Datasets pour chaque gacha, pour chaque mois (0 si pas d'entrée ce mois)
+  // Prépare les datasets pour le graphique (un par gacha)
   const datasets = gachas.map(gachaId => {
     const data = filteredMonths.map(month => {
       const sum = moneyEntries
@@ -101,7 +118,7 @@ export default function StatistiquesScreen() {
 
   const insets = useSafeAreaInsets();
 
-  // Filtrer les entrées money selon la tranche de dates sélectionnée
+  // Filtre les entrées money selon la période sélectionnée
   const filteredMoneyEntries = moneyEntries.filter(entry => {
     const d = new Date(entry.date);
     let afterStart = true, beforeEnd = true;
@@ -110,7 +127,7 @@ export default function StatistiquesScreen() {
     return afterStart && beforeEnd;
   });
 
-  // Somme totale par gacha sur la période filtrée
+  // Calcule la somme totale par gacha sur la période filtrée
   const totalByGacha: Record<string, number> = {};
   filteredMoneyEntries.forEach(entry => {
     totalByGacha[entry.gachaId] = (totalByGacha[entry.gachaId] || 0) + entry.amount;
@@ -130,71 +147,75 @@ export default function StatistiquesScreen() {
       }}>
         Statistiques globales
       </Text>
-      <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 16 }}>
-        <View style={{ alignItems: 'center', marginRight: 16 }}>
-          <Text style={{ color: isDark ? '#aaa' : '#888', fontSize: 12 }}>Date de Début</Text>
-          <Text
-            onPress={() => setShowStartPicker(true)}
-            style={{
-              color: isDark ? '#fff' : '#181818',
-              borderWidth: 1,
-              borderColor: isDark ? '#444' : '#ccc',
-              borderRadius: 8,
-              padding: 8,
-              minWidth: 100,
-              textAlign: 'center',
-              marginTop: 4,
-            }}
-          >
-            {startDate ? format(startDate, 'MMM yyyy', { locale: fr }) : 'Choisir'}
-          </Text>
-          {showStartPicker && (
-            <DateTimePicker
-              value={startDate || minDate}
-              mode="date"
-              display="spinner"
-              onChange={(_, date) => {
-                setShowStartPicker(false);
-                if (date) setStartDate(date);
+      {/* Filtres de dates, affichés seulement s'il y a des entrées */}
+      {moneyEntries.length > 0 && (
+        <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 16 }}>
+          <View style={{ alignItems: 'center', marginRight: 16 }}>
+            <Text style={{ color: isDark ? '#aaa' : '#888', fontSize: 12 }}>Date de Début</Text>
+            <Text
+              onPress={() => setShowStartPicker(true)}
+              style={{
+                color: isDark ? '#fff' : '#181818',
+                borderWidth: 1,
+                borderColor: isDark ? '#444' : '#ccc',
+                borderRadius: 8,
+                padding: 8,
+                minWidth: 100,
+                textAlign: 'center',
+                marginTop: 4,
               }}
-              minimumDate={minDate}
-              maximumDate={endDate || maxDate}
-            />
-          )}
-        </View>
-        <View style={{ alignItems: 'center' }}>
-          <Text style={{ color: isDark ? '#aaa' : '#888', fontSize: 12 }}>Date de Fin</Text>
-          <Text
-            onPress={() => setShowEndPicker(true)}
-            style={{
-              color: isDark ? '#fff' : '#181818',
-              borderWidth: 1,
-              borderColor: isDark ? '#444' : '#ccc',
-              borderRadius: 8,
-              padding: 8,
-              minWidth: 100,
-              textAlign: 'center',
-              marginTop: 4,
-            }}
-          >
-            {endDate ? format(endDate, 'MMM yyyy', { locale: fr }) : 'Choisir'}
-          </Text>
-          {showEndPicker && (
-            <DateTimePicker
-              value={endDate || maxDate}
-              mode="date"
-              display="spinner"
-              onChange={(_, date) => {
-                setShowEndPicker(false);
-                if (date) setEndDate(date);
+            >
+              {startDate ? format(startDate, 'MMM yyyy', { locale: fr }) : 'Choisir'}
+            </Text>
+            {showStartPicker && (
+              <DateTimePicker
+                value={startDate || minDate}
+                mode="date"
+                display="spinner"
+                onChange={(_, date) => {
+                  setShowStartPicker(false);
+                  if (date) setStartDate(date);
+                }}
+                minimumDate={minDate}
+                maximumDate={endDate || maxDate}
+              />
+            )}
+          </View>
+          <View style={{ alignItems: 'center' }}>
+            <Text style={{ color: isDark ? '#aaa' : '#888', fontSize: 12 }}>Date de Fin</Text>
+            <Text
+              onPress={() => setShowEndPicker(true)}
+              style={{
+                color: isDark ? '#fff' : '#181818',
+                borderWidth: 1,
+                borderColor: isDark ? '#444' : '#ccc',
+                borderRadius: 8,
+                padding: 8,
+                minWidth: 100,
+                textAlign: 'center',
+                marginTop: 4,
               }}
-              minimumDate={startDate || minDate}
-              maximumDate={maxDate}
-            />
-          )}
+            >
+              {endDate ? format(endDate, 'MMM yyyy', { locale: fr }) : 'Choisir'}
+            </Text>
+            {showEndPicker && (
+              <DateTimePicker
+                value={endDate || maxDate}
+                mode="date"
+                display="spinner"
+                onChange={(_, date) => {
+                  setShowEndPicker(false);
+                  if (date) setEndDate(date);
+                }}
+                minimumDate={startDate || minDate}
+                maximumDate={maxDate}
+              />
+            )}
+          </View>
         </View>
-      </View>
+      )}
       <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
+        {/* Affichage du graphique si données */}
         {filteredMonths.length > 0 && datasets.length > 0 ? (
           <>
             <ScrollView
@@ -251,10 +272,10 @@ export default function StatistiquesScreen() {
           </Text>
         )}
 
-        {/* Total dépensé et barre de répartition */}
+        {/* Total dépensé et camembert de répartition */}
         <View style={{ marginTop: 32, alignItems: 'center' }}>
           {(() => {
-            // Somme totale par gacha sur la période filtrée
+            // Préparation des segments pour le camembert
             const radius = 60;
             const strokeWidth = 24;
             const center = radius + strokeWidth / 2;
@@ -316,7 +337,7 @@ export default function StatistiquesScreen() {
                     </Text>
                   </View>
                 </View>
-                {/* Légende */}
+                {/* Légende du camembert */}
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
                   {Object.entries(totalByGacha)
                     .filter(([_, v]) => v > 0)
@@ -342,6 +363,7 @@ export default function StatistiquesScreen() {
           })()}
         </View>
 
+        {/* Tooltip sur le graphique */}
         {tooltip && (
           <View
             style={{
