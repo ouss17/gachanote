@@ -252,7 +252,14 @@ export default function MoneyTab({ gachaId, isDark }: { gachaId: string, isDark:
             {/* Bouton de validation */}
             <Button title="Ajouter" onPress={handleAdd} />
             {/* Bouton Annuler */}
-            <TouchableOpacity style={{ marginTop: 16 }} onPress={() => setShowModal(false)}>
+            <TouchableOpacity
+              style={{ marginTop: 16 }}
+              onPress={() => {
+                setShowModal(false);
+                setAmount('');
+                setDate(new Date());
+              }}
+            >
               <Text style={{ color: '#007AFF', textAlign: 'center' }}>Annuler</Text>
             </TouchableOpacity>
           </View>

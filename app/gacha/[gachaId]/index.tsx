@@ -11,6 +11,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux';
 import MoneyTab from './MoneyTab';
 import RollsTab from './RollsTab';
+import SimulationsTab from './SimulationsTab';
 import StatsTab from './StatsTab';
 
 /**
@@ -39,7 +40,7 @@ export default function GachaRollsScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [editRoll, setEditRoll] = useState<Roll | null>(null);
   const [search, setSearch] = useState('');
-  const [tab, setTab] = useState<'list' | 'stats' | 'money'>('list');
+  const [tab, setTab] = useState<'list' | 'stats' | 'money' | 'simulations'>('list');
   const [showStatsPercent, setShowStatsPercent] = useState({
     featured: false,
     spook: false,
@@ -232,6 +233,20 @@ export default function GachaRollsScreen() {
             Liste
           </Text>
         </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                flex: 1,
+                padding: 12,
+                backgroundColor: tab === 'simulations' ? (isDark ? '#444' : '#eee') : 'transparent',
+                borderRadius: 8,
+                marginLeft: 4,
+              }}
+              onPress={() => setTab('simulations')}
+            >
+              <Text style={{ color: isDark ? '#fff' : '#181818', textAlign: 'center', fontWeight: tab === 'simulations' ? 'bold' : 'normal' }}>
+                Simulations
+              </Text>
+            </TouchableOpacity>
         <TouchableOpacity
           style={{
             flex: 1,
@@ -296,43 +311,9 @@ export default function GachaRollsScreen() {
         />
       ) : tab === 'money' ? (
         <MoneyTab gachaId={String(gachaId)} isDark={isDark} />
+      ) : tab === 'simulations' ? (
+        <SimulationsTab />
       ) : null}
-
-      {/* Affichage des taux de drop par multi (hors onglet Argent) */}
-      {(['dbl', 'fgo', 'dokkan', 'sevenDS', 'opbr', 'nikke'].includes(String(gachaId))) && multiCost > 0 && tab !== 'money' && (
-        <View style={{ marginTop: 24 }}>
-          <Text style={{ color: isDark ? '#fff' : '#181818', fontWeight: 'bold', fontSize: 16, textAlign: 'center', marginBottom: 4 }}>
-            Taux de drop par {multiLabel} :
-          </Text>
-          <Text style={{ color: isDark ? '#fff' : '#181818', textAlign: 'center' }}>
-            Vedettes : <Text style={{ fontWeight: 'bold' }}>{featuredPerMulti}</Text> / {multiLabel}
-          </Text>
-          <Text style={{ color: isDark ? '#aaa' : '#888', textAlign: 'center', fontSize: 13 }}>
-            ×10 : <Text style={{ fontWeight: 'bold', color: isDark ? '#fff' : '#181818' }}>
-              {(Number(featuredPerMulti) * 10).toFixed(2)}
-            </Text> / {multiLabel}
-          </Text>
-          <Text style={{ color: isDark ? '#aaa' : '#888', textAlign: 'center', fontSize: 13 }}>
-            ×20 : <Text style={{ fontWeight: 'bold', color: isDark ? '#fff' : '#181818' }}>
-              {(Number(featuredPerMulti) * 20).toFixed(2)}
-            </Text> / {multiLabel}
-          </Text>
-
-          <Text style={{ color: isDark ? '#fff' : '#181818', textAlign: 'center' }}>
-            Spooks : <Text style={{ fontWeight: 'bold' }}>{spookPerMulti}</Text> / {multiLabel}
-          </Text>
-          <Text style={{ color: isDark ? '#aaa' : '#888', textAlign: 'center', fontSize: 13 }}>
-            ×10 : <Text style={{ fontWeight: 'bold', color: isDark ? '#fff' : '#181818' }}>
-              {(Number(spookPerMulti) * 10).toFixed(2)}
-            </Text> / {multiLabel}
-          </Text>
-          <Text style={{ color: isDark ? '#aaa' : '#888', textAlign: 'center', fontSize: 13 }}>
-            ×20 : <Text style={{ fontWeight: 'bold', color: isDark ? '#fff' : '#181818' }}>
-              {(Number(spookPerMulti) * 20).toFixed(2)}
-            </Text> / {multiLabel}
-          </Text>
-        </View>
-      )}
 
       {/* Bouton flottant "+" pour ajouter un roll, uniquement dans l'onglet Liste */}
       {tab === 'list' && (
