@@ -1,0 +1,389 @@
+import { setNationality } from '@/redux/slices/nationalitySlice';
+import { setFontSize, setSounds, setVibrations } from '@/redux/slices/settingsSlice';
+import { setTheme } from '@/redux/slices/themeSlice';
+import { RootState } from '@/redux/store';
+import React, { useState } from 'react';
+import { Alert, Modal, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
+
+const LANGUAGES = [
+  { code: 'fr', label: 'Français' },
+  { code: 'en', label: 'English' },
+  { code: 'jp', label: '日本語' },
+];
+
+const FONT_SIZES = [
+  { key: 'small', label: 'Petit', example: 'Aa' },
+  { key: 'normal', label: 'Normal', example: 'Aa' },
+  { key: 'large', label: 'Grand', example: 'Aa' },
+];
+
+const Settings = () => {
+  const dispatch = useDispatch();
+  const theme = useSelector((state: RootState) => state.theme.mode);
+  const isDark = theme === 'dark';
+  const nationality = useSelector((state: RootState) => state.nationality.country);
+  const fontSize = useSelector((state: RootState) => state.settings.fontSize);
+  const sounds = useSelector((state: RootState) => state.settings.sounds);
+  const vibrations = useSelector((state: RootState) => state.settings.vibrations);
+  const [showImportExport, setShowImportExport] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [importText, setImportText] = useState('');
+  const [feedbackText, setFeedbackText] = useState('');
+
+  // Fonction utilitaire pour la taille de police
+  const getFontSize = (base: number) => {
+    if (fontSize === 'small') return base * 0.85;
+    if (fontSize === 'large') return base * 1.25;
+    return base;
+  };
+
+  // Reset data
+  const handleReset = () => {
+    Alert.alert(
+      'Confirmation',
+      'Voulez-vous vraiment réinitialiser toutes vos données ? Cette action est irréversible.',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Réinitialiser',
+          style: 'destructive',
+          onPress: () => {
+            dispatch(setNationality({ country: 'fr', currency: '€' }));
+            // Ajoute ici d'autres resets si besoin
+          },
+        },
+      ]
+    );
+  };
+
+  // Export/Import (placeholders)
+  const handleExport = (type: 'json' | 'gacha') => {
+    Alert.alert('Export', `Export ${type === 'gacha' ? 'par gacha' : 'global'} à venir !`);
+  };
+  const handleImport = () => {
+    Alert.alert('Import', 'Import à venir !');
+  };
+
+  // Envoyer le feedback
+  const handleSendFeedback = () => {
+    // Logique pour envoyer le feedback (e.g., appel API)
+    console.log('Feedback envoyé :', feedbackText);
+    setFeedbackText('');
+    setShowFeedbackModal(false);
+    Alert.alert('Merci !', 'Votre feedback a été envoyé. Merci de contribuer à l\'amélioration de l\'app.');
+  };
+
+  return (
+    <ScrollView style={{ flex: 1, backgroundColor: isDark ? '#181818' : '#fff' }}>
+      <View style={{ padding: 20 }}>
+        {/* Section Paramètres généraux */}
+        <Text style={[styles.sectionTitle, { color: isDark ? '#FFD700' : '#007AFF', fontSize: getFontSize(18) }]}>
+          🔧 Paramètres généraux
+        </Text>
+        {/* Langue */}
+        <View style={styles.row}>
+          <Text style={[styles.label, { color: isDark ? '#fff' : '#181818', fontSize: getFontSize(16) }]}>
+            Langue
+          </Text>
+          <View style={{ flexDirection: 'row' }}>
+            {LANGUAGES.map(lang => (
+              <TouchableOpacity
+                key={lang.code}
+                style={[
+                  styles.chip,
+                  {
+                    backgroundColor: nationality === lang.code
+                      ? (isDark ? '#FFD700' : '#007AFF')
+                      : (isDark ? '#232323' : '#eee'),
+                  },
+                ]}
+                onPress={() => dispatch(setNationality({ country: lang.code, currency: lang.code === 'fr' ? '€' : lang.code === 'en' ? '$' : '¥' }))}
+              >
+                <Text style={{
+                  color: nationality === lang.code
+                    ? (isDark ? '#181818' : '#fff')
+                    : (isDark ? '#fff' : '#181818'),
+                  fontWeight: nationality === lang.code ? 'bold' : 'normal',
+                  fontSize: getFontSize(16),
+                }}>
+                  {lang.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+        {/* Thème */}
+        <View style={styles.row}>
+          <Text style={[styles.label, { color: isDark ? '#fff' : '#181818', fontSize: getFontSize(16) }]}>Thème</Text>
+          <View style={{ flexDirection: 'row' }}>
+            {['light', 'dark'].map(mode => (
+              <TouchableOpacity
+                key={mode}
+                style={[
+                  styles.chip,
+                  {
+                    backgroundColor: theme === mode
+                      ? (isDark ? '#FFD700' : '#007AFF')
+                      : (isDark ? '#232323' : '#eee'),
+                  },
+                ]}
+                onPress={() => dispatch(setTheme(mode as 'light' | 'dark'))}
+              >
+                <Text style={{
+                  color: theme === mode
+                    ? (isDark ? '#181818' : '#fff')
+                    : (isDark ? '#fff' : '#181818'),
+                  fontWeight: theme === mode ? 'bold' : 'normal',
+                  fontSize: getFontSize(16),
+                }}>
+                  {mode === 'light' ? 'Clair' : 'Sombre'}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+        {/* Taille de police */}
+        <View style={styles.row}>
+          <Text style={[styles.label, { color: isDark ? '#fff' : '#181818', fontSize: getFontSize(16) }]}>Taille de police</Text>
+          <View style={{ flexDirection: 'row' }}>
+            {FONT_SIZES.map(size => (
+              <TouchableOpacity
+                key={size.key}
+                style={[
+                  styles.chip,
+                  {
+                    backgroundColor: fontSize === size.key
+                      ? (isDark ? '#FFD700' : '#007AFF')
+                      : (isDark ? '#232323' : '#eee'),
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    minWidth: 60,
+                    justifyContent: 'center',
+                  },
+                ]}
+                onPress={() => dispatch(setFontSize(size.key as 'small' | 'normal' | 'large'))}
+              >
+                <Text
+                  style={{
+                    fontSize:
+                      size.key === 'small'
+                        ? getFontSize(13)
+                        : size.key === 'large'
+                        ? getFontSize(22)
+                        : getFontSize(17),
+                    color: fontSize === size.key
+                      ? (isDark ? '#181818' : '#fff')
+                      : (isDark ? '#fff' : '#181818'),
+                    fontWeight: 'bold',
+                  }}
+                >
+                  {size.example}
+                </Text>
+                <Text
+                  style={{
+                    color: fontSize === size.key
+                      ? (isDark ? '#181818' : '#fff')
+                      : (isDark ? '#fff' : '#181818'),
+                    fontWeight: fontSize === size.key ? 'bold' : 'normal',
+                    fontSize: getFontSize(16),
+                    marginLeft: 6,
+                  }}
+                >
+                  {size.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+        {/* Sons & Vibrations */}
+        <View style={styles.row}>
+          <Text style={[styles.label, { color: isDark ? '#fff' : '#181818', fontSize: getFontSize(16) }]}>Sons</Text>
+          <Switch
+            value={sounds}
+            onValueChange={v => { dispatch(setSounds(v)); }}
+            thumbColor={sounds ? (isDark ? '#FFD700' : '#007AFF') : (isDark ? '#444' : '#ccc')}
+            trackColor={{ false: isDark ? '#232323' : '#eee', true: isDark ? '#FFD700' : '#007AFF' }}
+          />
+        </View>
+        <View style={styles.row}>
+          <Text style={[styles.label, { color: isDark ? '#fff' : '#181818', fontSize: getFontSize(16) }]}>Vibrations</Text>
+          <Switch
+            value={vibrations}
+            onValueChange={v => { dispatch(setVibrations(v)); }}
+            thumbColor={vibrations ? (isDark ? '#FFD700' : '#007AFF') : (isDark ? '#444' : '#ccc')}
+            trackColor={{ false: isDark ? '#232323' : '#eee', true: isDark ? '#FFD700' : '#007AFF' }}
+          />
+        </View>
+
+        {/* Section Données & Confidentialité */}
+        <Text style={[styles.sectionTitle, { color: isDark ? '#FFD700' : '#007AFF', marginTop: 32, fontSize: getFontSize(18) }]}>📊 Données & Confidentialité</Text>
+        <View style={styles.row}>
+          <TouchableOpacity style={styles.linkBtn} onPress={() => setShowImportExport(true)}>
+            <Text style={[styles.link, { color: isDark ? '#FFD700' : '#007AFF', fontSize: getFontSize(16) }]}>Import / Export</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.linkBtn} onPress={handleReset}>
+            <Text style={[styles.link, { color: '#FF3B30', fontWeight: 'bold', fontSize: getFontSize(16) }]}>Remise à zéro</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Section Feedback */}
+        <Text style={[styles.sectionTitle, { color: isDark ? '#FFD700' : '#007AFF', marginTop: 32, fontSize: getFontSize(18) }]}>🙎🏽‍♂️ Partage ton expérience</Text>
+        <View style={styles.row}>
+          <TouchableOpacity style={styles.linkBtn} onPress={() => setShowFeedbackModal(true)}>
+            <Text style={[styles.link, { color: isDark ? '#FFD700' : '#007AFF', fontSize: getFontSize(16) }]}>Envoyer un feedback anonyme</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Modal Import/Export */}
+        <Modal visible={showImportExport} animationType="slide" transparent>
+          <View style={{
+            flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center'
+          }}>
+            <View style={{
+              backgroundColor: isDark ? '#232323' : '#fff',
+              padding: 24,
+              borderRadius: 16,
+              width: '90%',
+              maxHeight: '80%',
+            }}>
+              <Text style={{ fontWeight: 'bold', fontSize: getFontSize(18), color: isDark ? '#FFD700' : '#007AFF', marginBottom: 12 }}>
+                Import / Export des données
+              </Text>
+              {/* Export */}
+              <Text style={{ color: isDark ? '#fff' : '#181818', marginBottom: 8, fontSize: getFontSize(15) }}>
+                Exporter toutes les données ou seulement celles d'un gacha :
+              </Text>
+              <TouchableOpacity
+                style={styles.validateBtn}
+                onPress={() => handleExport('json')}
+              >
+                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>Exporter tout (JSON)</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.validateBtn}
+                onPress={() => handleExport('gacha')}
+              >
+                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>Exporter un gacha (JSON)</Text>
+              </TouchableOpacity>
+              {/* Import */}
+              <Text style={{ color: isDark ? '#fff' : '#181818', marginTop: 16, marginBottom: 4, fontSize: getFontSize(15) }}>
+                Importer des données (JSON) :
+              </Text>
+              <TextInput
+                style={[styles.input, { fontSize: getFontSize(16) }]}
+                placeholder="Collez ici vos données JSON"
+                placeholderTextColor="#888"
+                multiline
+                value={importText}
+                onChangeText={setImportText}
+              />
+              <TouchableOpacity
+                style={styles.validateBtn}
+                onPress={handleImport}
+              >
+                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>Importer</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={{ marginTop: 16 }} onPress={() => setShowImportExport(false)}>
+                <Text style={{ color: '#007AFF', textAlign: 'center', fontSize: getFontSize(16) }}>Fermer</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+
+        {/* Modal Feedback */}
+        <Modal visible={showFeedbackModal} animationType="slide" transparent>
+          <View style={{
+            flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center'
+          }}>
+            <View style={{
+              backgroundColor: isDark ? '#232323' : '#fff',
+              padding: 24,
+              borderRadius: 16,
+              width: '90%',
+              maxHeight: '80%',
+            }}>
+              <Text style={{ fontWeight: 'bold', fontSize: getFontSize(18), color: isDark ? '#FFD700' : '#007AFF', marginBottom: 12 }}>
+                Envoyer un feedback anonyme
+              </Text>
+              <TextInput
+                style={[styles.input, { fontSize: getFontSize(16) }]}
+                placeholder="Décris ton expérience, tes suggestions ou bugs rencontrés..."
+                placeholderTextColor="#888"
+                multiline
+                value={feedbackText}
+                onChangeText={setFeedbackText}
+              />
+              <TouchableOpacity
+                style={styles.validateBtn}
+                onPress={handleSendFeedback}
+              >
+                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>Envoyer</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={{ marginTop: 16 }} onPress={() => setShowFeedbackModal(false)}>
+                <Text style={{ color: '#007AFF', textAlign: 'center', fontSize: getFontSize(16) }}>Fermer</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      </View>
+    </ScrollView>
+  );
+};
+
+const styles = StyleSheet.create({
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 14,
+    marginTop: 12,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 18,
+    flexWrap: 'wrap',
+  },
+  label: {
+    fontSize: 16,
+    flex: 1,
+  },
+  chip: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 16,
+    marginHorizontal: 4,
+    marginVertical: 2,
+  },
+  link: {
+    fontSize: 16,
+    textDecorationLine: 'underline',
+  },
+  linkBtn: {
+    marginRight: 12,
+    marginVertical: 4,
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  validateBtn: {
+    backgroundColor: '#00B894',
+    borderRadius: 8,
+    padding: 14,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 8,
+    backgroundColor: '#fff',
+    color: '#181818',
+  },
+});
+
+export default Settings;

@@ -24,6 +24,7 @@ import { FlatList, Text, TextInput, TouchableOpacity, View } from 'react-native'
  * @param featuredCountRef Référence pour le champ nombre de vedettes
  * @param spookCountRef Référence pour le champ spook
  * @param sideUnitRef Référence pour le champ side unit
+ * @param getFontSize Fonction pour la taille de police dynamique
  */
 export default function RollsTab({
   rolls,
@@ -44,6 +45,7 @@ export default function RollsTab({
   featuredCountRef,
   spookCountRef,
   sideUnitRef,
+  getFontSize,
 }: any) {
   return (
     <>
@@ -56,7 +58,7 @@ export default function RollsTab({
             borderRadius: 8,
             padding: 12,
             marginBottom: 24,
-            fontSize: 16,
+            fontSize: getFontSize ? getFontSize(16) : 16,
             backgroundColor: isDark ? '#232323' : '#fff',
             color: isDark ? '#fff' : '#181818',
           }}
@@ -85,7 +87,7 @@ export default function RollsTab({
             {item.nameFeatured ? (
               <Text style={{
                 fontWeight: 'bold',
-                fontSize: 18,
+                fontSize: getFontSize ? getFontSize(18) : 18,
                 textAlign: 'center',
                 color: isDark ? '#fff' : '#181818',
                 marginBottom: 8,
@@ -93,25 +95,25 @@ export default function RollsTab({
                 {item.nameFeatured}
               </Text>
             ) : null}
-            <Text style={{ color: isDark ? '#fff' : '#181818' }}>
+            <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize ? getFontSize(15) : 15 }}>
               Date : <Text style={{ fontWeight: 'bold' }}>
                 {new Date(item.date).toLocaleDateString('fr-FR')}
               </Text>
             </Text>
-            <Text style={{ color: isDark ? '#fff' : '#181818' }}>
+            <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize ? getFontSize(15) : 15 }}>
               Ressource : <Text style={{ fontWeight: 'bold' }}>
                 {item.resourceAmount} {item.resourceType?.toUpperCase() ?? ''}
               </Text>
             </Text>
-            <Text style={{ color: isDark ? '#fff' : '#181818' }}>
+            <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize ? getFontSize(15) : 15 }}>
               Vedette : <Text style={{ fontWeight: 'bold' }}>{item.featuredCount}</Text>
             </Text>
             {item.spookCount > 0 && (
-              <Text style={{ color: isDark ? '#fff' : '#181818' }}>
+              <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize ? getFontSize(15) : 15 }}>
                 Spook : <Text style={{ fontWeight: 'bold' }}>{item.spookCount}</Text>
               </Text>
             )}
-            <Text style={{ color: isDark ? '#fff' : '#181818' }}>
+            <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize ? getFontSize(15) : 15 }}>
               Side units : <Text style={{ fontWeight: 'bold' }}>{item.sideUnit > 0 ? item.sideUnit : 0}</Text>
             </Text>
             {/* Actions d'édition et suppression */}
@@ -129,18 +131,20 @@ export default function RollsTab({
                 }}
                 style={{ marginRight: 16 }}
               >
-                <AntDesign name="edit" size={20} color="#007AFF" />
+                <AntDesign name="edit" size={getFontSize ? getFontSize(20) : 20} color="#007AFF" />
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => dispatch(removeRoll(item.id))}
               >
-                <AntDesign name="delete" size={20} color="#FF3B30" />
+                <AntDesign name="delete" size={getFontSize ? getFontSize(20) : 20} color="#FF3B30" />
               </TouchableOpacity>
             </View>
           </View>
         )}
         ListEmptyComponent={
-          <Text style={{ color: isDark ? '#fff' : '#181818' }}>Aucun roll enregistré.</Text>
+          <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize ? getFontSize(15) : 15 }}>
+            Aucun roll enregistré.
+          </Text>
         }
         contentContainerStyle={{ paddingBottom: 80 }}
       />

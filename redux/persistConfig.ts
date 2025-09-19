@@ -7,5 +7,5 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export const persistConfig = {
   key: 'root', // Clé racine pour le stockage
   storage: AsyncStorage, // Backend de stockage (AsyncStorage pour React Native)
-  whitelist: ['rolls', 'money', 'nationality', 'onboarding', 'theme', 'simulations'], // Slices Redux à persister
+  whitelist: ['rolls', 'money', 'nationality', 'onboarding', 'theme', 'simulations', 'settings'], // Slices Redux à persister
 };

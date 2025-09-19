@@ -47,12 +47,20 @@ export default function HomeScreen() {
     return <DemoScreen onFinish={() => dispatch(setOnboardingSeen())} />;
   }
 
+  const fontSize = useSelector((state: RootState) => state.settings.fontSize);
+
+  function getFontSize(base: number) {
+    if (fontSize === 'small') return base * 0.85;
+    if (fontSize === 'large') return base * 1.25;
+    return base;
+  }
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#181818' : '#fff' }}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
 
       {/* Titre principal */}
-      <Text style={[styles.title, { color: isDark ? '#fff' : '#181818', marginTop: 8 }]}>
+      <Text style={[styles.title, { color: isDark ? '#fff' : '#181818', marginTop: 8, fontSize: getFontSize(32) }]}>
         Gachanote
       </Text>
 
@@ -149,6 +157,7 @@ export default function HomeScreen() {
           marginBottom: 16,
           borderWidth: 1,
           borderColor: isDark ? '#333' : '#ccc',
+          fontSize: getFontSize(16), // ← adapte la taille du texte ici
         }}
       />
 
@@ -170,7 +179,9 @@ export default function HomeScreen() {
             <Image source={item.logo} style={[styles.logo, {
               backgroundColor: isDark ? "transparent" : 'gray',
             }]} resizeMode='contain' />
-            <Text style={[styles.gachaName, { color: isDark ? '#fff' : '#181818' }]}>{item.name}</Text>
+            <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize(20) }}>
+              {item.name}
+            </Text>
           </TouchableOpacity>
         )}
       />

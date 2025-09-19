@@ -11,6 +11,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
  * @param isDark Thème sombre ou non
  * @param totalMoney Argent total dépensé pour ce gacha
  * @param currency Devise utilisée
+ * @param getFontSize Fonction pour la taille de police dynamique
  */
 export default function StatsTab({
   stats,
@@ -20,6 +21,7 @@ export default function StatsTab({
   isDark,
   totalMoney,
   currency,
+  getFontSize,
 }: {
   stats: { resource: number; featured: number; spook: number; sideUnit: number };
   resourceType: string;
@@ -28,6 +30,7 @@ export default function StatsTab({
   isDark: boolean;
   totalMoney: number;
   currency: string;
+  getFontSize: (base: number) => number;
 }) {
   return (
     <View style={{
@@ -37,7 +40,7 @@ export default function StatsTab({
       marginBottom: 24,
       alignItems: 'center'
     }}>
-      <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: 18, fontWeight: 'bold', marginBottom: 12 }}>
+      <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize(18), fontWeight: 'bold', marginBottom: 12 }}>
         Statistiques
       </Text>
       <View style={{
@@ -56,6 +59,8 @@ export default function StatsTab({
           value={stats.resource.toString()}
           color={isDark ? '#232323' : '#fff'}
           borderColor="#007AFF"
+          fontSize={getFontSize(20)}
+          labelFontSize={getFontSize(13)}
         />
         <StatCircle
           label="Vedettes"
@@ -69,6 +74,8 @@ export default function StatsTab({
           onPress={() =>
             setShowStatsPercent((s: any) => ({ ...s, featured: !s.featured }))
           }
+          fontSize={getFontSize(20)}
+          labelFontSize={getFontSize(13)}
         />
         <StatCircle
           label="Spooks"
@@ -82,6 +89,8 @@ export default function StatsTab({
           onPress={() =>
             setShowStatsPercent((s: any) => ({ ...s, spook: !s.spook }))
           }
+          fontSize={getFontSize(20)}
+          labelFontSize={getFontSize(13)}
         />
         <StatCircle
           label="Side units"
@@ -95,6 +104,8 @@ export default function StatsTab({
           onPress={() =>
             setShowStatsPercent((s: any) => ({ ...s, sideUnit: !s.sideUnit }))
           }
+          fontSize={getFontSize(20)}
+          labelFontSize={getFontSize(13)}
         />
       </View>
       {/* Affichage du total d'argent dépensé */}
@@ -107,10 +118,10 @@ export default function StatsTab({
         width: '100%',
         maxWidth: 320,
       }}>
-        <Text style={{ color: isDark ? '#fff' : '#181818', fontWeight: 'bold', fontSize: 16 }}>
+        <Text style={{ color: isDark ? '#fff' : '#181818', fontWeight: 'bold', fontSize: getFontSize(16) }}>
           Argent dépensé
         </Text>
-        <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: 22, fontWeight: 'bold', marginTop: 8 }}>
+        <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize(22), fontWeight: 'bold', marginTop: 8 }}>
           {totalMoney.toLocaleString('fr-FR')} {currency}
         </Text>
       </View>
@@ -126,6 +137,8 @@ export default function StatsTab({
  * @param color Couleur de fond
  * @param borderColor Couleur de la bordure et du texte
  * @param onPress Fonction appelée au clic (pour basculer valeur/pourcentage)
+ * @param fontSize Taille de la valeur
+ * @param labelFontSize Taille du label
  */
 function StatCircle({
   label,
@@ -133,12 +146,16 @@ function StatCircle({
   color,
   borderColor,
   onPress,
+  fontSize,
+  labelFontSize,
 }: {
   label: string,
   value: string,
   color: string,
   borderColor: string,
   onPress?: () => void,
+  fontSize: number,
+  labelFontSize: number,
 }) {
   return (
     <TouchableOpacity
@@ -157,9 +174,9 @@ function StatCircle({
         alignItems: 'center',
         marginBottom: 8,
       }}>
-        <Text style={{ fontWeight: 'bold', fontSize: 20, color: borderColor }}>{value}</Text>
+        <Text style={{ fontWeight: 'bold', fontSize, color: borderColor }}>{value}</Text>
       </View>
-      <Text style={{ color: borderColor, fontWeight: 'bold', textAlign: 'center' }}>{label}</Text>
+      <Text style={{ color: borderColor, fontWeight: 'bold', textAlign: 'center', fontSize: labelFontSize }}>{label}</Text>
     </TouchableOpacity>
   );
 }

@@ -35,7 +35,15 @@ export default function StatistiquesScreen() {
   const moneyEntries = useSelector((state: RootState) => state.money.entries);
   const theme = useSelector((state: RootState) => state.theme.mode);
   const currency = useSelector((state: RootState) => state.nationality.currency);
+  const fontSize = useSelector((state: RootState) => state.settings.fontSize);
   const isDark = theme === 'dark';
+
+  // Fonction utilitaire pour la taille de police
+  function getFontSize(base: number) {
+    if (fontSize === 'small') return base * 0.85;
+    if (fontSize === 'large') return base * 1.25;
+    return base;
+  }
 
   // États pour le filtrage par date et l'affichage du tooltip
   const [startDate, setStartDate] = useState<Date | null>(null);
@@ -140,7 +148,7 @@ export default function StatistiquesScreen() {
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <Text style={{
         color: isDark ? '#fff' : '#181818',
-        fontSize: 22,
+        fontSize: getFontSize(22),
         fontWeight: 'bold',
         marginBottom: 16,
         textAlign: 'center'
@@ -151,7 +159,7 @@ export default function StatistiquesScreen() {
       {moneyEntries.length > 0 && (
         <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 16 }}>
           <View style={{ alignItems: 'center', marginRight: 16 }}>
-            <Text style={{ color: isDark ? '#aaa' : '#888', fontSize: 12 }}>Date de Début</Text>
+            <Text style={{ color: isDark ? '#aaa' : '#888', fontSize: getFontSize(12) }}>Date de Début</Text>
             <Text
               onPress={() => setShowStartPicker(true)}
               style={{
@@ -163,6 +171,7 @@ export default function StatistiquesScreen() {
                 minWidth: 100,
                 textAlign: 'center',
                 marginTop: 4,
+                fontSize: getFontSize(15),
               }}
             >
               {startDate ? format(startDate, 'MMM yyyy', { locale: fr }) : 'Choisir'}
@@ -182,7 +191,7 @@ export default function StatistiquesScreen() {
             )}
           </View>
           <View style={{ alignItems: 'center' }}>
-            <Text style={{ color: isDark ? '#aaa' : '#888', fontSize: 12 }}>Date de Fin</Text>
+            <Text style={{ color: isDark ? '#aaa' : '#888', fontSize: getFontSize(12) }}>Date de Fin</Text>
             <Text
               onPress={() => setShowEndPicker(true)}
               style={{
@@ -194,6 +203,7 @@ export default function StatistiquesScreen() {
                 minWidth: 100,
                 textAlign: 'center',
                 marginTop: 4,
+                fontSize: getFontSize(15),
               }}
             >
               {endDate ? format(endDate, 'MMM yyyy', { locale: fr }) : 'Choisir'}
@@ -262,12 +272,12 @@ export default function StatistiquesScreen() {
               </ScrollView>
             </ScrollView>
             <View style={{ alignItems: 'center', marginTop: 4, marginBottom: 8 }}>
-              <MaterialIcons name="arrow-forward-ios" size={20} color={isDark ? '#aaa' : '#888'} />
-              <Text style={{ color: isDark ? '#aaa' : '#888', fontSize: 12 }}>Glissez pour voir plus</Text>
+              <MaterialIcons name="arrow-forward-ios" size={getFontSize(20)} color={isDark ? '#aaa' : '#888'} />
+              <Text style={{ color: isDark ? '#aaa' : '#888', fontSize: getFontSize(12) }}>Glissez pour voir plus</Text>
             </View>
           </>
         ) : (
-          <Text style={{ color: isDark ? '#aaa' : '#888', textAlign: 'center', marginTop: 32 }}>
+          <Text style={{ color: isDark ? '#aaa' : '#888', textAlign: 'center', marginTop: 32, fontSize: getFontSize(15) }}>
             Aucune donnée à afficher.
           </Text>
         )}
@@ -323,14 +333,14 @@ export default function StatistiquesScreen() {
                     <Text style={{
                       color: isDark ? '#fff' : '#181818',
                       fontWeight: 'bold',
-                      fontSize: 20,
+                      fontSize: getFontSize(20),
                       textAlign: 'center',
                     }}>
                       {total.toLocaleString('fr-FR')} {currency}
                     </Text>
                     <Text style={{
                       color: isDark ? '#aaa' : '#888',
-                      fontSize: 13,
+                      fontSize: getFontSize(13),
                       textAlign: 'center',
                     }}>
                       Total dépensé
@@ -351,7 +361,7 @@ export default function StatistiquesScreen() {
                             backgroundColor: GACHA_COLORS[gachaId] || '#888',
                             marginRight: 4,
                           }} />
-                          <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: 13 }}>
+                          <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize(13) }}>
                             {gacha?.name || gachaId} ({percent}%)
                           </Text>
                         </View>
@@ -384,7 +394,7 @@ export default function StatistiquesScreen() {
             }}
             pointerEvents="none"
           >
-            <Text style={{ color: isDark ? '#fff' : '#181818', fontWeight: 'bold' }}>
+            <Text style={{ color: isDark ? '#fff' : '#181818', fontWeight: 'bold', fontSize: getFontSize(15) }}>
               {tooltip.value.toLocaleString('fr-FR')} {currency}
             </Text>
           </View>

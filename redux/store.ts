@@ -5,6 +5,7 @@ import moneyReducer from './slices/moneySlice';
 import nationalityReducer from './slices/nationalitySlice';
 import onboardingReducer from './slices/onboardingSlice';
 import rollsReducer from './slices/rollsSlice';
+import settingsReducer from './slices/settingsSlice';
 import simulationsReducer from './slices/simulationsSlice';
 import themeReducer from './slices/themeSlice';
 
@@ -18,6 +19,7 @@ const rootReducer = combineReducers({
   nationality: nationalityReducer,
   onboarding: onboardingReducer,
   simulations: simulationsReducer,
+  settings: settingsReducer,
 });
 
 /**

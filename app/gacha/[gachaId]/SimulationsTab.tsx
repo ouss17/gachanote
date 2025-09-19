@@ -5,26 +5,21 @@ import React, { useState } from 'react';
 import { Alert, FlatList, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
-/**
- * Onglet Simulations : permet d’ajouter des bannières et de simuler des rolls.
- */
-export default function SimulationsTab() {
+export default function SimulationsTab({ getFontSize }: { getFontSize: (base: number) => number }) {
   const dispatch = useDispatch();
   const banners = useSelector((state: RootState) => state.simulations.banners);
+  const fontSize = useSelector((state: RootState) => state.settings.fontSize);
   const { gachaId } = useLocalSearchParams();
 
   // Champs du formulaire
   const [name, setName] = useState('');
   const [rate, setRate] = useState('0.7');
   const [featuredInputs, setFeaturedInputs] = useState([{ name: '', rate: '0.7' }]);
-  const [search, setSearch] = useState(''); // <-- Ajout du champ de recherche
-  const [showModal, setShowModal] = useState(false); // État pour contrôler l'affichage du modal
+  const [search, setSearch] = useState('');
+  const [showModal, setShowModal] = useState(false);
 
   const { cost: multiCost, label: multiLabel } = getMultiCost(String(gachaId));
 
-  /**
-   * Ajoute un personnage featuré à la bannière.
-   */
   const handleAddFeatured = () => {
     const lastInput = featuredInputs[featuredInputs.length - 1];
     if (!lastInput.name || !lastInput.rate) return;
@@ -34,9 +29,6 @@ export default function SimulationsTab() {
     ]);
   };
 
-  /**
-   * Ajoute la bannière de simulation dans le store.
-   */
   const handleAddBanner = () => {
     if (!name || !rate) return;
     const id = Date.now().toString();
@@ -56,7 +48,7 @@ export default function SimulationsTab() {
       characters,
       rolls: [],
       totalResourceUsed: 0,
-      gachaId: String(gachaId), // <-- Ajout ici
+      gachaId: String(gachaId),
     };
     dispatch(addBanner(banner));
     setName('');
@@ -64,11 +56,6 @@ export default function SimulationsTab() {
     setFeaturedInputs([{ name: '', rate: '0.7' }]);
   };
 
-  /**
-   * Simule un tirage simple ou multiple.
-   * @param banner La bannière concernée
-   * @param count Nombre de tirages (1 ou 10)
-   */
   const handleSimulateRoll = (banner: SimulationBanner, count: number) => {
     const results: { [name: string]: number } = {};
     for (let i = 0; i < count; i++) {
@@ -84,7 +71,6 @@ export default function SimulationsTab() {
       }
     }
     const rollResult = Object.entries(results).map(([name, count]) => ({ name, count }));
-    // Calcule la ressource utilisée selon le jeu
     const resourceUsed = count * (multiCost / 10);
     dispatch(addSimulationRoll({
       bannerId: banner.id,
@@ -97,7 +83,6 @@ export default function SimulationsTab() {
     }));
   };
 
-  // Filtrage des bannières selon la recherche
   const filteredBanners = banners
     .filter(b => b.gachaId === String(gachaId))
     .filter(b => b.name.toLowerCase().includes(search.trim().toLowerCase()));
@@ -106,13 +91,12 @@ export default function SimulationsTab() {
 
   return (
     <View style={{ flex: 1, padding: 16 }}>
-
       {/* Phrase d'accroche dynamique */}
-      <Text style={{ fontSize: 15, color: '#007AFF', marginBottom: 8, fontWeight: 'bold' }}>
+      <Text style={{ fontSize: getFontSize(15), color: '#007AFF', marginBottom: 8, fontWeight: 'bold' }}>
         Crée tes propres bannières, choisis les personnages et leurs taux de drop, et simule ta chance comme si tu étais sur le vrai jeu !
       </Text>
 
-      {/* Champ de recherche : affiché seulement s'il y a au moins une bannière pour ce gacha */}
+      {/* Champ de recherche */}
       {hasAnyBanner && (
         <TextInput
           style={{
@@ -121,7 +105,7 @@ export default function SimulationsTab() {
             borderRadius: 8,
             padding: 12,
             marginBottom: 16,
-            fontSize: 16,
+            fontSize: getFontSize(16),
             backgroundColor: '#fff',
             color: '#181818',
           }}
@@ -132,7 +116,7 @@ export default function SimulationsTab() {
         />
       )}
 
-      <Text style={{ marginTop: 8, fontWeight: 'bold', fontSize: 18 }}>Bannières existantes</Text>
+      <Text style={{ marginTop: 8, fontWeight: 'bold', fontSize: getFontSize(18) }}>Bannières existantes</Text>
       <FlatList
         data={filteredBanners}
         keyExtractor={item => item.id}
@@ -145,8 +129,8 @@ export default function SimulationsTab() {
             borderRadius: 12,
             backgroundColor: '#f9f9f9'
           }}>
-            <Text style={{ fontWeight: 'bold', fontSize: 16 }}>{banner.name}</Text>
-            <Text style={{ color: '#888', marginBottom: 8 }}>
+            <Text style={{ fontWeight: 'bold', fontSize: getFontSize(16) }}>{banner.name}</Text>
+            <Text style={{ color: '#888', marginBottom: 8, fontSize: getFontSize(14) }}>
               {banner.characters.map(c => `${c.name} (${c.rate}%)`).join(', ')}
             </Text>
             <View style={{ flexDirection: 'row', marginBottom: 8 }}>
@@ -154,25 +138,25 @@ export default function SimulationsTab() {
                 style={[styles.addBtn, { marginRight: 8 }]}
                 onPress={() => handleSimulateRoll(banner, 1)}
               >
-                <Text style={{ color: '#fff' }}>Tirage simple</Text>
+                <Text style={{ color: '#fff', fontSize: getFontSize(14) }}>Tirage simple</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.addBtn, { marginRight: 8 }]}
                 onPress={() => handleSimulateRoll(banner, 10)}
               >
-                <Text style={{ color: '#fff' }}>Tirage x10</Text>
+                <Text style={{ color: '#fff', fontSize: getFontSize(14) }}>Tirage x10</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.addBtn}
                 onPress={() => handleSimulateRoll(banner, 100)}
               >
-                <Text style={{ color: '#fff' }}>Tirage x100</Text>
+                <Text style={{ color: '#fff', fontSize: getFontSize(14) }}>Tirage x100</Text>
               </TouchableOpacity>
             </View>
             {/* Historique des résultats */}
             {banner.rolls.length > 0 && (
               <View>
-                <Text style={{ fontWeight: 'bold', marginTop: 8 }}>Résultats :</Text>
+                <Text style={{ fontWeight: 'bold', marginTop: 8, fontSize: getFontSize(15) }}>Résultats :</Text>
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginLeft: 8 }}>
                   {banner.rolls.map(roll => (
                     <View
@@ -188,16 +172,16 @@ export default function SimulationsTab() {
                         alignItems: 'center',
                       }}
                     >
-                      <Text style={{ color: '#d32f2f', fontWeight: 'bold', fontSize: 13 }}>
+                      <Text style={{ color: '#d32f2f', fontWeight: 'bold', fontSize: getFontSize(13) }}>
                         {roll.results.map(r => `${r.name}×${r.count}`).join(', ')}
                       </Text>
-                      <Text style={{ color: '#888', fontSize: 12, marginLeft: 4 }}>
+                      <Text style={{ color: '#888', fontSize: getFontSize(12), marginLeft: 4 }}>
                         ({roll.resourceUsed / (multiCost / 10)} tirage{roll.resourceUsed / (multiCost / 10) > 1 ? 's' : ''})
                       </Text>
                     </View>
                   ))}
                 </View>
-                <Text style={{ color: '#888', marginTop: 4 }}>
+                <Text style={{ color: '#888', marginTop: 4, fontSize: getFontSize(14) }}>
                   Ressource utilisée : {banner.totalResourceUsed} {multiLabel.replace(/.*?([a-zA-Z]+)$/, '$1')}
                 </Text>
               </View>
@@ -207,12 +191,12 @@ export default function SimulationsTab() {
               const stats = getBannerStats(banner);
               return (
                 <View style={{ marginTop: 8 }}>
-                  <Text style={{ fontWeight: 'bold', marginBottom: 4 }}>Statistiques :</Text>
-                  <Text style={{ color: '#888' }}>
+                  <Text style={{ fontWeight: 'bold', marginBottom: 4, fontSize: getFontSize(15) }}>Statistiques :</Text>
+                  <Text style={{ color: '#888', fontSize: getFontSize(14) }}>
                     Total de tirages simulés : {stats.totalRolls} {multiLabel.replace(/.*?([a-zA-Z]+)$/, '$1')}
                   </Text>
                   {stats.rates.map(r => (
-                    <Text key={r.name} style={{ color: '#007AFF', marginLeft: 8 }}>
+                    <Text key={r.name} style={{ color: '#007AFF', marginLeft: 8, fontSize: getFontSize(14) }}>
                       {r.name} : {r.count} fois ({r.rate}%)
                     </Text>
                   ))}
@@ -233,7 +217,7 @@ export default function SimulationsTab() {
                   );
                 }}
               >
-                <Text style={{ color: '#fff', fontWeight: 'bold' }}>Supprimer</Text>
+                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(14) }}>Supprimer</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.addBtn, { backgroundColor: '#FFA500' }]}
@@ -248,15 +232,14 @@ export default function SimulationsTab() {
                   );
                 }}
               >
-                <Text style={{ color: '#fff', fontWeight: 'bold' }}>Réinitialiser</Text>
+                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(14) }}>Réinitialiser</Text>
               </TouchableOpacity>
             </View>
           </View>
         )}
         contentContainerStyle={{ paddingBottom: 80 }}
-        // Permet le scroll même si peu d'éléments
         ListEmptyComponent={
-          <Text style={{ color: '#888', textAlign: 'center', marginTop: 24 }}>
+          <Text style={{ color: '#888', textAlign: 'center', marginTop: 24, fontSize: getFontSize(15) }}>
             Aucune bannière trouvée.
           </Text>
         }
@@ -281,16 +264,16 @@ export default function SimulationsTab() {
             borderRadius: 16,
             width: '90%',
           }}>
-            <Text style={styles.title}>Créer une bannière de simulation</Text>
+            <Text style={[styles.title, { fontSize: getFontSize(18) }]}>Créer une bannière de simulation</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { fontSize: getFontSize(16) }]}
               placeholder="Nom du perso vedette"
               value={name}
               onChangeText={setName}
             />
-            <Text style={{ marginBottom: 4 }}>Taux de drop (%)</Text>
+            <Text style={{ marginBottom: 4, fontSize: getFontSize(14) }}>Taux de drop (%)</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { fontSize: getFontSize(16) }]}
               placeholder="Taux (ex: 0.7)"
               value={rate}
               onChangeText={setRate}
@@ -298,11 +281,11 @@ export default function SimulationsTab() {
             />
 
             {/* Ajout de personnages featurés */}
-            <Text style={{ marginTop: 12, fontWeight: 'bold' }}>Personnages featurés (optionnel)</Text>
+            <Text style={{ marginTop: 12, fontWeight: 'bold', fontSize: getFontSize(15) }}>Personnages featurés (optionnel)</Text>
             {featuredInputs.map((input, idx) => (
               <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
                 <TextInput
-                  style={[styles.input, { flex: 1, marginRight: 8 }]}
+                  style={[styles.input, { flex: 1, marginRight: 8, fontSize: getFontSize(16) }]}
                   placeholder="Nom du perso"
                   value={input.name}
                   onChangeText={text => {
@@ -312,7 +295,7 @@ export default function SimulationsTab() {
                   }}
                 />
                 <TextInput
-                  style={[styles.input, { width: 70, marginRight: 8 }]}
+                  style={[styles.input, { width: 70, marginRight: 8, fontSize: getFontSize(16) }]}
                   placeholder="Taux"
                   value={input.rate}
                   onChangeText={text => {
@@ -322,27 +305,24 @@ export default function SimulationsTab() {
                   }}
                   keyboardType="numeric"
                 />
-                {/* Bouton pour supprimer une ligne */}
                 {featuredInputs.length > 1 && (
                   <TouchableOpacity
                     onPress={() => setFeaturedInputs(featuredInputs.filter((_, i) => i !== idx))}
                     style={[styles.addBtn, { backgroundColor: '#FF3B30' }]}
                   >
-                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>–</Text>
+                    <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>–</Text>
                   </TouchableOpacity>
                 )}
-                {/* Bouton pour ajouter une nouvelle ligne */}
                 {idx === featuredInputs.length - 1 && (
                   <TouchableOpacity onPress={handleAddFeatured} style={styles.addBtn}>
-                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>+</Text>
+                    <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>+</Text>
                   </TouchableOpacity>
                 )}
               </View>
             ))}
-            
 
             <TouchableOpacity style={styles.validateBtn} onPress={() => { handleAddBanner(); setShowModal(false); }}>
-              <Text style={{ color: '#fff', fontWeight: 'bold' }}>Ajouter la bannière</Text>
+              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>Ajouter la bannière</Text>
             </TouchableOpacity>
             <TouchableOpacity style={{ marginTop: 16 }} onPress={() => {
               setShowModal(false);
@@ -350,7 +330,7 @@ export default function SimulationsTab() {
               setRate('0.7');
               setFeaturedInputs([{ name: '', rate: '0.7' }]);
             }}>
-              <Text style={{ color: '#007AFF', textAlign: 'center' }}>Annuler</Text>
+              <Text style={{ color: '#007AFF', textAlign: 'center', fontSize: getFontSize(16) }}>Annuler</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -377,16 +357,12 @@ export default function SimulationsTab() {
         onPress={() => setShowModal(true)}
         activeOpacity={0.7}
       >
-        <Text style={{ color: '#fff', fontSize: 32, fontWeight: 'bold' }}>+</Text>
+        <Text style={{ color: '#fff', fontSize: getFontSize(32), fontWeight: 'bold' }}>+</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
-/**
- * Calcule les statistiques d'une bannière de simulation.
- * @param banner La bannière à analyser
- */
 function getBannerStats(banner: SimulationBanner) {
   const totalRolls = banner.rolls.reduce((sum, roll) => sum + roll.resourceUsed, 0);
   const counts: { [name: string]: number } = {};
@@ -395,7 +371,6 @@ function getBannerStats(banner: SimulationBanner) {
       counts[r.name] = (counts[r.name] || 0) + r.count;
     });
   });
-  // Calcule le taux réel obtenu pour chaque personnage
   const rates = Object.entries(counts).map(([name, count]) => ({
     name,
     count,
@@ -404,7 +379,6 @@ function getBannerStats(banner: SimulationBanner) {
   return { totalRolls, rates };
 }
 
-// Copie la fonction getMultiCost depuis index.tsx :
 function getMultiCost(gachaId: string) {
   switch (gachaId) {
     case 'dbl':
