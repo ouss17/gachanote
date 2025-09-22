@@ -2,8 +2,9 @@ import { setNationality } from '@/redux/slices/nationalitySlice';
 import { setFontSize, setSounds, setVibrations } from '@/redux/slices/settingsSlice';
 import { setTheme } from '@/redux/slices/themeSlice';
 import { RootState } from '@/redux/store';
+import { Feather } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { Alert, Modal, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, Modal, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 const LANGUAGES = [
@@ -74,6 +75,13 @@ const Settings = () => {
     Alert.alert('Merci !', 'Votre feedback a été envoyé. Merci de contribuer à l\'amélioration de l\'app.');
   };
 
+  // Liste des nationalités avec drapeaux (comme sur l'index)
+  const flags = [
+    { country: 'fr', currency: '€', label: 'Français', icon: require('@/assets/flags/fr.png') },
+    { country: 'en', currency: '$', label: 'English', icon: require('@/assets/flags/us.png') },
+    { country: 'jp', currency: '¥', label: '日本語', icon: require('@/assets/flags/jp.png') },
+  ];
+
   return (
     <ScrollView style={{ flex: 1, backgroundColor: isDark ? '#181818' : '#fff' }}>
       <View style={{ padding: 20 }}>
@@ -87,28 +95,36 @@ const Settings = () => {
             Langue
           </Text>
           <View style={{ flexDirection: 'row' }}>
-            {LANGUAGES.map(lang => (
+            {flags.map(flag => (
               <TouchableOpacity
-                key={lang.code}
+                key={flag.country}
                 style={[
                   styles.chip,
                   {
-                    backgroundColor: nationality === lang.code
+                    backgroundColor: nationality === flag.country
                       ? (isDark ? '#FFD700' : '#007AFF')
                       : (isDark ? '#232323' : '#eee'),
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    minWidth: 48,
+                    justifyContent: 'center',
                   },
                 ]}
-                onPress={() => dispatch(setNationality({ country: lang.code, currency: lang.code === 'fr' ? '€' : lang.code === 'en' ? '$' : '¥' }))}
+                onPress={() => dispatch(setNationality({ country: flag.country, currency: flag.currency }))}
               >
-                <Text style={{
-                  color: nationality === lang.code
-                    ? (isDark ? '#181818' : '#fff')
-                    : (isDark ? '#fff' : '#181818'),
-                  fontWeight: nationality === lang.code ? 'bold' : 'normal',
-                  fontSize: getFontSize(16),
-                }}>
-                  {lang.label}
-                </Text>
+                <Image
+                  source={flag.icon}
+                  style={{
+                    width: 28,
+                    height: 20,
+                    borderRadius: 6,
+                    marginRight: 0,
+                    borderWidth: nationality === flag.country ? 2 : 0,
+                    borderColor: nationality === flag.country
+                      ? (isDark ? '#181818' : '#007AFF')
+                      : 'transparent',
+                  }}
+                />
               </TouchableOpacity>
             ))}
           </View>
@@ -126,19 +142,29 @@ const Settings = () => {
                     backgroundColor: theme === mode
                       ? (isDark ? '#FFD700' : '#007AFF')
                       : (isDark ? '#232323' : '#eee'),
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minWidth: 48,
                   },
                 ]}
                 onPress={() => dispatch(setTheme(mode as 'light' | 'dark'))}
               >
-                <Text style={{
-                  color: theme === mode
-                    ? (isDark ? '#181818' : '#fff')
-                    : (isDark ? '#fff' : '#181818'),
-                  fontWeight: theme === mode ? 'bold' : 'normal',
-                  fontSize: getFontSize(16),
-                }}>
-                  {mode === 'light' ? 'Clair' : 'Sombre'}
-                </Text>
+                {mode === 'light' ? (
+                  <Feather
+                    name="sun"
+                    size={getFontSize(20)}
+                    color={theme === mode ? (isDark ? '#181818' : '#fff') : (isDark ? '#fff' : '#181818')}
+                    style={{ marginRight: 0 }}
+                  />
+                ) : (
+                  <Feather
+                    name="moon"
+                    size={getFontSize(20)}
+                    color={theme === mode ? (isDark ? '#181818' : '#fff') : (isDark ? '#fff' : '#181818')}
+                    style={{ marginRight: 0 }}
+                  />
+                )}
               </TouchableOpacity>
             ))}
           </View>

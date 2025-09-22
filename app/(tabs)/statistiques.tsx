@@ -7,7 +7,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useState } from 'react';
-import { Dimensions, ScrollView, Text, View } from 'react-native';
+import { Dimensions, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, G } from 'react-native-svg';
@@ -131,7 +131,11 @@ export default function StatistiquesScreen() {
     const d = new Date(entry.date);
     let afterStart = true, beforeEnd = true;
     if (startDate) afterStart = d >= new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
-    if (endDate) beforeEnd = d <= new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+    if (endDate) {
+      // Inclure toute la journée de endDate (jusqu'à 23:59:59.999)
+      const end = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), 23, 59, 59, 999);
+      beforeEnd = d <= end;
+    }
     return afterStart && beforeEnd;
   });
 
@@ -157,7 +161,7 @@ export default function StatistiquesScreen() {
       </Text>
       {/* Filtres de dates, affichés seulement s'il y a des entrées */}
       {moneyEntries.length > 0 && (
-        <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 16 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 16, alignItems: 'center' }}>
           <View style={{ alignItems: 'center', marginRight: 16 }}>
             <Text style={{ color: isDark ? '#aaa' : '#888', fontSize: getFontSize(12) }}>Date de Début</Text>
             <Text
@@ -174,7 +178,7 @@ export default function StatistiquesScreen() {
                 fontSize: getFontSize(15),
               }}
             >
-              {startDate ? format(startDate, 'MMM yyyy', { locale: fr }) : 'Choisir'}
+              {startDate ? format(startDate, 'dd/MM/yyyy') : 'Choisir'}
             </Text>
             {showStartPicker && (
               <DateTimePicker
@@ -190,7 +194,7 @@ export default function StatistiquesScreen() {
               />
             )}
           </View>
-          <View style={{ alignItems: 'center' }}>
+          <View style={{ alignItems: 'center', marginRight: 16 }}>
             <Text style={{ color: isDark ? '#aaa' : '#888', fontSize: getFontSize(12) }}>Date de Fin</Text>
             <Text
               onPress={() => setShowEndPicker(true)}
@@ -206,7 +210,7 @@ export default function StatistiquesScreen() {
                 fontSize: getFontSize(15),
               }}
             >
-              {endDate ? format(endDate, 'MMM yyyy', { locale: fr }) : 'Choisir'}
+              {endDate ? format(endDate, 'dd/MM/yyyy') : 'Choisir'}
             </Text>
             {showEndPicker && (
               <DateTimePicker
@@ -222,6 +226,27 @@ export default function StatistiquesScreen() {
               />
             )}
           </View>
+          {/* Bouton de réinitialisation des filtres */}
+          <TouchableOpacity
+            onPress={() => {
+              setStartDate(null);
+              setEndDate(null);
+            }}
+            style={{
+              backgroundColor: isDark ? '#444' : '#eee',
+              paddingVertical: 8,
+              paddingHorizontal: 14,
+              borderRadius: 8,
+              marginTop: 18,
+              marginLeft: 4,
+              borderWidth: 1,
+              borderColor: isDark ? '#333' : '#ccc',
+            }}
+          >
+            <Text style={{ color: isDark ? '#FFD700' : '#007AFF', fontSize: getFontSize(14), fontWeight: 'bold' }}>
+              Réinitialiser
+            </Text>
+          </TouchableOpacity>
         </View>
       )}
       <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>

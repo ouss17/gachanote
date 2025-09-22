@@ -1,13 +1,10 @@
 import { GACHAS } from '@/data/gachas';
-import { setNationality } from '@/redux/slices/nationalitySlice';
 import { setOnboardingSeen } from '@/redux/slices/onboardingSlice';
-import { toggleTheme } from '@/redux/slices/themeSlice';
 import { RootState } from '@/redux/store';
-import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
-import { FlatList, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { FlatList, Image, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import DemoScreen from '../DemoScreen';
@@ -64,85 +61,7 @@ export default function HomeScreen() {
         Gachanote
       </Text>
 
-      {/* Sélecteur de nationalité et bouton de thème */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-        {/* Sélecteur de nationalité */}
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <TouchableOpacity
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              borderWidth: 1,
-              borderColor: isDark ? '#333' : '#ccc',
-              borderRadius: 8,
-              paddingHorizontal: 8,
-              paddingVertical: 4,
-              backgroundColor: isDark ? '#232323' : '#fff',
-            }}
-            onPress={() => setShowSelect(true)}
-          >
-            <Image
-              source={flags.find(f => f.country === nationality.country)?.icon}
-              style={{ width: 32, height: 24, borderRadius: 6, marginRight: 8 }}
-            />
-            <Text style={{ color: isDark ? '#fff' : '#181818' }}>
-              {flags.find(f => f.country === nationality.country)?.label}
-            </Text>
-          </TouchableOpacity>
-        </View>
-        {/* Bouton mode sombre/clair à droite */}
-        <View style={{ flex: 1, alignItems: 'flex-end' }}>
-          <TouchableOpacity
-            onPress={() => dispatch(toggleTheme())}
-            style={{
-              padding: 8,
-              borderRadius: 8,
-              backgroundColor: isDark ? '#333' : '#eee',
-            }}
-          >
-            {isDark ? (
-              <Feather name="sun" size={24} color="#FFD700" />
-            ) : (
-              <Feather name="moon" size={24} color="#181818" />
-            )}
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Modal pour sélectionner la nationalité */}
-      {showSelect && (
-        <View style={{
-          position: 'absolute',
-          top: 60,
-          left: 20,
-          right: 20,
-          backgroundColor: isDark ? '#232323' : '#fff',
-          borderRadius: 12,
-          borderWidth: 1,
-          borderColor: isDark ? '#333' : '#ccc',
-          zIndex: 100,
-          padding: 16,
-        }}>
-          {flags.map(flag => (
-            <TouchableOpacity
-              key={flag.country}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                paddingVertical: 8,
-              }}
-              onPress={() => {
-                dispatch(setNationality({ country: flag.country, currency: flag.currency }));
-                setShowSelect(false);
-              }}
-            >
-              <Image source={flag.icon} style={{ width: 32, height: 24, borderRadius: 6, marginRight: 8 }} />
-              <Text style={{ color: isDark ? '#fff' : '#181818' }}>{flag.label}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
-
+    
       {/* Champ de recherche pour filtrer les gachas */}
       <TextInput
         placeholder="Rechercher un gacha..."

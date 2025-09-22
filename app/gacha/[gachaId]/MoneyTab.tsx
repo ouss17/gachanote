@@ -38,13 +38,18 @@ export default function MoneyTab({ gachaId, isDark, getFontSize }: { gachaId: st
 
   /**
    * Liste des entrées filtrées par période sélectionnée.
+   * La date de fin est incluse (jusqu'à 23:59:59 du jour choisi).
    */
   const moneyEntries = allEntries
     .filter(e => {
       const d = new Date(e.date);
       let afterStart = true, beforeEnd = true;
       if (startDate) afterStart = d >= new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
-      if (endDate) beforeEnd = d <= new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+      if (endDate) {
+        // Inclure toute la journée de endDate
+        const end = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), 23, 59, 59, 999);
+        beforeEnd = d <= end;
+      }
       return afterStart && beforeEnd;
     })
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -66,11 +71,14 @@ export default function MoneyTab({ gachaId, isDark, getFontSize }: { gachaId: st
     setDate(new Date());
   };
 
+  // Affiche les filtres de dates si au moins une entrée existe pour ce gacha (même si le filtre ne retourne rien)
+  const hasAnyEntry = allEntries.length > 0;
+
   return (
     <View style={{ flex: 1 }}>
-      {/* Filtres de dates, affichés seulement s'il y a des entrées */}
-      {moneyEntries.length > 0 && (
-        <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 16 }}>
+      {/* Filtres de dates, affichés seulement s'il y a au moins une entrée pour ce gacha */}
+      {hasAnyEntry && (
+        <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 16, alignItems: 'center' }}>
           {/* Filtre date de début */}
           <View style={{ alignItems: 'center', marginRight: 16 }}>
             <Text style={{ color: isDark ? '#aaa' : '#888', fontSize: getFontSize(12) }}>Date de Début</Text>
@@ -92,7 +100,7 @@ export default function MoneyTab({ gachaId, isDark, getFontSize }: { gachaId: st
             </Text>
             {showStartPicker && (
               <DateTimePicker
-                value={startDate || (moneyEntries[0] ? new Date(moneyEntries[0].date) : new Date())}
+                value={startDate || (allEntries[0] ? new Date(allEntries[0].date) : new Date())}
                 mode="date"
                 display="spinner"
                 onChange={(_, date) => {
@@ -104,7 +112,7 @@ export default function MoneyTab({ gachaId, isDark, getFontSize }: { gachaId: st
             )}
           </View>
           {/* Filtre date de fin */}
-          <View style={{ alignItems: 'center' }}>
+          <View style={{ alignItems: 'center', marginRight: 16 }}>
             <Text style={{ color: isDark ? '#aaa' : '#888', fontSize: getFontSize(12) }}>Date de Fin</Text>
             <Text
               onPress={() => setShowEndPicker(true)}
@@ -124,18 +132,39 @@ export default function MoneyTab({ gachaId, isDark, getFontSize }: { gachaId: st
             </Text>
             {showEndPicker && (
               <DateTimePicker
-                value={endDate || (moneyEntries[0] ? new Date(moneyEntries[0].date) : new Date())}
+                value={endDate || (allEntries[0] ? new Date(allEntries[0].date) : new Date())}
                 mode="date"
                 display="spinner"
                 onChange={(_, date) => {
                   setShowEndPicker(false);
                   if (date) setEndDate(date);
                 }}
-                minimumDate={startDate || (moneyEntries[moneyEntries.length - 1] ? new Date(moneyEntries[moneyEntries.length - 1].date) : undefined)}
+                minimumDate={startDate || (allEntries[allEntries.length - 1] ? new Date(allEntries[allEntries.length - 1].date) : undefined)}
                 maximumDate={new Date()}
               />
             )}
           </View>
+          {/* Bouton de réinitialisation des filtres */}
+          <TouchableOpacity
+            onPress={() => {
+              setStartDate(null);
+              setEndDate(null);
+            }}
+            style={{
+              backgroundColor: isDark ? '#444' : '#eee',
+              paddingVertical: 8,
+              paddingHorizontal: 14,
+              borderRadius: 8,
+              marginTop: 18,
+              marginLeft: 4,
+              borderWidth: 1,
+              borderColor: isDark ? '#333' : '#ccc',
+            }}
+          >
+            <Text style={{ color: isDark ? '#FFD700' : '#007AFF', fontSize: getFontSize(14), fontWeight: 'bold' }}>
+              Réinitialiser
+            </Text>
+          </TouchableOpacity>
         </View>
       )}
       {/* Liste des montants enregistrés */}
