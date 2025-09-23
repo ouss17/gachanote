@@ -188,7 +188,7 @@ export default function GachaRollsScreen() {
   const moneyEntries = useSelector((state: RootState) =>
     state.money.entries.filter(e => e.gachaId === gachaId)
   );
-  const currency = useSelector((state: RootState) => state.nationality.currency);
+  const currency = useSelector((state: RootState) => state.devise.currency);
 
   // Calcul du total d'argent dépensé pour ce gacha
   const totalMoney = moneyEntries.reduce((sum, entry) => sum + entry.amount, 0);

@@ -1,25 +1,25 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 /**
  * État représentant la nationalité et la devise de l'utilisateur.
  */
-type NationalityState = {
-  country: string; // Code pays, ex: 'fr', 'us', 'jp'
+type DeviseState = {
+  currency: string; // Devise associée, ex: '€', '$', '¥'
 };
 
 /**
  * Valeurs initiales de la nationalité (France, Euro).
  */
-const initialState: NationalityState = {
-  country: "fr",
+const initialState: DeviseState = {
+  currency: '€',
 };
 
 /**
  * Slice Redux pour la gestion de la nationalité et de la devise.
  * Permet de changer le pays et la devise utilisée dans l'app.
  */
-const nationalitySlice = createSlice({
-  name: "nationality",
+const deviseSlice = createSlice({
+  name: 'devise',
   initialState,
   reducers: {
     /**
@@ -27,11 +27,11 @@ const nationalitySlice = createSlice({
      * @param state État actuel
      * @param action Payload contenant le code pays et la devise
      */
-    setNationality: (state, action: PayloadAction<{ country: string }>) => {
-      state.country = action.payload.country;
+    setDevise: (state, action: PayloadAction<{ currency: string }>) => {
+      state.currency = action.payload.currency;
     },
   },
 });
 
-export const { setNationality } = nationalitySlice.actions;
-export default nationalitySlice.reducer;
+export const { setDevise } = deviseSlice.actions;
+export default deviseSlice.reducer;

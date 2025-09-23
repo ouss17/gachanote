@@ -28,7 +28,6 @@ export default function HomeScreen() {
     g.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  const nationality = useSelector((state: RootState) => state.nationality);
 
   // Liste des nationalités disponibles avec leurs drapeaux et devises
   const flags = [

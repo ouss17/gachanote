@@ -34,7 +34,7 @@ export default function StatistiquesScreen() {
   // Sélection des données Redux et gestion du thème
   const moneyEntries = useSelector((state: RootState) => state.money.entries);
   const theme = useSelector((state: RootState) => state.theme.mode);
-  const currency = useSelector((state: RootState) => state.nationality.currency);
+  const currency = useSelector((state: RootState) => state.devise.currency);
   const fontSize = useSelector((state: RootState) => state.settings.fontSize);
   const isDark = theme === 'dark';
 

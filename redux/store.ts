@@ -1,6 +1,7 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import { persistReducer, persistStore } from 'redux-persist';
 import { persistConfig } from './persistConfig';
+import deviseReducer from './slices/deviseSlice';
 import moneyReducer from './slices/moneySlice';
 import nationalityReducer from './slices/nationalitySlice';
 import onboardingReducer from './slices/onboardingSlice';
@@ -16,10 +17,11 @@ const rootReducer = combineReducers({
   rolls: rollsReducer,
   theme: themeReducer,
   money: moneyReducer,
-  nationality: nationalityReducer,
+  devise: deviseReducer,
   onboarding: onboardingReducer,
   simulations: simulationsReducer,
   settings: settingsReducer,
+  nationality: nationalityReducer,
 });
 
 /**

@@ -15,7 +15,7 @@ import { useDispatch, useSelector } from 'react-redux';
  */
 export default function MoneyTab({ gachaId, isDark, getFontSize }: { gachaId: string, isDark: boolean, getFontSize: (base: number) => number }) {
   const dispatch = useDispatch();
-  const currency = useSelector((state: RootState) => state.nationality.currency);
+  const currency = useSelector((state: RootState) => state.devise.currency);
   const allMoneyEntries = useSelector((state: RootState) => state.money.entries);
 
   // Filtre toutes les entrées d'argent pour ce gacha

@@ -1,3 +1,4 @@
+import { setDevise } from '@/redux/slices/deviseSlice';
 import { setNationality } from '@/redux/slices/nationalitySlice';
 import { setFontSize, setSounds, setVibrations } from '@/redux/slices/settingsSlice';
 import { setTheme } from '@/redux/slices/themeSlice';
@@ -19,6 +20,12 @@ const FONT_SIZES = [
   { key: 'large', label: 'Grand', example: 'Aa' },
 ];
 
+const currencies = [
+  { currency: '€', label: 'Euro', symbol: '€' },
+  { currency: '$', label: 'Dollar', symbol: '$' },
+  { currency: '¥', label: 'Yen', symbol: '¥' },
+];
+
 const Settings = () => {
   const dispatch = useDispatch();
   const theme = useSelector((state: RootState) => state.theme.mode);
@@ -27,6 +34,7 @@ const Settings = () => {
   const fontSize = useSelector((state: RootState) => state.settings.fontSize);
   const sounds = useSelector((state: RootState) => state.settings.sounds);
   const vibrations = useSelector((state: RootState) => state.settings.vibrations);
+  const devise = useSelector((state: RootState) => state.devise.currency);
   const [showImportExport, setShowImportExport] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [importText, setImportText] = useState('');
@@ -50,7 +58,7 @@ const Settings = () => {
           text: 'Réinitialiser',
           style: 'destructive',
           onPress: () => {
-            dispatch(setNationality({ country: 'fr', currency: '€' }));
+            dispatch(setNationality({ country: 'fr' }));
             // Ajoute ici d'autres resets si besoin
           },
         },
@@ -77,9 +85,9 @@ const Settings = () => {
 
   // Liste des nationalités avec drapeaux (comme sur l'index)
   const flags = [
-    { country: 'fr', currency: '€', label: 'Français', icon: require('@/assets/flags/fr.png') },
-    { country: 'en', currency: '$', label: 'English', icon: require('@/assets/flags/us.png') },
-    { country: 'jp', currency: '¥', label: '日本語', icon: require('@/assets/flags/jp.png') },
+    { country: 'fr', label: 'Français', icon: require('@/assets/flags/fr.png') },
+    { country: 'en', label: 'English', icon: require('@/assets/flags/us.png') },
+    { country: 'jp', label: '日本語', icon: require('@/assets/flags/jp.png') },
   ];
 
   return (
@@ -110,7 +118,7 @@ const Settings = () => {
                     justifyContent: 'center',
                   },
                 ]}
-                onPress={() => dispatch(setNationality({ country: flag.country, currency: flag.currency }))}
+                onPress={() => dispatch(setNationality({ country: flag.country }))}
               >
                 <Image
                   source={flag.icon}
@@ -125,6 +133,45 @@ const Settings = () => {
                       : 'transparent',
                   }}
                 />
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+        {/* --- DEVISE --- */}
+        <View style={styles.row}>
+          <Text style={[styles.label, { color: isDark ? '#fff' : '#181818', fontSize: getFontSize(16) }]}
+          >
+            Devise
+          </Text>
+          <View style={{ flexDirection: 'row' }}>
+            {currencies.map(cur => (
+              <TouchableOpacity
+                key={cur.currency}
+                style={[
+                  styles.chip,
+                  {
+                    backgroundColor: devise === cur.currency
+                      ? (isDark ? '#FFD700' : '#007AFF')
+                      : (isDark ? '#232323' : '#eee'),
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    minWidth: 48,
+                    justifyContent: 'center',
+                  },
+                ]}
+                onPress={() => dispatch(setDevise({ currency: cur.currency }))}
+              >
+                <Text
+                  style={{
+                    fontSize: getFontSize(22),
+                    color: devise === cur.currency
+                      ? (isDark ? '#181818' : '#fff')
+                      : (isDark ? '#fff' : '#181818'),
+                    fontWeight: devise === cur.currency ? 'bold' : 'normal',
+                  }}
+                >
+                  {cur.symbol}
+                </Text>
               </TouchableOpacity>
             ))}
           </View>
