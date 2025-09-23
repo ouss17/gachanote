@@ -21,21 +21,12 @@ export default function HomeScreen() {
   const isDark = theme === 'dark';
 
   const [search, setSearch] = useState('');
-  const [showSelect, setShowSelect] = useState(false);
 
   // Filtrage des gachas selon la recherche (insensible à la casse)
   const filteredGachas = GACHAS.filter(g =>
     g.name.toLowerCase().includes(search.toLowerCase())
   );
 
-
-  // Liste des nationalités disponibles avec leurs drapeaux et devises
-  const flags = [
-    { country: 'fr', currency: '€', label: 'France', icon: require('@/assets/flags/fr.png') },
-    { country: 'us', currency: '$', label: 'USA', icon: require('@/assets/flags/us.png') },
-    { country: 'jp', currency: '¥', label: 'Japon', icon: require('@/assets/flags/jp.png') },
-    // Ajoute d'autres pays si besoin
-  ];
 
   // Affiche la démo si l'utilisateur ne l'a pas encore vue
   const onboardingSeen = useSelector((state: RootState) => state.onboarding.seen);

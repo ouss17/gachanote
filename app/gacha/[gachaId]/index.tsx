@@ -179,10 +179,6 @@ export default function GachaRollsScreen() {
   const { cost: multiCost, label: multiLabel } = getMultiCost(String(gachaId));
   const multiCount = multiCost > 0 ? stats.resource / multiCost : 0;
 
-  // Calculs pour les taux de drop par multi
-  const featuredPerMulti = multiCount > 0 ? (stats.featured / multiCount).toFixed(2) : '0';
-  const spookPerMulti = multiCount > 0 ? (stats.spook / multiCount).toFixed(2) : '0';
-  const sideUnitPerMulti = multiCount > 0 ? (stats.sideUnit / multiCount).toFixed(2) : '0';
 
   // Sélectionne les entrées d'argent pour ce gacha
   const moneyEntries = useSelector((state: RootState) =>
