@@ -8,34 +8,27 @@ import { FlatList, Image, StyleSheet, Text, TextInput, TouchableOpacity } from '
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import DemoScreen from '../DemoScreen';
+import { Theme } from '@/constants/Themes';
 
-/**
- * Écran d'accueil principal de l'application.
- * Permet de sélectionner la nationalité, de changer le thème, de rechercher un gacha
- * et d'accéder à la démo si l'utilisateur ne l'a pas encore vue.
- */
 export default function HomeScreen() {
   const router = useRouter();
   const theme = useSelector((state: RootState) => state.theme.mode);
   const dispatch = useDispatch();
   const isDark = theme === 'dark';
+  const colors = isDark ? Theme.dark : Theme.light;
 
   const [search, setSearch] = useState('');
 
-  // Filtrage des gachas selon la recherche (insensible à la casse)
   const filteredGachas = GACHAS.filter(g =>
     g.name.toLowerCase().includes(search.toLowerCase())
   );
 
-
-  // Affiche la démo si l'utilisateur ne l'a pas encore vue
   const onboardingSeen = useSelector((state: RootState) => state.onboarding.seen);
   if (!onboardingSeen) {
     return <DemoScreen onFinish={() => dispatch(setOnboardingSeen())} />;
   }
 
   const fontSize = useSelector((state: RootState) => state.settings.fontSize);
-
   function getFontSize(base: number) {
     if (fontSize === 'small') return base * 0.85;
     if (fontSize === 'large') return base * 1.25;
@@ -43,31 +36,29 @@ export default function HomeScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#181818' : '#fff' }}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
 
       {/* Titre principal */}
-      <Text style={[styles.title, { color: isDark ? '#fff' : '#181818', marginTop: 8, fontSize: getFontSize(32) }]}>
+      <Text style={[styles.title, { color: colors.text, fontSize: getFontSize(32) }]}>
         Gachanote
       </Text>
 
-    
-      {/* Champ de recherche pour filtrer les gachas */}
+      {/* Champ de recherche */}
       <TextInput
         placeholder="Rechercher un gacha..."
-        placeholderTextColor={isDark ? '#aaa' : '#888'}
+        placeholderTextColor={colors.placeholder}
         value={search}
         onChangeText={setSearch}
-        style={{
-          backgroundColor: isDark ? '#232323' : '#f2f2f2',
-          color: isDark ? '#fff' : '#181818',
-          borderRadius: 8,
-          padding: 10,
-          marginBottom: 16,
-          borderWidth: 1,
-          borderColor: isDark ? '#333' : '#ccc',
-          fontSize: getFontSize(16), // ← adapte la taille du texte ici
-        }}
+        style={[
+          styles.searchInput,
+          {
+            backgroundColor: colors.surface,
+            color: colors.text,
+            borderColor: colors.border,
+            fontSize: getFontSize(16),
+          },
+        ]}
       />
 
       {/* Liste des gachas filtrés */}
@@ -79,16 +70,14 @@ export default function HomeScreen() {
             style={[
               styles.gachaItem,
               {
-                backgroundColor: isDark ? '#232323' : '#fff',
-                borderColor: isDark ? '#333' : '#ccc',
+                backgroundColor: colors.card,
+                borderColor: colors.border,
               },
             ]}
             onPress={() => router.push(`/gacha/${item.id}`)}
           >
-            <Image source={item.logo} style={[styles.logo, {
-              backgroundColor: isDark ? "transparent" : 'gray',
-            }]} resizeMode='contain' />
-            <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize(20) }}>
+            <Image source={item.logo} style={styles.logo} resizeMode="contain" />
+            <Text style={[styles.gachaName, { color: colors.text, fontSize: getFontSize(20) }]}>
               {item.name}
             </Text>
           </TouchableOpacity>
@@ -98,24 +87,39 @@ export default function HomeScreen() {
   );
 }
 
-/**
- * Styles pour l'écran d'accueil.
- */
 const styles = StyleSheet.create({
-  title: { fontSize: 32, fontWeight: 'bold', marginBottom: 24, textAlign: 'center' },
+  container: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+  },
+  title: {
+    fontWeight: 'bold',
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  searchInput: {
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+  },
   gachaItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
+    padding: 14,
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 16,
     marginBottom: 12,
   },
-  logo: { 
-    width: 100,
-    height: 72,
-    marginRight: 20,
+  logo: {
+    width: 80,
+    height: 60,
+    marginRight: 16,
     borderRadius: 12,
+    backgroundColor: 'transparent',
   },
-  gachaName: { fontSize: 20 },
+  gachaName: {
+    fontWeight: '600',
+  },
 });
