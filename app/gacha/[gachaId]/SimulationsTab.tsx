@@ -2,7 +2,7 @@ import { addBanner, addSimulationRoll, clearBannerRolls, removeBanner, Simulatio
 import { RootState } from '@/redux/store';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, FlatList, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, Modal, StyleSheet, Text, TextInput, TouchableOpacity, Vibration, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 export default function SimulationsTab({ getFontSize }: { getFontSize: (base: number) => number }) {
@@ -57,6 +57,7 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
   };
 
   const handleSimulateRoll = (banner: SimulationBanner, count: number) => {
+    Vibration.vibrate(50);
     const results: { [name: string]: number } = {};
     for (let i = 0; i < count; i++) {
       let obtained = null;
