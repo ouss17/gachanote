@@ -1,3 +1,4 @@
+import { Theme } from '@/constants/Themes';
 import { setDevise } from '@/redux/slices/deviseSlice';
 import { setNationality } from '@/redux/slices/nationalitySlice';
 import { setFontSize, setSounds, setVibrations } from '@/redux/slices/settingsSlice';
@@ -26,10 +27,17 @@ const currencies = [
   { currency: '¥', label: 'Yen', symbol: '¥' },
 ];
 
+// Ajoute le mode "night" (demi-lune) et "dark" (pleine lune)
+const themeModes = [
+  { key: 'light', icon: 'sun' }, // soleil
+  { key: 'dark', icon: 'circle' }, // pleine lune (cercle plein)
+  { key: 'night', icon: 'moon', style: { transform: [{ scaleX: -1 }] } }, // demi-lune (miroir)
+];
+
 const Settings = () => {
   const dispatch = useDispatch();
   const theme = useSelector((state: RootState) => state.theme.mode);
-  const isDark = theme === 'dark';
+  const themeColors = Theme[theme as keyof typeof Theme];
   const nationality = useSelector((state: RootState) => state.nationality.country);
   const fontSize = useSelector((state: RootState) => state.settings.fontSize);
   const sounds = useSelector((state: RootState) => state.settings.sounds);
@@ -91,15 +99,15 @@ const Settings = () => {
   ];
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: isDark ? '#181818' : '#fff' }}>
+    <ScrollView style={{ flex: 1, backgroundColor: themeColors.background }}>
       <View style={{ padding: 20 }}>
         {/* Section Paramètres généraux */}
-        <Text style={[styles.sectionTitle, { color: isDark ? '#FFD700' : '#007AFF', fontSize: getFontSize(18) }]}>
+        <Text style={[styles.sectionTitle, { color: themeColors.primary, fontSize: getFontSize(18) }]}>
           🔧 Paramètres généraux
         </Text>
         {/* Langue */}
         <View style={styles.row}>
-          <Text style={[styles.label, { color: isDark ? '#fff' : '#181818', fontSize: getFontSize(16) }]}>
+          <Text style={[styles.label, { color: themeColors.text, fontSize: getFontSize(16) }]}>
             Langue
           </Text>
           <View style={{ flexDirection: 'row' }}>
@@ -110,8 +118,8 @@ const Settings = () => {
                   styles.chip,
                   {
                     backgroundColor: nationality === flag.country
-                      ? (isDark ? '#FFD700' : '#007AFF')
-                      : (isDark ? '#232323' : '#eee'),
+                      ? themeColors.primary
+                      : themeColors.card,
                     flexDirection: 'row',
                     alignItems: 'center',
                     minWidth: 48,
@@ -129,7 +137,7 @@ const Settings = () => {
                     marginRight: 0,
                     borderWidth: nationality === flag.country ? 2 : 0,
                     borderColor: nationality === flag.country
-                      ? (isDark ? '#181818' : '#007AFF')
+                      ? themeColors.background
                       : 'transparent',
                   }}
                 />
@@ -139,7 +147,7 @@ const Settings = () => {
         </View>
         {/* --- DEVISE --- */}
         <View style={styles.row}>
-          <Text style={[styles.label, { color: isDark ? '#fff' : '#181818', fontSize: getFontSize(16) }]}
+          <Text style={[styles.label, { color: themeColors.text, fontSize: getFontSize(16) }]}
           >
             Devise
           </Text>
@@ -151,8 +159,8 @@ const Settings = () => {
                   styles.chip,
                   {
                     backgroundColor: devise === cur.currency
-                      ? (isDark ? '#FFD700' : '#007AFF')
-                      : (isDark ? '#232323' : '#eee'),
+                      ? themeColors.primary
+                      : themeColors.card,
                     flexDirection: 'row',
                     alignItems: 'center',
                     minWidth: 48,
@@ -165,8 +173,8 @@ const Settings = () => {
                   style={{
                     fontSize: getFontSize(22),
                     color: devise === cur.currency
-                      ? (isDark ? '#181818' : '#fff')
-                      : (isDark ? '#fff' : '#181818'),
+                      ? themeColors.background
+                      : themeColors.text,
                     fontWeight: devise === cur.currency ? 'bold' : 'normal',
                   }}
                 >
@@ -178,47 +186,38 @@ const Settings = () => {
         </View>
         {/* Thème */}
         <View style={styles.row}>
-          <Text style={[styles.label, { color: isDark ? '#fff' : '#181818', fontSize: getFontSize(16) }]}>Thème</Text>
+          <Text style={[styles.label, { color: themeColors.text, fontSize: getFontSize(16) }]}>Thème</Text>
           <View style={{ flexDirection: 'row' }}>
-            {['light', 'dark'].map(mode => (
+            {themeModes.map(mode => (
               <TouchableOpacity
-                key={mode}
+                key={mode.key}
                 style={[
                   styles.chip,
                   {
-                    backgroundColor: theme === mode
-                      ? (isDark ? '#FFD700' : '#007AFF')
-                      : (isDark ? '#232323' : '#eee'),
+                    backgroundColor: theme === mode.key
+                      ? themeColors.primary
+                      : themeColors.card,
                     flexDirection: 'row',
                     alignItems: 'center',
                     justifyContent: 'center',
                     minWidth: 48,
                   },
                 ]}
-                onPress={() => dispatch(setTheme(mode as 'light' | 'dark'))}
+                onPress={() => dispatch(setTheme(mode.key as 'light' | 'dark' | 'night'))}
               >
-                {mode === 'light' ? (
-                  <Feather
-                    name="sun"
-                    size={getFontSize(20)}
-                    color={theme === mode ? (isDark ? '#181818' : '#fff') : (isDark ? '#fff' : '#181818')}
-                    style={{ marginRight: 0 }}
-                  />
-                ) : (
-                  <Feather
-                    name="moon"
-                    size={getFontSize(20)}
-                    color={theme === mode ? (isDark ? '#181818' : '#fff') : (isDark ? '#fff' : '#181818')}
-                    style={{ marginRight: 0 }}
-                  />
-                )}
+                <Feather
+                  name={mode.icon as any}
+                  size={getFontSize(20)}
+                  color={theme === mode.key ? themeColors.background : themeColors.text}
+                  style={mode.key === 'night' ? { ...mode.style } : undefined}
+                />
               </TouchableOpacity>
             ))}
           </View>
         </View>
         {/* Taille de police */}
         <View style={styles.row}>
-          <Text style={[styles.label, { color: isDark ? '#fff' : '#181818', fontSize: getFontSize(16) }]}>Taille de police</Text>
+          <Text style={[styles.label, { color: themeColors.text, fontSize: getFontSize(16) }]}>Taille de police</Text>
           <View style={{ flexDirection: 'row' }}>
             {FONT_SIZES.map(size => (
               <TouchableOpacity
@@ -227,8 +226,8 @@ const Settings = () => {
                   styles.chip,
                   {
                     backgroundColor: fontSize === size.key
-                      ? (isDark ? '#FFD700' : '#007AFF')
-                      : (isDark ? '#232323' : '#eee'),
+                      ? themeColors.primary
+                      : themeColors.card,
                     flexDirection: 'row',
                     alignItems: 'center',
                     minWidth: 60,
@@ -246,8 +245,8 @@ const Settings = () => {
                         ? getFontSize(22)
                         : getFontSize(17),
                     color: fontSize === size.key
-                      ? (isDark ? '#181818' : '#fff')
-                      : (isDark ? '#fff' : '#181818'),
+                      ? themeColors.background
+                      : themeColors.text,
                     fontWeight: 'bold',
                   }}
                 >
@@ -256,8 +255,8 @@ const Settings = () => {
                 <Text
                   style={{
                     color: fontSize === size.key
-                      ? (isDark ? '#181818' : '#fff')
-                      : (isDark ? '#fff' : '#181818'),
+                      ? themeColors.background
+                      : themeColors.text,
                     fontWeight: fontSize === size.key ? 'bold' : 'normal',
                     fontSize: getFontSize(16),
                     marginLeft: 6,
@@ -271,29 +270,29 @@ const Settings = () => {
         </View>
         {/* Sons & Vibrations */}
         <View style={styles.row}>
-          <Text style={[styles.label, { color: isDark ? '#fff' : '#181818', fontSize: getFontSize(16) }]}>Sons</Text>
+          <Text style={[styles.label, { color: themeColors.text, fontSize: getFontSize(16) }]}>Sons</Text>
           <Switch
             value={sounds}
             onValueChange={v => { dispatch(setSounds(v)); }}
-            thumbColor={sounds ? (isDark ? '#FFD700' : '#007AFF') : (isDark ? '#444' : '#ccc')}
-            trackColor={{ false: isDark ? '#232323' : '#eee', true: isDark ? '#FFD700' : '#007AFF' }}
+            thumbColor={sounds ? (themeColors.primary) : (themeColors.card)}
+            trackColor={{ false: themeColors.card, true: themeColors.primary }}
           />
         </View>
         <View style={styles.row}>
-          <Text style={[styles.label, { color: isDark ? '#fff' : '#181818', fontSize: getFontSize(16) }]}>Vibrations</Text>
+          <Text style={[styles.label, { color: themeColors.text, fontSize: getFontSize(16) }]}>Vibrations</Text>
           <Switch
             value={vibrations}
             onValueChange={v => { dispatch(setVibrations(v)); }}
-            thumbColor={vibrations ? (isDark ? '#FFD700' : '#007AFF') : (isDark ? '#444' : '#ccc')}
-            trackColor={{ false: isDark ? '#232323' : '#eee', true: isDark ? '#FFD700' : '#007AFF' }}
+            thumbColor={vibrations ? (themeColors.primary) : (themeColors.card)}
+            trackColor={{ false: themeColors.card, true: themeColors.primary }}
           />
         </View>
 
         {/* Section Données & Confidentialité */}
-        <Text style={[styles.sectionTitle, { color: isDark ? '#FFD700' : '#007AFF', marginTop: 32, fontSize: getFontSize(18) }]}>📊 Données & Confidentialité</Text>
+        <Text style={[styles.sectionTitle, { color: themeColors.primary, marginTop: 32, fontSize: getFontSize(18) }]}>📊 Données & Confidentialité</Text>
         <View style={styles.row}>
           <TouchableOpacity style={styles.linkBtn} onPress={() => setShowImportExport(true)}>
-            <Text style={[styles.link, { color: isDark ? '#FFD700' : '#007AFF', fontSize: getFontSize(16) }]}>Import / Export</Text>
+            <Text style={[styles.link, { color: themeColors.primary, fontSize: getFontSize(16) }]}>Import / Export</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.linkBtn} onPress={handleReset}>
             <Text style={[styles.link, { color: '#FF3B30', fontWeight: 'bold', fontSize: getFontSize(16) }]}>Remise à zéro</Text>
@@ -301,10 +300,10 @@ const Settings = () => {
         </View>
 
         {/* Section Feedback */}
-        <Text style={[styles.sectionTitle, { color: isDark ? '#FFD700' : '#007AFF', marginTop: 32, fontSize: getFontSize(18) }]}>🙎🏽‍♂️ Partage ton expérience</Text>
+        <Text style={[styles.sectionTitle, { color: themeColors.primary, marginTop: 32, fontSize: getFontSize(18) }]}>🙎🏽‍♂️ Partage ton expérience</Text>
         <View style={styles.row}>
           <TouchableOpacity style={styles.linkBtn} onPress={() => setShowFeedbackModal(true)}>
-            <Text style={[styles.link, { color: isDark ? '#FFD700' : '#007AFF', fontSize: getFontSize(16) }]}>Envoyer un feedback anonyme</Text>
+            <Text style={[styles.link, { color: themeColors.primary, fontSize: getFontSize(16) }]}>Envoyer un feedback anonyme</Text>
           </TouchableOpacity>
         </View>
 
@@ -314,17 +313,17 @@ const Settings = () => {
             flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center'
           }}>
             <View style={{
-              backgroundColor: isDark ? '#232323' : '#fff',
+              backgroundColor: themeColors.card,
               padding: 24,
               borderRadius: 16,
               width: '90%',
               maxHeight: '80%',
             }}>
-              <Text style={{ fontWeight: 'bold', fontSize: getFontSize(18), color: isDark ? '#FFD700' : '#007AFF', marginBottom: 12 }}>
+              <Text style={{ fontWeight: 'bold', fontSize: getFontSize(18), color: themeColors.primary, marginBottom: 12 }}>
                 Import / Export des données
               </Text>
               {/* Export */}
-              <Text style={{ color: isDark ? '#fff' : '#181818', marginBottom: 8, fontSize: getFontSize(15) }}>
+              <Text style={{ color: themeColors.text, marginBottom: 8, fontSize: getFontSize(15) }}>
                 Exporter toutes les données ou seulement celles d'un gacha :
               </Text>
               <TouchableOpacity
@@ -340,7 +339,7 @@ const Settings = () => {
                 <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>Exporter un gacha (JSON)</Text>
               </TouchableOpacity>
               {/* Import */}
-              <Text style={{ color: isDark ? '#fff' : '#181818', marginTop: 16, marginBottom: 4, fontSize: getFontSize(15) }}>
+              <Text style={{ color: themeColors.text, marginTop: 16, marginBottom: 4, fontSize: getFontSize(15) }}>
                 Importer des données (JSON) :
               </Text>
               <TextInput
@@ -358,7 +357,7 @@ const Settings = () => {
                 <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>Importer</Text>
               </TouchableOpacity>
               <TouchableOpacity style={{ marginTop: 16 }} onPress={() => setShowImportExport(false)}>
-                <Text style={{ color: '#007AFF', textAlign: 'center', fontSize: getFontSize(16) }}>Fermer</Text>
+                <Text style={{ color: themeColors.primary, textAlign: 'center', fontSize: getFontSize(16) }}>Fermer</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -370,13 +369,13 @@ const Settings = () => {
             flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center'
           }}>
             <View style={{
-              backgroundColor: isDark ? '#232323' : '#fff',
+              backgroundColor: themeColors.card,
               padding: 24,
               borderRadius: 16,
               width: '90%',
               maxHeight: '80%',
             }}>
-              <Text style={{ fontWeight: 'bold', fontSize: getFontSize(18), color: isDark ? '#FFD700' : '#007AFF', marginBottom: 12 }}>
+              <Text style={{ fontWeight: 'bold', fontSize: getFontSize(18), color: themeColors.primary, marginBottom: 12 }}>
                 Envoyer un feedback anonyme
               </Text>
               <TextInput
@@ -394,7 +393,7 @@ const Settings = () => {
                 <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>Envoyer</Text>
               </TouchableOpacity>
               <TouchableOpacity style={{ marginTop: 16 }} onPress={() => setShowFeedbackModal(false)}>
-                <Text style={{ color: '#007AFF', textAlign: 'center', fontSize: getFontSize(16) }}>Fermer</Text>
+                <Text style={{ color: themeColors.primary, textAlign: 'center', fontSize: getFontSize(16) }}>Fermer</Text>
               </TouchableOpacity>
             </View>
           </View>
