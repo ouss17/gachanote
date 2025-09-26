@@ -1,3 +1,5 @@
+import ExportDataButton from '@/components/ExportDataButton';
+import ExportGachaButton from '@/components/ExportGachaButton';
 import { Theme } from '@/constants/Themes';
 import { setDevise } from '@/redux/slices/deviseSlice';
 import { setNationality } from '@/redux/slices/nationalitySlice';
@@ -326,18 +328,8 @@ const Settings = () => {
               <Text style={{ color: themeColors.text, marginBottom: 8, fontSize: getFontSize(15) }}>
                 Exporter toutes les données ou seulement celles d'un gacha :
               </Text>
-              <TouchableOpacity
-                style={styles.validateBtn}
-                onPress={() => handleExport('json')}
-              >
-                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>Exporter tout (JSON)</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.validateBtn}
-                onPress={() => handleExport('gacha')}
-              >
-                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>Exporter un gacha (JSON)</Text>
-              </TouchableOpacity>
+              <ExportDataButton getFontSize={getFontSize} themeColors={themeColors} />
+              <ExportGachaButton getFontSize={getFontSize} themeColors={themeColors} />
               {/* Import */}
               <Text style={{ color: themeColors.text, marginTop: 16, marginBottom: 4, fontSize: getFontSize(15) }}>
                 Importer des données (JSON) :
