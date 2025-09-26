@@ -4,7 +4,7 @@ import { RootState } from '@/redux/store';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
-import { FlatList, Image, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
+import { FlatList, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import DemoScreen from '../DemoScreen';
@@ -15,7 +15,12 @@ export default function HomeScreen() {
   const theme = useSelector((state: RootState) => state.theme.mode);
   const dispatch = useDispatch();
   const isDark = theme === 'dark';
-  const colors = isDark ? Theme.dark : Theme.light;
+  const colors =
+    theme === 'night'
+      ? Theme.night
+      : theme === 'dark'
+      ? Theme.dark
+      : Theme.light;
 
   const [search, setSearch] = useState('');
 
@@ -82,6 +87,7 @@ export default function HomeScreen() {
             </Text>
           </TouchableOpacity>
         )}
+        contentContainerStyle={{ paddingBottom: 100 }} // Add enough padding to clear the tab bar
       />
     </SafeAreaView>
   );

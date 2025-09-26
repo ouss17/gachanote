@@ -13,28 +13,28 @@ export const Theme = {
     shadow: "rgba(139, 92, 246, 0.3)",
   },
   light: {
-    background: "#F8FAFC",
-    surface: "#FFFFFF",
-    card: "#F1F5F9",
-    text: "#1E293B",
-    textSecondary: "#64748B",
-    primary: "#8B5CF6",
-    secondary: "#EC4899",
-    accent: "#06B6D4",
-    border: "#CBD5E1",
-    placeholder: "#94A3B8",
-    shadow: "rgba(139, 92, 246, 0.2)",
+    background: "#F3F4F6",   // gris clair doux (moins blanc que #F8FAFC)
+    surface: "#FFFFFF",      // surfaces type input/nav
+    card: "#F9FAFB",         // cartes très claires mais pas blanc pur
+    text: "#334155",         // gris ardoise (Slate 700)
+    textSecondary: "#64748B",// gris bleuté
+    primary: "#7C3AED",      // violet adouci (moins saturé)
+    secondary: "#DB2777",    // rose plus doux
+    accent: "#0EA5E9",       // bleu clair (plutôt que turquoise flashy)
+    border: "#E2E8F0",       // gris clair subtil
+    placeholder: "#94A3B8",  // gris bleuté
+    shadow: "rgba(124, 58, 237, 0.08)", // ombre violette ultra légère
   },
   night: {
-    background: "#000000",
-    surface: "#0F0F0F",
+    background: "#0F0F0F",
+    surface: "#1A1A1A",
     card: "#1A1A1A",
     text: "#E2E8F0",
     textSecondary: "#A78BFA",
     primary: "#7C3AED",
     secondary: "#F472B6",
     accent: "#22D3EE",
-    border: "#1F2937",
+    border: "#121418ff",
     placeholder: "#6B7280",
     shadow: "rgba(124, 58, 237, 0.4)",
   },
