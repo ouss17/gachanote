@@ -27,11 +27,11 @@ const currencies = [
   { currency: '¥', label: 'Yen', symbol: '¥' },
 ];
 
-// Ajoute le mode "night" (demi-lune) et "dark" (pleine lune)
+// Ajoute le mode "night" (pleine lune) et "dark" (demi-lune)
 const themeModes = [
   { key: 'light', icon: 'sun' }, // soleil
-  { key: 'dark', icon: 'circle' }, // pleine lune (cercle plein)
-  { key: 'night', icon: 'moon', style: { transform: [{ scaleX: -1 }] } }, // demi-lune (miroir)
+  { key: 'dark', icon: 'moon', style: { transform: [{ scaleX: -1 }] } }, // dark = demi-lune (miroir)
+  { key: 'night', icon: 'circle' }, // night = pleine lune (cercle plein)
 ];
 
 const Settings = () => {
