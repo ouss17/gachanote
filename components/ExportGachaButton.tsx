@@ -6,8 +6,10 @@ import { Alert, Modal, ScrollView, Text, TouchableOpacity, View } from 'react-na
 import { useSelector } from 'react-redux';
 
 export default function ExportGachaButton({ getFontSize, themeColors }: { getFontSize: (n: number) => number, themeColors: any }) {
-  // Récupère tous les rolls
+  // Récupère tous les rolls, money et simulations
   const rolls = useSelector((state: RootState) => state.rolls.rolls);
+  const moneyEntries = useSelector((state: RootState) => state.money.entries);
+  const banners = useSelector((state: RootState) => state.simulations.banners);
 
   // Liste unique des gachas présents dans les rolls
   const gachaIds = Array.from(new Set(rolls.map(r => r.gachaId)));
@@ -31,13 +33,20 @@ export default function ExportGachaButton({ getFontSize, themeColors }: { getFon
       return;
     }
     try {
-      // Filtrer les rolls des gachas sélectionnés
+      // Filtrer les données des gachas sélectionnés
       const filteredRolls = rolls.filter(r => selected.includes(r.gachaId));
+      const filteredMoney = moneyEntries.filter(e => selected.includes(e.gachaId));
+      const filteredSimulations = banners.filter(b => selected.includes(b.gachaId));
+
+      // Format global : chaque slice est une clé, tableau dans une propriété
       const exportData = {
-        rolls: filteredRolls,
+        rolls: { rolls: filteredRolls },
+        money: { entries: filteredMoney },
+        simulations: { banners: filteredSimulations },
       };
+
       const json = JSON.stringify(exportData, null, 2);
-      const dir = FileSystem.cacheDirectory ?? FileSystem.DirectoryCache;
+      const dir = FileSystem.cacheDirectory;
       const fileUri = dir + 'gachanote-export-gacha.json';
 
       await FileSystem.writeAsStringAsync(fileUri, json, { encoding: 'utf8' });

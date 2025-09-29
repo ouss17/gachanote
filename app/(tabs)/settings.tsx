@@ -2,11 +2,16 @@ import ExportDataButton from '@/components/ExportDataButton';
 import ExportGachaButton from '@/components/ExportGachaButton';
 import { Theme } from '@/constants/Themes';
 import { setDevise } from '@/redux/slices/deviseSlice';
+import { addMoney, resetMoney } from '@/redux/slices/moneySlice';
 import { setNationality } from '@/redux/slices/nationalitySlice';
+import { addRoll, resetRolls } from '@/redux/slices/rollsSlice';
 import { setFontSize, setSounds, setVibrations } from '@/redux/slices/settingsSlice';
+import { addBanner, addSimulationRoll, resetSimulations } from '@/redux/slices/simulationsSlice';
 import { setTheme } from '@/redux/slices/themeSlice';
 import { RootState } from '@/redux/store';
 import { Feather } from '@expo/vector-icons';
+import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system/legacy';
 import React, { useState } from 'react';
 import { Alert, Image, Modal, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
@@ -45,6 +50,9 @@ const Settings = () => {
   const sounds = useSelector((state: RootState) => state.settings.sounds);
   const vibrations = useSelector((state: RootState) => state.settings.vibrations);
   const devise = useSelector((state: RootState) => state.devise.currency);
+  const rolls = useSelector((state: RootState) => state.rolls.rolls);
+  const moneyEntries = useSelector((state: RootState) => state.money.entries);
+  const banners = useSelector((state: RootState) => state.simulations.banners);
   const [showImportExport, setShowImportExport] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [importText, setImportText] = useState('');
@@ -69,6 +77,9 @@ const Settings = () => {
           style: 'destructive',
           onPress: () => {
             dispatch(setNationality({ country: 'fr' }));
+            dispatch(resetRolls());
+            dispatch(resetMoney());
+            dispatch(resetSimulations());
             // Ajoute ici d'autres resets si besoin
           },
         },
@@ -81,7 +92,108 @@ const Settings = () => {
     Alert.alert('Export', `Export ${type === 'gacha' ? 'par gacha' : 'global'} à venir !`);
   };
   const handleImport = () => {
-    Alert.alert('Import', 'Import à venir !');
+    try {
+      const data = JSON.parse(importText);
+      if (!data || !Array.isArray(data.rolls)) {
+        Alert.alert('Erreur', "Le fichier n'est pas au format attendu (clé 'rolls' manquante).");
+        return;
+      }
+      // Filtrer les rolls à importer (id non déjà présent)
+      const existingIds = new Set(rolls.map(r => r.id));
+      const newRolls = data.rolls.filter((r: any) => !existingIds.has(r.id));
+      if (newRolls.length === 0) {
+        Alert.alert('Aucun nouveau roll', "Tous les rolls de ce fichier existent déjà.");
+        return;
+      }
+      newRolls.forEach((r: any) => dispatch(addRoll(r)));
+      Alert.alert('Import réussi', `${newRolls.length} roll(s) importé(s) avec succès.`);
+      setImportText('');
+      setShowImportExport(false);
+    } catch (e) {
+      console.log('Import error:', e);
+      Alert.alert('Erreur', "Le fichier n'est pas un JSON valide ou une erreur est survenue.");
+    }
+  };
+
+  const handleImportFile = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: 'application/json',
+        copyToCacheDirectory: true,
+        multiple: false,
+      });
+      if (result.canceled || !result.assets?.[0]?.uri) return;
+
+      const uri = result.assets[0].uri;
+      const content = await FileSystem.readAsStringAsync(uri, { encoding: 'utf8' });
+      const data = JSON.parse(content);
+
+      // Récupère les tableaux à l'intérieur des slices
+      const rollsArray = data.rolls?.rolls ?? [];
+      const moneyArray = data.money?.entries ?? [];
+      const simulationsArray = data.simulations?.banners ?? [];
+
+      // Vérifie qu'au moins une donnée est présente
+      if (!Array.isArray(rollsArray) && !Array.isArray(moneyArray) && !Array.isArray(simulationsArray)) {
+        Alert.alert('Erreur', "Le fichier n'est pas au format attendu (au moins une des clés 'rolls', 'money', 'simulations' doit contenir un tableau).");
+        return;
+      }
+
+      // LOG pour debug
+      console.log('Import JSON:', { rollsArray, moneyArray, simulationsArray });
+
+      // Import rolls
+      let importedRolls = 0;
+      if (Array.isArray(rollsArray)) {
+        const existingRollIds = new Set(rolls.map(r => r.id));
+        const newRolls = rollsArray.filter((r: any) => !existingRollIds.has(r.id));
+        newRolls.forEach((r: any) => dispatch(addRoll(r)));
+        importedRolls = newRolls.length;
+      }
+
+      // Import money
+      let importedMoney = 0;
+      if (Array.isArray(moneyArray)) {
+        const existingMoneyIds = new Set(moneyEntries.map(e => e.id));
+        const newMoney = moneyArray.filter((e: any) => !existingMoneyIds.has(e.id));
+        newMoney.forEach((e: any) => dispatch(addMoney(e)));
+        importedMoney = newMoney.length;
+      }
+
+      // Import simulations
+      let importedSimulations = 0;
+      if (Array.isArray(simulationsArray)) {
+        const existingBannerIds = new Set(banners.map(b => b.id));
+        simulationsArray.forEach((banner: any) => {
+          if (!existingBannerIds.has(banner.id)) {
+            dispatch(addBanner(banner));
+            importedSimulations++;
+          } else {
+            // Bannière déjà présente, on ajoute seulement les rolls non présents
+            const existingBanner = banners.find(b => b.id === banner.id);
+            const existingRollIds = new Set(existingBanner?.rolls.map(r => r.id));
+            const newRolls = banner.rolls.filter((r: any) => !existingRollIds.has(r.id));
+            newRolls.forEach((r: any) => dispatch(addSimulationRoll({ bannerId: banner.id, roll: r })));
+            if (newRolls.length > 0) importedSimulations++;
+          }
+        });
+      }
+
+      if (importedRolls + importedMoney + importedSimulations === 0) {
+        Alert.alert('Import terminé', "Aucune donnée importée : tout existe déjà.");
+        setShowImportExport(false);
+        return;
+      }
+
+      Alert.alert(
+        'Import réussi',
+        `${importedRolls} roll(s), ${importedMoney} entrée(s) d'argent, ${importedSimulations} bannière(s)/tirage(s) simulé(s) importé(s) avec succès.`
+      );
+      setShowImportExport(false);
+    } catch (e) {
+      console.log('Import error:', e);
+      Alert.alert('Erreur', "Le fichier n'est pas un JSON valide ou une erreur est survenue.");
+    }
   };
 
   // Envoyer le feedback
@@ -311,16 +423,27 @@ const Settings = () => {
 
         {/* Modal Import/Export */}
         <Modal visible={showImportExport} animationType="slide" transparent>
-          <View style={{
-            flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center'
-          }}>
-            <View style={{
-              backgroundColor: themeColors.card,
-              padding: 24,
-              borderRadius: 16,
-              width: '90%',
-              maxHeight: '80%',
-            }}>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={{
+              flex: 1,
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+            onPress={() => setShowImportExport(false)}
+          >
+            <TouchableOpacity
+              activeOpacity={1}
+              style={{
+                backgroundColor: themeColors.card,
+                padding: 24,
+                borderRadius: 16,
+                width: '90%',
+                maxHeight: '80%',
+              }}
+              onPress={() => {}} // Empêche la propagation du clic à l'extérieur
+            >
               <Text style={{ fontWeight: 'bold', fontSize: getFontSize(18), color: themeColors.primary, marginBottom: 12 }}>
                 Import / Export des données
               </Text>
@@ -334,39 +457,44 @@ const Settings = () => {
               <Text style={{ color: themeColors.text, marginTop: 16, marginBottom: 4, fontSize: getFontSize(15) }}>
                 Importer des données (JSON) :
               </Text>
-              <TextInput
-                style={[styles.input, { fontSize: getFontSize(16) }]}
-                placeholder="Collez ici vos données JSON"
-                placeholderTextColor="#888"
-                multiline
-                value={importText}
-                onChangeText={setImportText}
-              />
               <TouchableOpacity
                 style={styles.validateBtn}
-                onPress={handleImport}
+                onPress={handleImportFile}
               >
-                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>Importer</Text>
+                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>
+                  Importer un fichier JSON
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity style={{ marginTop: 16 }} onPress={() => setShowImportExport(false)}>
                 <Text style={{ color: themeColors.primary, textAlign: 'center', fontSize: getFontSize(16) }}>Fermer</Text>
               </TouchableOpacity>
-            </View>
-          </View>
+            </TouchableOpacity>
+          </TouchableOpacity>
         </Modal>
 
         {/* Modal Feedback */}
         <Modal visible={showFeedbackModal} animationType="slide" transparent>
-          <View style={{
-            flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center'
-          }}>
-            <View style={{
-              backgroundColor: themeColors.card,
-              padding: 24,
-              borderRadius: 16,
-              width: '90%',
-              maxHeight: '80%',
-            }}>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={{
+              flex: 1,
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+            onPress={() => setShowFeedbackModal(false)}
+          >
+            <TouchableOpacity
+              activeOpacity={1}
+              style={{
+                backgroundColor: themeColors.card,
+                padding: 24,
+                borderRadius: 16,
+                width: '90%',
+                maxHeight: '80%',
+              }}
+              onPress={() => {}} // Empêche la propagation du clic à l'extérieur
+            >
               <Text style={{ fontWeight: 'bold', fontSize: getFontSize(18), color: themeColors.primary, marginBottom: 12 }}>
                 Envoyer un feedback anonyme
               </Text>
@@ -387,8 +515,8 @@ const Settings = () => {
               <TouchableOpacity style={{ marginTop: 16 }} onPress={() => setShowFeedbackModal(false)}>
                 <Text style={{ color: themeColors.primary, textAlign: 'center', fontSize: getFontSize(16) }}>Fermer</Text>
               </TouchableOpacity>
-            </View>
-          </View>
+            </TouchableOpacity>
+          </TouchableOpacity>
         </Modal>
       </View>
     </ScrollView>

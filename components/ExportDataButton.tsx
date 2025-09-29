@@ -11,7 +11,7 @@ export default function ExportDataButton({ getFontSize, themeColors }: { getFont
   const handleExport = async () => {
     try {
       const json = JSON.stringify(state, null, 2);
-      const dir = FileSystem.cacheDirectory ?? FileSystem.DirectoryCache;
+      const dir = FileSystem.cacheDirectory;
       const fileUri = dir + 'gachanote-export.json';
 
       await FileSystem.writeAsStringAsync(fileUri, json, { encoding: 'utf8' });

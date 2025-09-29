@@ -69,8 +69,11 @@ const rollsSlice = createSlice({
     clearRolls: (state) => {
       state.rolls = [];
     },
+    resetRolls: (state) => {
+      state.rolls = [];
+    },
   },
 });
 
-export const { addRoll, removeRoll, updateRoll, clearRolls } = rollsSlice.actions;
+export const { addRoll, removeRoll, updateRoll, clearRolls, resetRolls } = rollsSlice.actions;
 export default rollsSlice.reducer;
