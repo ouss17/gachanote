@@ -9,28 +9,38 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import { setOnboardingSeen } from '@/redux/slices/onboardingSlice';
 import { useDispatch } from 'react-redux';
 import DemoScreen from '../DemoScreen';
+import { Theme } from '@/constants/Themes';
+
+type ThemeMode = 'light' | 'dark' | 'night';
 
 export default function TabLayout() {
-  const theme = useSelector((state : any) => state.theme.mode); // 'light' ou 'dark'
+  const theme = useSelector((state: any) => state.theme.mode) as ThemeMode;
   const onboardingSeen = useSelector((state: any) => state.onboarding.seen);
   const dispatch = useDispatch();
 
+  const colors = Theme[theme] || Theme.light;
+
   if (!onboardingSeen) {
-    // Cache le menu (tabs) pendant la démo
     return <DemoScreen onFinish={() => dispatch(setOnboardingSeen())} />;
   }
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: theme === 'dark' ? '#6C47FF' : '#007AFF',
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textSecondary,
         headerShown: false,
         tabBarButton: HapticTab,
-        tabBarStyle: {
-          backgroundColor: theme === 'dark' ? '#181818' : '#fff',
-          borderTopWidth: 0.5,
-          borderTopColor: theme === 'dark' ? '#333' : '#eee',
-          position: Platform.OS === 'ios' ? 'absolute' : 'relative',
+        tabBarIconStyle: {
+          marginBottom: 2,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        tabBarLabelStyle: {
+          fontWeight: '700',
+          fontSize: 13,
+          letterSpacing: 1,
+          marginBottom: 8,
         },
       }}>
       <Tabs.Screen
