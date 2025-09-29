@@ -11,15 +11,16 @@ import { useDispatch } from 'react-redux';
 import DemoScreen from '../DemoScreen';
 import { Theme } from '@/constants/Themes';
 
+type ThemeMode = 'light' | 'dark' | 'night';
+
 export default function TabLayout() {
-  const theme = useSelector((state : any) => state.theme.mode); // 'light' ou 'dark'
+  const theme = useSelector((state: any) => state.theme.mode) as ThemeMode;
   const onboardingSeen = useSelector((state: any) => state.onboarding.seen);
   const dispatch = useDispatch();
 
   const colors = Theme[theme] || Theme.light;
 
   if (!onboardingSeen) {
-    // Cache le menu (tabs) pendant la démo
     return <DemoScreen onFinish={() => dispatch(setOnboardingSeen())} />;
   }
 
@@ -30,18 +31,7 @@ export default function TabLayout() {
         tabBarInactiveTintColor: colors.textSecondary,
         headerShown: false,
         tabBarButton: HapticTab,
-        tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopWidth: 0,
-          borderRadius: 20,
-          marginHorizontal: 16,
-          marginBottom: Platform.OS === 'ios' ? 24 : 12,
-          height: 70,
-          shadowColor: colors.surface,
-          position: 'absolute',
-        },
         tabBarIconStyle: {
-          marginTop: 8,
           marginBottom: 2,
           alignItems: 'center',
           justifyContent: 'center',
@@ -51,15 +41,6 @@ export default function TabLayout() {
           fontSize: 13,
           letterSpacing: 1,
           marginBottom: 8,
-        },
-        tabBarIndicatorStyle: {
-          backgroundColor: colors.primary,
-          height: 4,
-          borderRadius: 2,
-          position: 'absolute',
-          bottom: 8,
-          left: 32,
-          right: 32,
         },
       }}>
       <Tabs.Screen

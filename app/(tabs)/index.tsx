@@ -87,7 +87,6 @@ export default function HomeScreen() {
             </Text>
           </TouchableOpacity>
         )}
-        contentContainerStyle={{ paddingBottom: 100 }} // Add enough padding to clear the tab bar
       />
     </SafeAreaView>
   );
