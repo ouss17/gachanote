@@ -64,8 +64,11 @@ const moneySlice = createSlice({
     clearMoney: (state) => {
       state.entries = [];
     },
+    resetMoney: (state) => {
+      state.entries = [];
+    },
   },
 });
 
-export const { addMoney, removeMoney, updateMoney, clearMoney } = moneySlice.actions;
+export const { addMoney, removeMoney, updateMoney, clearMoney, resetMoney } = moneySlice.actions;
 export default moneySlice.reducer;

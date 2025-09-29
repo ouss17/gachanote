@@ -81,6 +81,12 @@ const simulationsSlice = createSlice({
         banner.totalResourceUsed = 0;
       }
     },
+    /**
+     * Réinitialise toutes les simulations.
+     */
+    resetSimulations: (state) => {
+      state.banners = [];
+    },
   },
 });
 
@@ -89,5 +95,6 @@ export const {
   removeBanner,
   addSimulationRoll,
   clearBannerRolls,
+  resetSimulations,
 } = simulationsSlice.actions;
 export default simulationsSlice.reducer;

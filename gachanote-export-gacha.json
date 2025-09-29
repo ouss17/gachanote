@@ -1,0 +1,794 @@
+{
+  "rolls": [
+    {
+      "id": "96ea8613-0ea5-4518-9e3f-f23686c0caca",
+      "gachaId": "dbl",
+      "resourceAmount": 3000,
+      "featuredCount": 1,
+      "spookCount": 5,
+      "date": "2025-09-02",
+      "resourceType": "cc",
+      "nameFeatured": "Goku",
+      "sideUnit": 0
+    },
+    {
+      "id": "fc511869-e373-4933-a1ca-571b22528614",
+      "gachaId": "dbl",
+      "resourceAmount": 40000,
+      "featuredCount": 5,
+      "spookCount": 0,
+      "date": "2025-09-04",
+      "resourceType": "cc",
+      "nameFeatured": "Goku super saiyajin ultra",
+      "sideUnit": 0
+    }
+  ],
+  "money": [
+    {
+      "id": "1756834588095",
+      "gachaId": "dbl",
+      "amount": 300,
+      "date": "2025-09-02"
+    },
+    {
+      "id": "1756987324635",
+      "gachaId": "dbl",
+      "amount": 50,
+      "date": "2025-09-04"
+    }
+  ],
+  "simulations": [
+    {
+      "id": "1758287898613",
+      "name": "Vegeta ssj4 ultra",
+      "characters": [
+        {
+          "name": "Vegeta ssj4 ultra",
+          "rate": 0.5,
+          "isFeatured": false
+        },
+        {
+          "name": "Krilin",
+          "rate": 0.7,
+          "isFeatured": true
+        },
+        {
+          "name": "Muten roshi",
+          "rate": 0.7,
+          "isFeatured": true
+        }
+      ],
+      "rolls": [
+        {
+          "id": "1758288189865",
+          "results": [
+            {
+              "name": "Krilin",
+              "count": 1
+            },
+            {
+              "name": "Vegeta ssj4 ultra",
+              "count": 2
+            }
+          ],
+          "resourceUsed": 10000,
+          "date": "2025-09-19T13:23:09.865Z"
+        },
+        {
+          "id": "1758288201464",
+          "results": [],
+          "resourceUsed": 1000,
+          "date": "2025-09-19T13:23:21.464Z"
+        },
+        {
+          "id": "1758288201958",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-19T13:23:21.958Z"
+        },
+        {
+          "id": "1758288202450",
+          "results": [],
+          "resourceUsed": 1000,
+          "date": "2025-09-19T13:23:22.450Z"
+        },
+        {
+          "id": "1758288202860",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-19T13:23:22.860Z"
+        },
+        {
+          "id": "1758288203303",
+          "results": [],
+          "resourceUsed": 1000,
+          "date": "2025-09-19T13:23:23.303Z"
+        },
+        {
+          "id": "1758288203549",
+          "results": [],
+          "resourceUsed": 1000,
+          "date": "2025-09-19T13:23:23.549Z"
+        },
+        {
+          "id": "1758288203731",
+          "results": [],
+          "resourceUsed": 1000,
+          "date": "2025-09-19T13:23:23.731Z"
+        },
+        {
+          "id": "1758288203894",
+          "results": [],
+          "resourceUsed": 1000,
+          "date": "2025-09-19T13:23:23.894Z"
+        },
+        {
+          "id": "1758288204092",
+          "results": [],
+          "resourceUsed": 1000,
+          "date": "2025-09-19T13:23:24.092Z"
+        },
+        {
+          "id": "1758288204289",
+          "results": [],
+          "resourceUsed": 1000,
+          "date": "2025-09-19T13:23:24.289Z"
+        },
+        {
+          "id": "1758288204486",
+          "results": [],
+          "resourceUsed": 1000,
+          "date": "2025-09-19T13:23:24.486Z"
+        },
+        {
+          "id": "1758288204684",
+          "results": [],
+          "resourceUsed": 1000,
+          "date": "2025-09-19T13:23:24.684Z"
+        },
+        {
+          "id": "1758288204897",
+          "results": [],
+          "resourceUsed": 1000,
+          "date": "2025-09-19T13:23:24.897Z"
+        },
+        {
+          "id": "1758288205061",
+          "results": [],
+          "resourceUsed": 1000,
+          "date": "2025-09-19T13:23:25.061Z"
+        },
+        {
+          "id": "1758288205228",
+          "results": [],
+          "resourceUsed": 1000,
+          "date": "2025-09-19T13:23:25.228Z"
+        },
+        {
+          "id": "1758288205491",
+          "results": [],
+          "resourceUsed": 1000,
+          "date": "2025-09-19T13:23:25.491Z"
+        },
+        {
+          "id": "1758288205671",
+          "results": [],
+          "resourceUsed": 1000,
+          "date": "2025-09-19T13:23:25.671Z"
+        },
+        {
+          "id": "1758288205868",
+          "results": [],
+          "resourceUsed": 1000,
+          "date": "2025-09-19T13:23:25.868Z"
+        },
+        {
+          "id": "1758288206054",
+          "results": [],
+          "resourceUsed": 1000,
+          "date": "2025-09-19T13:23:26.054Z"
+        },
+        {
+          "id": "1758288206260",
+          "results": [],
+          "resourceUsed": 1000,
+          "date": "2025-09-19T13:23:26.260Z"
+        },
+        {
+          "id": "1758288206457",
+          "results": [],
+          "resourceUsed": 1000,
+          "date": "2025-09-19T13:23:26.457Z"
+        },
+        {
+          "id": "1758288206657",
+          "results": [],
+          "resourceUsed": 1000,
+          "date": "2025-09-19T13:23:26.657Z"
+        },
+        {
+          "id": "1758288206822",
+          "results": [
+            {
+              "name": "Krilin",
+              "count": 1
+            }
+          ],
+          "resourceUsed": 1000,
+          "date": "2025-09-19T13:23:26.822Z"
+        },
+        {
+          "id": "1758288207016",
+          "results": [],
+          "resourceUsed": 1000,
+          "date": "2025-09-19T13:23:27.016Z"
+        },
+        {
+          "id": "1758288207214",
+          "results": [],
+          "resourceUsed": 1000,
+          "date": "2025-09-19T13:23:27.214Z"
+        },
+        {
+          "id": "1758288207396",
+          "results": [],
+          "resourceUsed": 1000,
+          "date": "2025-09-19T13:23:27.396Z"
+        },
+        {
+          "id": "1758288712203",
+          "results": [
+            {
+              "name": "Muten roshi",
+              "count": 1
+            },
+            {
+              "name": "Krilin",
+              "count": 1
+            }
+          ],
+          "resourceUsed": 10000,
+          "date": "2025-09-19T13:31:52.203Z"
+        },
+        {
+          "id": "1758288716013",
+          "results": [
+            {
+              "name": "Muten roshi",
+              "count": 1
+            }
+          ],
+          "resourceUsed": 10000,
+          "date": "2025-09-19T13:31:56.013Z"
+        },
+        {
+          "id": "1758288717638",
+          "results": [],
+          "resourceUsed": 1000,
+          "date": "2025-09-19T13:31:57.638Z"
+        },
+        {
+          "id": "1758288718937",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-19T13:31:58.937Z"
+        },
+        {
+          "id": "1758295707044",
+          "results": [
+            {
+              "name": "Krilin",
+              "count": 1
+            },
+            {
+              "name": "Muten roshi",
+              "count": 1
+            }
+          ],
+          "resourceUsed": 10000,
+          "date": "2025-09-19T15:28:27.044Z"
+        },
+        {
+          "id": "1758295707536",
+          "results": [],
+          "resourceUsed": 1000,
+          "date": "2025-09-19T15:28:27.536Z"
+        },
+        {
+          "id": "1758295707914",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-19T15:28:27.914Z"
+        },
+        {
+          "id": "1758899450556",
+          "results": [],
+          "resourceUsed": 1000,
+          "date": "2025-09-26T15:10:50.556Z"
+        },
+        {
+          "id": "1758899452430",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:10:52.430Z"
+        },
+        {
+          "id": "1758899526414",
+          "results": [],
+          "resourceUsed": 1000,
+          "date": "2025-09-26T15:12:06.414Z"
+        },
+        {
+          "id": "1758899545748",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:25.748Z"
+        },
+        {
+          "id": "1758899546994",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:26.994Z"
+        },
+        {
+          "id": "1758899547553",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:27.553Z"
+        },
+        {
+          "id": "1758899547816",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:27.816Z"
+        },
+        {
+          "id": "1758899547980",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:27.980Z"
+        },
+        {
+          "id": "1758899548177",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:28.177Z"
+        },
+        {
+          "id": "1758899548572",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:28.572Z"
+        },
+        {
+          "id": "1758899548786",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:28.786Z"
+        },
+        {
+          "id": "1758899549016",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:29.016Z"
+        },
+        {
+          "id": "1758899549213",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:29.213Z"
+        },
+        {
+          "id": "1758899549410",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:29.410Z"
+        },
+        {
+          "id": "1758899549640",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:29.640Z"
+        },
+        {
+          "id": "1758899550019",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:30.019Z"
+        },
+        {
+          "id": "1758899550232",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:30.232Z"
+        },
+        {
+          "id": "1758899550446",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:30.446Z"
+        },
+        {
+          "id": "1758899550676",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:30.676Z"
+        },
+        {
+          "id": "1758899550873",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:30.873Z"
+        },
+        {
+          "id": "1758899551071",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:31.071Z"
+        },
+        {
+          "id": "1758899551284",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:31.284Z"
+        },
+        {
+          "id": "1758899551498",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:31.498Z"
+        },
+        {
+          "id": "1758899551695",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:31.695Z"
+        },
+        {
+          "id": "1758899551893",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:31.893Z"
+        },
+        {
+          "id": "1758899552287",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:32.287Z"
+        },
+        {
+          "id": "1758899552485",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:32.485Z"
+        },
+        {
+          "id": "1758899552912",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:32.912Z"
+        },
+        {
+          "id": "1758899553109",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:33.109Z"
+        },
+        {
+          "id": "1758899553308",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:33.308Z"
+        },
+        {
+          "id": "1758899553521",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:33.521Z"
+        },
+        {
+          "id": "1758899553734",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:33.734Z"
+        },
+        {
+          "id": "1758899554147",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:34.147Z"
+        },
+        {
+          "id": "1758899554359",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:34.359Z"
+        },
+        {
+          "id": "1758899554589",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:34.589Z"
+        },
+        {
+          "id": "1758899554789",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:34.789Z"
+        },
+        {
+          "id": "1758899555017",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:35.017Z"
+        },
+        {
+          "id": "1758899555214",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:35.214Z"
+        },
+        {
+          "id": "1758899555429",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:35.429Z"
+        },
+        {
+          "id": "1758899555625",
+          "results": [
+            {
+              "name": "Vegeta ssj4 ultra",
+              "count": 1
+            }
+          ],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:35.625Z"
+        },
+        {
+          "id": "1758899555822",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:35.822Z"
+        },
+        {
+          "id": "1758899556052",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:36.052Z"
+        },
+        {
+          "id": "1758899556266",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-26T15:12:36.266Z"
+        }
+      ],
+      "totalResourceUsed": 72500,
+      "gachaId": "dbl"
+    },
+    {
+      "id": "1758288925537",
+      "name": "Goku super saiyan ultra",
+      "characters": [
+        {
+          "name": "Goku super saiyan ultra",
+          "rate": 0.3,
+          "isFeatured": false
+        },
+        {
+          "name": "gohan",
+          "rate": 0.7,
+          "isFeatured": true
+        },
+        {
+          "name": "Buu ",
+          "rate": 0.5,
+          "isFeatured": true
+        }
+      ],
+      "rolls": [
+        {
+          "id": "1758288949981",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-19T13:35:49.981Z"
+        },
+        {
+          "id": "1758288955582",
+          "results": [],
+          "resourceUsed": 1000,
+          "date": "2025-09-19T13:35:55.582Z"
+        },
+        {
+          "id": "1758288956896",
+          "results": [
+            {
+              "name": "Buu ",
+              "count": 2
+            },
+            {
+              "name": "Goku super saiyan ultra",
+              "count": 1
+            }
+          ],
+          "resourceUsed": 10000,
+          "date": "2025-09-19T13:35:56.896Z"
+        },
+        {
+          "id": "1758288960969",
+          "results": [
+            {
+              "name": "Goku super saiyan ultra",
+              "count": 1
+            }
+          ],
+          "resourceUsed": 10000,
+          "date": "2025-09-19T13:36:00.969Z"
+        },
+        {
+          "id": "1758288961118",
+          "results": [
+            {
+              "name": "Buu ",
+              "count": 1
+            }
+          ],
+          "resourceUsed": 10000,
+          "date": "2025-09-19T13:36:01.118Z"
+        },
+        {
+          "id": "1758812505571",
+          "results": [
+            {
+              "name": "Goku super saiyan ultra",
+              "count": 1
+            },
+            {
+              "name": "gohan",
+              "count": 2
+            }
+          ],
+          "resourceUsed": 10000,
+          "date": "2025-09-25T15:01:45.571Z"
+        },
+        {
+          "id": "1758812506751",
+          "results": [
+            {
+              "name": "Buu ",
+              "count": 1
+            }
+          ],
+          "resourceUsed": 1000,
+          "date": "2025-09-25T15:01:46.751Z"
+        },
+        {
+          "id": "1758812508918",
+          "results": [],
+          "resourceUsed": 1000,
+          "date": "2025-09-25T15:01:48.918Z"
+        },
+        {
+          "id": "1758812509693",
+          "results": [
+            {
+              "name": "Goku super saiyan ultra",
+              "count": 1
+            }
+          ],
+          "resourceUsed": 1000,
+          "date": "2025-09-25T15:01:49.693Z"
+        },
+        {
+          "id": "1758812510347",
+          "results": [],
+          "resourceUsed": 1000,
+          "date": "2025-09-25T15:01:50.347Z"
+        },
+        {
+          "id": "1758812510791",
+          "results": [
+            {
+              "name": "Goku super saiyan ultra",
+              "count": 1
+            },
+            {
+              "name": "gohan",
+              "count": 1
+            }
+          ],
+          "resourceUsed": 10000,
+          "date": "2025-09-25T15:01:50.791Z"
+        },
+        {
+          "id": "1758812511679",
+          "results": [],
+          "resourceUsed": 10000,
+          "date": "2025-09-25T15:01:51.679Z"
+        },
+        {
+          "id": "1758812512515",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-25T15:01:52.515Z"
+        },
+        {
+          "id": "1758812513073",
+          "results": [],
+          "resourceUsed": 1000,
+          "date": "2025-09-25T15:01:53.073Z"
+        }
+      ],
+      "totalResourceUsed": 66200,
+      "gachaId": "dbl"
+    },
+    {
+      "id": "1758289816372",
+      "name": "goku",
+      "characters": [
+        {
+          "name": "goku",
+          "rate": 0.7,
+          "isFeatured": false
+        },
+        {
+          "name": "krilin",
+          "rate": 0.7,
+          "isFeatured": true
+        },
+        {
+          "name": "piccolo",
+          "rate": 0.7,
+          "isFeatured": true
+        },
+        {
+          "name": "hit",
+          "rate": 0.7,
+          "isFeatured": true
+        }
+      ],
+      "rolls": [
+        {
+          "id": "1758289819446",
+          "results": [
+            {
+              "name": "goku",
+              "count": 2
+            },
+            {
+              "name": "krilin",
+              "count": 1
+            },
+            {
+              "name": "piccolo",
+              "count": 1
+            }
+          ],
+          "resourceUsed": 10000,
+          "date": "2025-09-19T13:50:19.446Z"
+        },
+        {
+          "id": "1758289842661",
+          "results": [],
+          "resourceUsed": 1000,
+          "date": "2025-09-19T13:50:42.661Z"
+        },
+        {
+          "id": "1758289844207",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-19T13:50:44.207Z"
+        },
+        {
+          "id": "1758289844748",
+          "results": [],
+          "resourceUsed": 100,
+          "date": "2025-09-19T13:50:44.748Z"
+        }
+      ],
+      "totalResourceUsed": 11200,
+      "gachaId": "dbl"
+    }
+  ]
+}

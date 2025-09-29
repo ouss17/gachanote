@@ -1,0 +1,477 @@
+{
+    "common.add": {
+        "en": "Add",
+        "fr": "Ajouter",
+        "jap": "追加"
+    },
+    "common.edit": {
+        "en": "Edit",
+        "fr": "Modifier",
+        "jap": "編集"
+    },
+    "common.delete": {
+        "en": "Delete",
+        "fr": "Supprimer",
+        "jap": "削除"
+    },
+    "common.cancel": {
+        "en": "Cancel",
+        "fr": "Annuler",
+        "jap": "キャンセル"
+    },
+    "common.date": {
+        "en": "Date",
+        "fr": "Date",
+        "jap": "日付"
+    },
+    "common.reset": {
+        "en": "Reset",
+        "fr": "Réinitialiser",
+        "jap": "リセット"
+    },
+    "common.resource": {
+        "en": "Resource",
+        "fr": "Ressource",
+        "jap": "リソース"
+    },
+    "common.featured": {
+        "en": "Featured",
+        "fr": "Vedette",
+        "jap": "ピックアップ"
+    },
+    "common.spook": {
+        "en": "Spook",
+        "fr": "Spook",
+        "jap": "すり抜け"
+    },
+    "common.sideUnits": {
+        "en": "Side units",
+        "fr": "Side units",
+        "jap": "サイドユニット"
+    },
+    "settings.general.title": {
+        "en": "🔧 General settings",
+        "fr": "🔧 Paramètres généraux",
+        "jap": "🔧 一般設定"
+    },
+    "settings.language": {
+        "en": "Language",
+        "fr": "Langue",
+        "jap": "言語"
+    },
+    "settings.currency": {
+        "en": "Currency",
+        "fr": "Devise",
+        "jap": "通貨"
+    },
+    "settings.theme": {
+        "en": "Theme",
+        "fr": "Thème",
+        "jap": "テーマ"
+    },
+    "settings.fontSize": {
+        "en": "Font size",
+        "fr": "Taille de police",
+        "jap": "文字サイズ"
+    },
+    "settings.fontSize.small": {
+        "en": "Small",
+        "fr": "Petit",
+        "jap": "小"
+    },
+    "settings.fontSize.normal": {
+        "en": "Normal",
+        "fr": "Normal",
+        "jap": "標準"
+    },
+    "settings.fontSize.large": {
+        "en": "Large",
+        "fr": "Grand",
+        "jap": "大"
+    },
+    "settings.sounds": {
+        "en": "Sounds",
+        "fr": "Sons",
+        "jap": "サウンド"
+    },
+    "settings.vibrations": {
+        "en": "Vibrations",
+        "fr": "Vibrations",
+        "jap": "バイブレーション"
+    },
+    "settings.dataPrivacy.title": {
+        "en": "📊 Data & Privacy",
+        "fr": "📊 Données & Confidentialité",
+        "jap": "📊 データとプライバシー"
+    },
+    "settings.importExport": {
+        "en": "Import / Export",
+        "fr": "Import / Export",
+        "jap": "インポート / エクスポート"
+    },
+    "settings.reset": {
+        "en": "Reset all",
+        "fr": "Remise à zéro",
+        "jap": "すべてリセット"
+    },
+    "settings.reset.confirmTitle": {
+        "en": "Confirmation",
+        "fr": "Confirmation",
+        "jap": "確認"
+    },
+    "settings.reset.confirmMessage": {
+        "en": "Do you really want to reset all your data? This action is irreversible.",
+        "fr": "Voulez-vous vraiment réinitialiser toutes vos données ? Cette action est irréversible.",
+        "jap": "すべてのデータをリセットしますか？この操作は取り消せません。"
+    },
+    "settings.feedback.title": {
+        "en": "🙎🏽‍♂️ Share your experience",
+        "fr": "🙎🏽‍♂️ Partage ton expérience",
+        "jap": "🙎🏽‍♂️ 体験を共有"
+    },
+    "settings.feedback.sendAnonymous": {
+        "en": "Send anonymous feedback",
+        "fr": "Envoyer un feedback anonyme",
+        "jap": "匿名でフィードバックを送信"
+    },
+    "settings.feedback.thankYouTitle": {
+        "en": "Thank you!",
+        "fr": "Merci !",
+        "jap": "ありがとうございます！"
+    },
+    "settings.feedback.thankYouMessage": {
+        "en": "Your feedback has been sent. Thanks for helping improve the app.",
+        "fr": "Votre feedback a été envoyé. Merci de contribuer à l'amélioration de l'app.",
+        "jap": "フィードバックが送信されました。アプリ改善にご協力ありがとうございます。"
+    },
+    "settings.importExport.title": {
+        "en": "Import / Export data",
+        "fr": "Import / Export des données",
+        "jap": "データのインポート / エクスポート"
+    },
+    "settings.importExport.exportAll": {
+        "en": "Export all (JSON)",
+        "fr": "Exporter tout (JSON)",
+        "jap": "すべてエクスポート (JSON)"
+    },
+    "settings.importExport.exportOne": {
+        "en": "Export one gacha (JSON)",
+        "fr": "Exporter un gacha (JSON)",
+        "jap": "1つのガチャをエクスポート (JSON)"
+    },
+    "settings.importExport.importLabel": {
+        "en": "Import data (JSON):",
+        "fr": "Importer des données (JSON) :",
+        "jap": "データをインポート (JSON):"
+    },
+    "settings.importExport.importPlaceholder": {
+        "en": "Paste your JSON data here",
+        "fr": "Collez ici vos données JSON",
+        "jap": "ここにJSONデータを貼り付けてください"
+    },
+    "settings.importExport.importButton": {
+        "en": "Import",
+        "fr": "Importer",
+        "jap": "インポート"
+    },
+    "settings.close": {
+        "en": "Close",
+        "fr": "Fermer",
+        "jap": "閉じる"
+    },
+    "settings.send": {
+        "en": "Send",
+        "fr": "Envoyer",
+        "jap": "送信"
+    },
+    "settings.feedback.placeholder": {
+        "en": "Describe your experience, suggestions, or encountered bugs...",
+        "fr": "Décris ton expérience, tes suggestions ou bugs rencontrés...",
+        "jap": "体験、提案、またはバグを記入してください..."
+    },
+    "statistiques.globalTitle": {
+        "en": "Global statistics",
+        "fr": "Statistiques globales",
+        "jap": "グローバル統計"
+    },
+    "statistiques.startDate": {
+        "en": "Start date",
+        "fr": "Date de début",
+        "jap": "開始日"
+    },
+    "statistiques.endDate": {
+        "en": "End date",
+        "fr": "Date de fin",
+        "jap": "終了日"
+    },
+    "statistiques.choose": {
+        "en": "Choose",
+        "fr": "Choisir",
+        "jap": "選択"
+    },
+    "statistiques.swipeMore": {
+        "en": "Swipe to see more",
+        "fr": "Glissez pour voir plus",
+        "jap": "スワイプしてもっと見る"
+    },
+    "statistiques.noData": {
+        "en": "No data to display.",
+        "fr": "Aucune donnée à afficher.",
+        "jap": "表示するデータがありません。"
+    },
+    "statistiques.totalSpent": {
+        "en": "Total spent",
+        "fr": "Total dépensé",
+        "jap": "合計消費額"
+    },
+    "gachaRolls.back": {
+        "en": "Back to home",
+        "fr": "Retour à l'accueil",
+        "jap": "ホームに戻る"
+    },
+    "gachaRolls.tabs.list": {
+        "en": "List",
+        "fr": "Liste",
+        "jap": "リスト"
+    },
+    "gachaRolls.tabs.simulations": {
+        "en": "Simulations",
+        "fr": "Simulations",
+        "jap": "シミュレーション"
+    },
+    "gachaRolls.tabs.stats": {
+        "en": "Statistics",
+        "fr": "Statistiques",
+        "jap": "統計"
+    },
+    "gachaRolls.tabs.money": {
+        "en": "Money",
+        "fr": "Argent",
+        "jap": "お金"
+    },
+    "gachaRolls.modal.addTitle": {
+        "en": "Add roll",
+        "fr": "Ajouter un tirage",
+        "jap": "ガチャ結果を追加"
+    },
+    "gachaRolls.modal.editTitle": {
+        "en": "Edit roll",
+        "fr": "Modifier le tirage",
+        "jap": "ガチャ結果を編集"
+    },
+    "gachaRolls.form.resourceAmount": {
+        "en": "Resource amount",
+        "fr": "Montant de la ressource",
+        "jap": "リソース数"
+    },
+    "gachaRolls.form.nameFeatured": {
+        "en": "Featured character name",
+        "fr": "Nom de la vedette",
+        "jap": "ピックアップキャラ名"
+    },
+    "gachaRolls.form.featuredCount": {
+        "en": "Number of featured",
+        "fr": "Nombre de vedettes",
+        "jap": "ピックアップ数"
+    },
+    "gachaRolls.form.spookCount": {
+        "en": "Number of spooks",
+        "fr": "Nombre de spooks",
+        "jap": "すり抜け数"
+    },
+    "gachaRolls.form.sideUnitCount": {
+        "en": "Number of featured side units",
+        "fr": "Nombre de side units featuré",
+        "jap": "サイドユニット数"
+    },
+    "gachaRolls.form.required": {
+        "en": "Please fill in all required fields.",
+        "fr": "Merci de remplir tous les champs obligatoires.",
+        "jap": "必須項目をすべて入力してください。"
+    },
+    "money.noEntries": {
+        "en": "No amount recorded.",
+        "fr": "Aucun montant enregistré.",
+        "jap": "記録された金額はありません。"
+    },
+    "money.add": {
+        "en": "Add amount",
+        "fr": "Ajouter un montant",
+        "jap": "金額を追加"
+    },
+    "money.form.amountPlaceholder": {
+        "en": "Amount",
+        "fr": "Montant",
+        "jap": "金額"
+    },
+    "gachaRolls.searchPlaceholder": {
+        "en": "Search by featured",
+        "fr": "Rechercher par vedette",
+        "jap": "ピックアップで検索"
+    },
+    "gachaRolls.list.empty": {
+        "en": "No roll recorded.",
+        "fr": "Aucun roll enregistré.",
+        "jap": "記録された結果はありません。"
+    },
+    "simulationsTab.intro": {
+        "en": "Create your own banners, choose characters and drop rates, and simulate your luck as if you were in the real game!",
+        "fr": "Crée tes propres bannières, choisis les personnages et leurs taux de drop, et simule ta chance comme si tu étais sur le vrai jeu !",
+        "jap": "自分のバナーを作成し、キャラと排出率を設定して、本物のゲームのように運をシミュレーション！"
+    },
+    "simulationsTab.searchPlaceholder": {
+        "en": "Search a banner",
+        "fr": "Rechercher une bannière",
+        "jap": "バナーを検索"
+    },
+    "simulationsTab.existingBanners": {
+        "en": "Existing banners",
+        "fr": "Bannières existantes",
+        "jap": "既存のバナー"
+    },
+    "simulationsTab.results": {
+        "en": "Results",
+        "fr": "Résultats",
+        "jap": "結果"
+    },
+    "simulationsTab.statistics": {
+        "en": "Statistics",
+        "fr": "Statistiques",
+        "jap": "統計"
+    },
+    "simulationsTab.deleteBannerConfirmMessage": {
+        "en": "Delete this banner and all its history?",
+        "fr": "Supprimer cette bannière et tout son historique ?",
+        "jap": "このバナーと履歴を削除しますか？"
+    },
+    "simulationsTab.resetBannerConfirmMessage": {
+        "en": "Reset this banner's history?",
+        "fr": "Réinitialiser l'historique de cette bannière ?",
+        "jap": "このバナーの履歴をリセットしますか？"
+    },
+    "simulationsTab.featuredCharacters": {
+        "en": "Featured characters (optional)",
+        "fr": "Personnages featurés (optionnel)",
+        "jap": "ピックアップキャラ（任意）"
+    },
+    "simulationsTab.addBannerModalTitle": {
+        "en": "Create a simulation banner",
+        "fr": "Créer une bannière de simulation",
+        "jap": "シミュレーションバナーを作成"
+    },
+    "simulationsTab.addBannerButton": {
+        "en": "Add banner",
+        "fr": "Ajouter la bannière",
+        "jap": "バナーを追加"
+    },
+    "gachaRolls.stats.title": {
+        "en": "Statistics",
+        "fr": "Statistiques",
+        "jap": "統計"
+    },
+    "gachaRolls.stats.moneySpent": {
+        "en": "Money spent",
+        "fr": "Argent dépensé",
+        "jap": "消費した金額"
+    },
+    "onboarding.page1.title": {
+        "en": "Welcome to Gachanote",
+        "fr": "Bienvenue sur Gachanote",
+        "jap": "Gachanoteへようこそ"
+    },
+    "onboarding.page1.subtitle": {
+        "en": "Track your rolls and expenses in your favorite gacha games.",
+        "fr": "Suivez vos tirages et vos dépenses sur vos jeux gacha favoris.",
+        "jap": "お気に入りのガチャゲームで結果と支出を記録しましょう。"
+    },
+    "onboarding.page2.title": {
+        "en": "Choose your nationality",
+        "fr": "Choisissez votre nationalité",
+        "jap": "国籍を選択"
+    },
+    "onboarding.page2.subtitle": {
+        "en": "The currency adapts automatically.",
+        "fr": "La devise s’adapte automatiquement.",
+        "jap": "通貨は自動的に適用されます。"
+    },
+    "onboarding.page3.title": {
+        "en": "Select a gacha",
+        "fr": "Sélectionnez un gacha",
+        "jap": "ガチャを選択"
+    },
+    "onboarding.page3.subtitle": {
+        "en": "On the home screen, choose the gacha you want to start tracking.",
+        "fr": "Sur l’accueil, choisissez le gacha de votre choix pour commencer à suivre vos tirages.",
+        "jap": "ホーム画面で追跡を始めたいガチャを選びます。"
+    },
+    "onboarding.page4.title": {
+        "en": "Gacha details",
+        "fr": "Détail du gacha",
+        "jap": "ガチャ詳細"
+    },
+    "onboarding.page4.subtitle": {
+        "en": "Find here all rolls related to the selected gacha.",
+        "fr": "Retrouvez ici tous les rolls spécifiques au gacha sélectionné.",
+        "jap": "選択したガチャの記録をここで確認できます。"
+    },
+    "onboarding.page5.title": {
+        "en": "Add a roll",
+        "fr": "Ajoutez un tirage",
+        "jap": "ガチャ結果を追加"
+    },
+    "onboarding.page5.subtitle": {
+        "en": "Fill in the fields as in the example. Resources, featured characters, and the date are mandatory.",
+        "fr": "Renseignez les champs comme dans l’exemple. Les ressources mises, vedettes obtenues et la date sont obligatoires.",
+        "jap": "例のように入力してください。リソース、ピックアップ、日付は必須です。"
+    },
+    "onboarding.page6.title": {
+        "en": "Saved results",
+        "fr": "Résultats enregistrés",
+        "jap": "保存された結果"
+    },
+    "onboarding.page6.subtitle": {
+        "en": "Your results are saved and can be viewed at any time.",
+        "fr": "Vos résultats sont sauvegardés et consultables à tout moment.",
+        "jap": "結果は保存され、いつでも確認できます。"
+    },
+    "onboarding.page7.title": {
+        "en": "Money tab",
+        "fr": "Onglet Argent",
+        "jap": "お金タブ"
+    },
+    "onboarding.page7.subtitle": {
+        "en": "For cash players, record and track your expenses for each gacha.",
+        "fr": "Pour les cash players, enregistrez et suivez vos dépenses sur chaque gacha.",
+        "jap": "課金プレイヤー向けに、各ガチャの支出を記録・追跡できます。"
+    },
+    "onboarding.page8.title": {
+        "en": "Saved expenses",
+        "fr": "Dépenses enregistrées",
+        "jap": "保存された支出"
+    },
+    "onboarding.page8.subtitle": {
+        "en": "Just like rolls, your expenses are saved and displayed.",
+        "fr": "Comme pour les rolls, vos dépenses sont sauvegardées et affichées.",
+        "jap": "ガチャ結果と同様に、支出も保存され表示されます。"
+    },
+    "onboarding.page9.title": {
+        "en": "Gacha statistics",
+        "fr": "Statistiques du gacha",
+        "jap": "ガチャ統計"
+    },
+    "onboarding.page9.subtitle": {
+        "en": "Check the number of characters obtained, resources used, and total money spent on this gacha.",
+        "fr": "Consultez le nombre de persos obtenus, les ressources et l’argent total mis sur ce gacha.",
+        "jap": "獲得したキャラ数、使用したリソース、ガチャに使った合計金額を確認できます。"
+    },
+    "onboarding.page10.title": {
+        "en": "Global statistics",
+        "fr": "Statistiques globales",
+        "jap": "全体統計"
+    },
+    "onboarding.page10.subtitle": {
+        "en": "See the money spent across all your gachas, find out which game costs you the most, and filter by date for specific periods.",
+        "fr": "Visualisez l’argent mis sur tous vos gachas, voyez sur quel jeu vous dépensez le plus et filtrez par date pour des périodes spécifiques.",
+        "jap": "すべてのガチャに使った金額を確認し、最も費用がかかっているゲームを見つけ、日付でフィルターして特定の期間を表示できます。"
+    }
+}
