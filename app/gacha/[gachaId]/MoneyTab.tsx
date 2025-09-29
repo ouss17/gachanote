@@ -74,6 +74,10 @@ export default function MoneyTab({ gachaId, isDark, getFontSize }: { gachaId: st
   // Affiche les filtres de dates si au moins une entrée existe pour ce gacha (même si le filtre ne retourne rien)
   const hasAnyEntry = allEntries.length > 0;
 
+  let lang = useSelector((state: any) => state.nationality.country) || 'fr';
+  const texts = require('@/data/texts.json');
+  const t = (key: string) => texts[key]?.[lang] || texts[key]?.fr || key;
+
   return (
     <View style={{ flex: 1 }}>
       {/* Filtres de dates, affichés seulement s'il y a au moins une entrée pour ce gacha */}
@@ -81,7 +85,7 @@ export default function MoneyTab({ gachaId, isDark, getFontSize }: { gachaId: st
         <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 16, alignItems: 'center' }}>
           {/* Filtre date de début */}
           <View style={{ alignItems: 'center', marginRight: 16 }}>
-            <Text style={{ color: isDark ? '#aaa' : '#888', fontSize: getFontSize(12) }}>Date de Début</Text>
+            <Text style={{ color: isDark ? '#aaa' : '#888', fontSize: getFontSize(12) }}>{t('statistiques.startDate')}</Text>
             <Text
               onPress={() => setShowStartPicker(true)}
               style={{
@@ -96,7 +100,7 @@ export default function MoneyTab({ gachaId, isDark, getFontSize }: { gachaId: st
                 fontSize: getFontSize(15),
               }}
             >
-              {startDate ? startDate.toLocaleDateString('fr-FR') : 'Choisir'}
+              {startDate ? startDate.toLocaleDateString(lang === 'en' ? 'en-US' : lang === 'jap' ? 'ja-JP' : 'fr-FR') : t('statistiques.choose')}
             </Text>
             {showStartPicker && (
               <DateTimePicker
@@ -113,7 +117,7 @@ export default function MoneyTab({ gachaId, isDark, getFontSize }: { gachaId: st
           </View>
           {/* Filtre date de fin */}
           <View style={{ alignItems: 'center', marginRight: 16 }}>
-            <Text style={{ color: isDark ? '#aaa' : '#888', fontSize: getFontSize(12) }}>Date de Fin</Text>
+            <Text style={{ color: isDark ? '#aaa' : '#888', fontSize: getFontSize(12) }}>{t('statistiques.endDate')}</Text>
             <Text
               onPress={() => setShowEndPicker(true)}
               style={{
@@ -128,7 +132,7 @@ export default function MoneyTab({ gachaId, isDark, getFontSize }: { gachaId: st
                 fontSize: getFontSize(15),
               }}
             >
-              {endDate ? endDate.toLocaleDateString('fr-FR') : 'Choisir'}
+              {endDate ? endDate.toLocaleDateString(lang === 'en' ? 'en-US' : lang === 'jap' ? 'ja-JP' : 'fr-FR') : t('statistiques.choose')}
             </Text>
             {showEndPicker && (
               <DateTimePicker
@@ -162,7 +166,7 @@ export default function MoneyTab({ gachaId, isDark, getFontSize }: { gachaId: st
             }}
           >
             <Text style={{ color: isDark ? '#FFD700' : '#007AFF', fontSize: getFontSize(14), fontWeight: 'bold' }}>
-              Réinitialiser
+              {t('common.reset')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -181,19 +185,19 @@ export default function MoneyTab({ gachaId, isDark, getFontSize }: { gachaId: st
             backgroundColor: isDark ? '#232323' : '#fff',
           }}>
             <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize(16) }}>
-              {item.amount} {currency} — {new Date(item.date).toLocaleDateString('fr-FR')}
+              {item.amount} {currency} — {new Date(item.date).toLocaleDateString(lang === 'en' ? 'en-US' : lang === 'jap' ? 'ja-JP' : 'fr-FR')}
             </Text>
             <TouchableOpacity
               onPress={() => dispatch(removeMoney(item.id))}
               style={{ marginTop: 4 }}
             >
-              <Text style={{ color: '#FF3B30', fontSize: getFontSize(14) }}>Supprimer</Text>
+              <Text style={{ color: '#FF3B30', fontSize: getFontSize(14) }}>{t('common.delete')}</Text>
             </TouchableOpacity>
           </View>
         )}
         ListEmptyComponent={
           <Text style={{ color: isDark ? '#aaa' : '#888', textAlign: 'center', fontSize: getFontSize(15) }}>
-            Aucun montant enregistré.
+            {t('money.noEntries')}
           </Text>
         }
       />
@@ -208,7 +212,7 @@ export default function MoneyTab({ gachaId, isDark, getFontSize }: { gachaId: st
         }}
         onPress={() => setShowModal(true)}
       >
-        <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>Ajouter un montant</Text>
+        <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>{t('money.add')}</Text>
       </TouchableOpacity>
       {/* Modal d'ajout d'un montant */}
       <Modal visible={showModal} transparent animationType="slide">
@@ -225,7 +229,7 @@ export default function MoneyTab({ gachaId, isDark, getFontSize }: { gachaId: st
             width: '90%',
           }}>
             <Text style={{ color: isDark ? '#fff' : '#181818', fontWeight: 'bold', fontSize: getFontSize(18), marginBottom: 12 }}>
-              Ajouter un montant
+              {t('money.add')}
             </Text>
             {/* Champ montant */}
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
@@ -240,7 +244,7 @@ export default function MoneyTab({ gachaId, isDark, getFontSize }: { gachaId: st
                   flex: 1,
                   fontSize: getFontSize(16),
                 }}
-                placeholder={`Montant (${currency})`}
+                placeholder={`${t('money.form.amountPlaceholder')} (${currency})`}
                 keyboardType="numeric"
                 value={amount}
                 onChangeText={setAmount}
@@ -251,7 +255,7 @@ export default function MoneyTab({ gachaId, isDark, getFontSize }: { gachaId: st
             </View>
             {/* Champ date */}
             <Text style={{ color: isDark ? '#fff' : '#181818', marginBottom: 4, fontSize: getFontSize(16) }}>
-              Date
+              {t('common.date')}
             </Text>
             <TouchableOpacity
               style={{
@@ -267,7 +271,7 @@ export default function MoneyTab({ gachaId, isDark, getFontSize }: { gachaId: st
               activeOpacity={0.7}
             >
               <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize(16) }}>
-                {date.toLocaleDateString('fr-FR')}
+                {date.toLocaleDateString(lang === 'en' ? 'en-US' : lang === 'jap' ? 'ja-JP' : 'fr-FR')}
               </Text>
             </TouchableOpacity>
             {showDatePicker && (
@@ -283,7 +287,7 @@ export default function MoneyTab({ gachaId, isDark, getFontSize }: { gachaId: st
               />
             )}
             {/* Bouton de validation */}
-            <Button title="Ajouter" onPress={handleAdd} />
+            <Button title={t('common.add')} onPress={handleAdd} />
             {/* Bouton Annuler */}
             <TouchableOpacity
               style={{ marginTop: 16 }}
@@ -293,7 +297,7 @@ export default function MoneyTab({ gachaId, isDark, getFontSize }: { gachaId: st
                 setDate(new Date());
               }}
             >
-              <Text style={{ color: '#007AFF', textAlign: 'center' }}>Annuler</Text>
+              <Text style={{ color: '#007AFF', textAlign: 'center' }}>{t('common.cancel')}</Text>
             </TouchableOpacity>
           </View>
         </View>

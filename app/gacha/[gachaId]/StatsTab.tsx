@@ -1,4 +1,5 @@
 import { Text, TouchableOpacity, View } from 'react-native';
+import { useSelector } from 'react-redux';
 
 /**
  * Onglet "Statistiques" d'un gacha.
@@ -32,6 +33,11 @@ export default function StatsTab({
   currency: string;
   getFontSize: (base: number) => number;
 }) {
+  // Add translation setup
+  const texts = require('@/data/texts.json');
+  let lang = useSelector((state: any) => state.nationality.country) || 'fr';
+  const t = (key: string) => texts[key]?.[lang] || texts[key]?.fr || key;
+
   return (
     <View style={{
       padding: 24,
@@ -41,7 +47,7 @@ export default function StatsTab({
       alignItems: 'center'
     }}>
       <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize(18), fontWeight: 'bold', marginBottom: 12 }}>
-        Statistiques
+        {t('gachaRolls.stats.title')}
       </Text>
       <View style={{
         flexDirection: 'row',
@@ -55,7 +61,7 @@ export default function StatsTab({
         alignSelf: 'center',
       }}>
         <StatCircle
-          label={`Ressources\n(${resourceType.toUpperCase()})`}
+          label={`${t('gachaRolls.form.resourceAmount')}\n(${resourceType.toUpperCase()})`}
           value={stats.resource.toString()}
           color={isDark ? '#232323' : '#fff'}
           borderColor="#007AFF"
@@ -63,7 +69,7 @@ export default function StatsTab({
           labelFontSize={getFontSize(13)}
         />
         <StatCircle
-          label="Vedettes"
+          label={t('common.featured')}
           value={
             showStatsPercent.featured && stats.resource > 0
               ? `${((stats.featured / stats.resource) * 100).toFixed(2)}%`
@@ -78,7 +84,7 @@ export default function StatsTab({
           labelFontSize={getFontSize(13)}
         />
         <StatCircle
-          label="Spooks"
+          label={t('common.spook')}
           value={
             showStatsPercent.spook && stats.resource > 0
               ? `${((stats.spook / stats.resource) * 100).toFixed(2)}%`
@@ -93,7 +99,7 @@ export default function StatsTab({
           labelFontSize={getFontSize(13)}
         />
         <StatCircle
-          label="Side units"
+          label={t('common.sideUnits')}
           value={
             showStatsPercent.sideUnit && stats.resource > 0
               ? `${((stats.sideUnit / stats.resource) * 100).toFixed(2)}%`
@@ -119,7 +125,7 @@ export default function StatsTab({
         maxWidth: 320,
       }}>
         <Text style={{ color: isDark ? '#fff' : '#181818', fontWeight: 'bold', fontSize: getFontSize(16) }}>
-          Argent dépensé
+          {t('gachaRolls.stats.moneySpent')}
         </Text>
         <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize(22), fontWeight: 'bold', marginTop: 8 }}>
           {totalMoney.toLocaleString('fr-FR')} {currency}

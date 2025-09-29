@@ -37,11 +37,15 @@ export default function StatistiquesScreen() {
   const currency = useSelector((state: RootState) => state.devise.currency);
   const fontSize = useSelector((state: RootState) => state.settings.fontSize);
   const isDark = theme === 'dark';
+  let lang = useSelector((state: any) => state.nationality.country) || 'fr';
+  const texts = require('@/data/texts.json');
+  const t = (key: string) => texts[key]?.[lang] || texts[key]?.fr || key;
 
   // Fonction utilitaire pour la taille de police
   function getFontSize(base: number) {
-    if (fontSize === 'small') return base * 0.85;
-    if (fontSize === 'large') return base * 1.25;
+    // Use the translated font size labels for comparison
+    if (fontSize === t('settings.fontSize.small')) return base * 0.85;
+    if (fontSize === t('settings.fontSize.large')) return base * 1.25;
     return base;
   }
 
@@ -157,13 +161,13 @@ export default function StatistiquesScreen() {
         marginBottom: 16,
         textAlign: 'center'
       }}>
-        Statistiques globales
+        {t('statistiques.globalTitle')}
       </Text>
       {/* Filtres de dates, affichés seulement s'il y a des entrées */}
       {moneyEntries.length > 0 && (
         <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 16, alignItems: 'center' }}>
           <View style={{ alignItems: 'center', marginRight: 16 }}>
-            <Text style={{ color: isDark ? '#aaa' : '#888', fontSize: getFontSize(12) }}>Date de Début</Text>
+            <Text style={{ color: isDark ? '#aaa' : '#888', fontSize: getFontSize(12) }}>{t('statistiques.startDate')}</Text>
             <Text
               onPress={() => setShowStartPicker(true)}
               style={{
@@ -178,7 +182,7 @@ export default function StatistiquesScreen() {
                 fontSize: getFontSize(15),
               }}
             >
-              {startDate ? format(startDate, 'dd/MM/yyyy') : 'Choisir'}
+              {startDate ? format(startDate, 'dd/MM/yyyy') : t('statistiques.choose')}
             </Text>
             {showStartPicker && (
               <DateTimePicker
@@ -195,7 +199,7 @@ export default function StatistiquesScreen() {
             )}
           </View>
           <View style={{ alignItems: 'center', marginRight: 16 }}>
-            <Text style={{ color: isDark ? '#aaa' : '#888', fontSize: getFontSize(12) }}>Date de Fin</Text>
+            <Text style={{ color: isDark ? '#aaa' : '#888', fontSize: getFontSize(12) }}>{t('statistiques.endDate')}</Text>
             <Text
               onPress={() => setShowEndPicker(true)}
               style={{
@@ -210,7 +214,7 @@ export default function StatistiquesScreen() {
                 fontSize: getFontSize(15),
               }}
             >
-              {endDate ? format(endDate, 'dd/MM/yyyy') : 'Choisir'}
+              {endDate ? format(endDate, 'dd/MM/yyyy') : t('statistiques.choose')}
             </Text>
             {showEndPicker && (
               <DateTimePicker
@@ -244,7 +248,7 @@ export default function StatistiquesScreen() {
             }}
           >
             <Text style={{ color: isDark ? '#FFD700' : '#007AFF', fontSize: getFontSize(14), fontWeight: 'bold' }}>
-              Réinitialiser
+              {t('common.reset')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -298,12 +302,12 @@ export default function StatistiquesScreen() {
             </ScrollView>
             <View style={{ alignItems: 'center', marginTop: 4, marginBottom: 8 }}>
               <MaterialIcons name="arrow-forward-ios" size={getFontSize(20)} color={isDark ? '#aaa' : '#888'} />
-              <Text style={{ color: isDark ? '#aaa' : '#888', fontSize: getFontSize(12) }}>Glissez pour voir plus</Text>
+              <Text style={{ color: isDark ? '#aaa' : '#888', fontSize: getFontSize(12) }}>{t('statistiques.swipeMore')}</Text>
             </View>
           </>
         ) : (
           <Text style={{ color: isDark ? '#aaa' : '#888', textAlign: 'center', marginTop: 32, fontSize: getFontSize(15) }}>
-            Aucune donnée à afficher.
+            {t('statistiques.noData')}
           </Text>
         )}
 
@@ -368,7 +372,7 @@ export default function StatistiquesScreen() {
                       fontSize: getFontSize(13),
                       textAlign: 'center',
                     }}>
-                      Total dépensé
+                      {t('statistiques.totalSpent')}
                     </Text>
                   </View>
                 </View>
@@ -397,7 +401,6 @@ export default function StatistiquesScreen() {
             );
           })()}
         </View>
-
         {/* Tooltip sur le graphique */}
         {tooltip && (
           <View

@@ -1,5 +1,6 @@
 import { AntDesign } from '@expo/vector-icons';
 import { FlatList, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useSelector } from 'react-redux';
 
 /**
  * Onglet "Liste" d'un gacha.
@@ -47,6 +48,14 @@ export default function RollsTab({
   sideUnitRef,
   getFontSize,
 }: any) {
+  // Get selected language from settings
+  let lang = useSelector((state: any) => state.nationality.country) || 'fr';
+  // Import texts.json
+  const texts = require('@/data/texts.json');
+
+  // Helper to get translation
+  const t = (key: string) => texts[key]?.[lang] || texts[key]?.fr || key;
+
   return (
     <>
       {/* Champ de recherche, affiché seulement s'il y a au moins un roll */}
@@ -62,7 +71,7 @@ export default function RollsTab({
             backgroundColor: isDark ? '#232323' : '#fff',
             color: isDark ? '#fff' : '#181818',
           }}
-          placeholder="Rechercher par vedette"
+          placeholder={t('gachaRolls.searchPlaceholder')}
           placeholderTextColor={isDark ? '#aaa' : '#888'}
           value={search}
           onChangeText={setSearch}
@@ -96,25 +105,27 @@ export default function RollsTab({
               </Text>
             ) : null}
             <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize ? getFontSize(15) : 15 }}>
-              Date : <Text style={{ fontWeight: 'bold' }}>
-                {new Date(item.date).toLocaleDateString('fr-FR')}
+              {t('common.date')} : <Text style={{ fontWeight: 'bold' }}>
+                {new Date(item.date).toLocaleDateString(
+                  lang === 'en' ? 'en-US' : lang === 'jap' ? 'ja-JP' : 'fr-FR'
+                )}
               </Text>
             </Text>
             <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize ? getFontSize(15) : 15 }}>
-              Ressource : <Text style={{ fontWeight: 'bold' }}>
+              {t('common.resource')} : <Text style={{ fontWeight: 'bold' }}>
                 {item.resourceAmount} {item.resourceType?.toUpperCase() ?? ''}
               </Text>
             </Text>
             <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize ? getFontSize(15) : 15 }}>
-              Vedette : <Text style={{ fontWeight: 'bold' }}>{item.featuredCount}</Text>
+              {t('common.featured')} : <Text style={{ fontWeight: 'bold' }}>{item.featuredCount}</Text>
             </Text>
             {item.spookCount > 0 && (
               <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize ? getFontSize(15) : 15 }}>
-                Spook : <Text style={{ fontWeight: 'bold' }}>{item.spookCount}</Text>
+                {t('common.spook')} : <Text style={{ fontWeight: 'bold' }}>{item.spookCount}</Text>
               </Text>
             )}
             <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize ? getFontSize(15) : 15 }}>
-              Side units : <Text style={{ fontWeight: 'bold' }}>{item.sideUnit > 0 ? item.sideUnit : 0}</Text>
+              {t('common.sideUnits')} : <Text style={{ fontWeight: 'bold' }}>{item.sideUnit > 0 ? item.sideUnit : 0}</Text>
             </Text>
             {/* Actions d'édition et suppression */}
             <View style={{ flexDirection: 'row', marginTop: 8 }}>
@@ -143,7 +154,7 @@ export default function RollsTab({
         )}
         ListEmptyComponent={
           <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize ? getFontSize(15) : 15 }}>
-            Aucun roll enregistré.
+            {t('gachaRolls.list.empty')}
           </Text>
         }
         contentContainerStyle={{ paddingBottom: 80 }}
