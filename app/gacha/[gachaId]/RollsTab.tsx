@@ -113,7 +113,11 @@ export default function RollsTab({
             </Text>
             <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize ? getFontSize(15) : 15 }}>
               {t('common.resource')} : <Text style={{ fontWeight: 'bold' }}>
-                {item.resourceAmount} {item.resourceType?.toUpperCase() ?? ''}
+                {item.resourceAmount} {item.resourceType === 'ticket'
+                  ? Number(item.resourceAmount) > 1
+                    ? 'Tickets'
+                    : 'Ticket'
+                  : item.resourceType?.toUpperCase() ?? ''}
               </Text>
             </Text>
             <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize ? getFontSize(15) : 15 }}>

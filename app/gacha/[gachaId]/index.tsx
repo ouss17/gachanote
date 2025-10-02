@@ -174,7 +174,7 @@ export default function GachaRollsScreen() {
   };
 
   // Type de ressource pour le gacha courant
-  const resourceType = getResourceType(String(gachaId));
+  const [resourceType, setResourceType] = useState(getResourceType(String(gachaId)));
   const insets = useSafeAreaInsets();
   const { cost: multiCost, label: multiLabel } = getMultiCost(String(gachaId));
   const multiCount = multiCost > 0 ? stats.resource / multiCost : 0;
@@ -361,6 +361,38 @@ export default function GachaRollsScreen() {
             <Text style={[styles.title, { color: isDark ? '#fff' : '#181818', fontSize: getFontSize(24) }]}>
               {editRoll ? t('gachaRolls.modal.editTitle') : t('gachaRolls.modal.addTitle')}
             </Text>
+
+            {/* Sélecteur du type de ressource - déplacé en haut */}
+            <Text style={{ color: isDark ? '#fff' : '#181818', marginBottom: 4, fontSize: getFontSize(16) }}>
+              Type de ressource <Text style={{ color: '#FF3B30' }}>*</Text>
+            </Text>
+            <View style={{ flexDirection: 'row', marginBottom: 16 }}>
+              {[
+                getResourceType(String(gachaId)), // type principal du gacha
+                'ticket', // on ajoute toujours "ticket"
+              ].map(type => (
+                <TouchableOpacity
+                  key={type}
+                  style={{
+                    backgroundColor: resourceType === type ? '#007AFF' : (isDark ? '#232323' : '#eee'),
+                    borderRadius: 8,
+                    paddingVertical: 8,
+                    paddingHorizontal: 16,
+                    marginRight: 8,
+                  }}
+                  onPress={() => setResourceType(type)}
+                >
+                  <Text style={{
+                    color: resourceType === type ? '#fff' : (isDark ? '#fff' : '#181818'),
+                    fontWeight: resourceType === type ? 'bold' : 'normal',
+                    fontSize: getFontSize(15),
+                  }}>
+                    {type === 'ticket' ? 'Ticket' : type.toUpperCase()}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
             {/* Champ Montant de la ressource */}
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
               <Text style={{ color: isDark ? '#fff' : '#181818', marginRight: 4, fontSize: getFontSize(16) }}>
@@ -379,7 +411,11 @@ export default function GachaRollsScreen() {
                 blurOnSubmit={false}
               />
               <Text style={{ marginLeft: 8, color: isDark ? '#fff' : '#181818', fontWeight: 'bold', fontSize: getFontSize(16) }}>
-                {resourceType.toUpperCase()}
+                {resourceType === 'ticket'
+                  ? Number(resourceAmount) > 1
+                    ? 'Tickets'
+                    : 'Ticket'
+                  : resourceType.toUpperCase()}
               </Text>
             </View>
 
@@ -452,7 +488,12 @@ export default function GachaRollsScreen() {
               onPress={() => setShowDatePicker(true)}
               activeOpacity={0.7}
             >
-              <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize(16) }}>
+              <Text
+                style={{
+                  color: theme === 'dark' || theme === 'night' ? '#181818' : '#181818', // noir pour dark et blue/night
+                  fontSize: getFontSize(16),
+                }}
+              >
                 {date.toLocaleDateString(
                   lang === 'en' ? 'en-US' : lang === 'jap' ? 'ja-JP' : 'fr-FR'
                 )}
