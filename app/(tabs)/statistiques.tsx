@@ -1,3 +1,4 @@
+import { Theme } from '@/constants/Themes';
 import { GACHAS } from '@/data/gachas';
 import { RootState } from '@/redux/store';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -34,9 +35,10 @@ export default function StatistiquesScreen() {
   // Sélection des données Redux et gestion du thème
   const moneyEntries = useSelector((state: RootState) => state.money.entries);
   const theme = useSelector((state: RootState) => state.theme.mode);
+  const themeColors = Theme[theme as keyof typeof Theme];
   const currency = useSelector((state: RootState) => state.devise.currency);
   const fontSize = useSelector((state: RootState) => state.settings.fontSize);
-  const isDark = theme === 'dark';
+  const isDark = theme === 'dark' || theme === 'night';
   let lang = useSelector((state: any) => state.nationality.country) || 'fr';
   const texts = require('@/data/texts.json');
   const t = (key: string) => texts[key]?.[lang] || texts[key]?.fr || key;
@@ -151,11 +153,11 @@ export default function StatistiquesScreen() {
   const total = Object.values(totalByGacha).reduce((a, b) => a + b, 0);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#181818' : '#fff', padding: 16 }}>
-      <View style={{ height: insets.top, backgroundColor: isDark ? '#181818' : '#fff' }} />
+    <SafeAreaView style={{ flex: 1, backgroundColor: themeColors.background, padding: 16 }}>
+      <View style={{ height: insets.top, backgroundColor: themeColors.background }} />
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <Text style={{
-        color: isDark ? '#fff' : '#181818',
+        color: themeColors.text,
         fontSize: getFontSize(22),
         fontWeight: 'bold',
         marginBottom: 16,

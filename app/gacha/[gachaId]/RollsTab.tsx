@@ -1,3 +1,4 @@
+import { Theme } from '@/constants/Themes';
 import { AntDesign } from '@expo/vector-icons';
 import { FlatList, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useSelector } from 'react-redux';
@@ -56,6 +57,9 @@ export default function RollsTab({
   // Helper to get translation
   const t = (key: string) => texts[key]?.[lang] || texts[key]?.fr || key;
 
+  const theme = useSelector((state: any) => state.theme.mode);
+  const themeColors = Theme[theme as keyof typeof Theme];
+
   return (
     <>
       {/* Champ de recherche, affiché seulement s'il y a au moins un roll */}
@@ -63,16 +67,16 @@ export default function RollsTab({
         <TextInput
           style={{
             borderWidth: 1,
-            borderColor: '#ccc',
+            borderColor: themeColors.border,
             borderRadius: 8,
             padding: 12,
             marginBottom: 24,
             fontSize: getFontSize ? getFontSize(16) : 16,
-            backgroundColor: isDark ? '#232323' : '#fff',
-            color: isDark ? '#fff' : '#181818',
+            backgroundColor: themeColors.card,
+            color: themeColors.text,
           }}
           placeholder={t('gachaRolls.searchPlaceholder')}
-          placeholderTextColor={isDark ? '#aaa' : '#888'}
+          placeholderTextColor={themeColors.placeholder}
           value={search}
           onChangeText={setSearch}
         />
@@ -88,8 +92,8 @@ export default function RollsTab({
               padding: 8,
               borderWidth: 1,
               borderRadius: 8,
-              borderColor: isDark ? '#333' : '#ccc',
-              backgroundColor: isDark ? '#232323' : '#fff',
+              borderColor: themeColors.border,
+              backgroundColor: themeColors.card,
             }}
           >
             {/* Nom de la vedette si présent */}
@@ -98,20 +102,20 @@ export default function RollsTab({
                 fontWeight: 'bold',
                 fontSize: getFontSize ? getFontSize(18) : 18,
                 textAlign: 'center',
-                color: isDark ? '#fff' : '#181818',
+                color: themeColors.text,
                 marginBottom: 8,
               }}>
                 {item.nameFeatured}
               </Text>
             ) : null}
-            <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize ? getFontSize(15) : 15 }}>
+            <Text style={{ color: themeColors.text, fontSize: getFontSize ? getFontSize(15) : 15 }}>
               {t('common.date')} : <Text style={{ fontWeight: 'bold' }}>
                 {new Date(item.date).toLocaleDateString(
                   lang === 'en' ? 'en-US' : lang === 'jap' ? 'ja-JP' : 'fr-FR'
                 )}
               </Text>
             </Text>
-            <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize ? getFontSize(15) : 15 }}>
+            <Text style={{ color: themeColors.text, fontSize: getFontSize ? getFontSize(15) : 15 }}>
               {t('common.resource')} : <Text style={{ fontWeight: 'bold' }}>
                 {item.resourceAmount} {item.resourceType === 'ticket'
                   ? Number(item.resourceAmount) > 1
@@ -120,15 +124,15 @@ export default function RollsTab({
                   : item.resourceType?.toUpperCase() ?? ''}
               </Text>
             </Text>
-            <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize ? getFontSize(15) : 15 }}>
+            <Text style={{ color: themeColors.text, fontSize: getFontSize ? getFontSize(15) : 15 }}>
               {t('common.featured')} : <Text style={{ fontWeight: 'bold' }}>{item.featuredCount}</Text>
             </Text>
             {item.spookCount > 0 && (
-              <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize ? getFontSize(15) : 15 }}>
+              <Text style={{ color: themeColors.text, fontSize: getFontSize ? getFontSize(15) : 15 }}>
                 {t('common.spook')} : <Text style={{ fontWeight: 'bold' }}>{item.spookCount}</Text>
               </Text>
             )}
-            <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize ? getFontSize(15) : 15 }}>
+            <Text style={{ color: themeColors.text, fontSize: getFontSize ? getFontSize(15) : 15 }}>
               {t('common.sideUnits')} : <Text style={{ fontWeight: 'bold' }}>{item.sideUnit > 0 ? item.sideUnit : 0}</Text>
             </Text>
             {/* Actions d'édition et suppression */}
@@ -146,7 +150,7 @@ export default function RollsTab({
                 }}
                 style={{ marginRight: 16 }}
               >
-                <AntDesign name="edit" size={getFontSize ? getFontSize(20) : 20} color="#007AFF" />
+                <AntDesign name="edit" size={getFontSize ? getFontSize(20) : 20} color={themeColors.primary} />
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => dispatch(removeRoll(item.id))}
@@ -157,7 +161,7 @@ export default function RollsTab({
           </View>
         )}
         ListEmptyComponent={
-          <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize ? getFontSize(15) : 15 }}>
+          <Text style={{ color: themeColors.text, fontSize: getFontSize ? getFontSize(15) : 15 }}>
             {t('gachaRolls.list.empty')}
           </Text>
         }

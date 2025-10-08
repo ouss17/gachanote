@@ -1,3 +1,4 @@
+import { Theme } from '@/constants/Themes';
 import { addRoll, removeRoll, Roll, updateRoll } from '@/redux/slices/rollsSlice';
 import { RootState } from '@/redux/store';
 import { AntDesign } from '@expo/vector-icons';
@@ -26,7 +27,8 @@ export default function GachaRollsScreen() {
   // Sélectionne tous les rolls depuis le store Redux
   const allRolls = useSelector((state: RootState) => state.rolls.rolls);
   const theme = useSelector((state: RootState) => state.theme.mode);
-  const isDark = theme === 'dark';
+  const themeColors = Theme[theme as keyof typeof Theme];
+  const isDark = theme === 'dark' || theme === 'night';
 
   // États pour la gestion du formulaire d'ajout/modification de roll
   const [showModal, setShowModal] = useState(false);
@@ -202,9 +204,9 @@ export default function GachaRollsScreen() {
   const t = (key: string) => texts[key]?.[lang] || texts[key]?.fr || key;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#181818' : '#fff' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: themeColors.background }}>
       {/* Espace pour la barre de statut */}
-      <View style={{ height: insets.top, backgroundColor: isDark ? '#181818' : '#fff' }} />
+      <View style={{ height: insets.top, backgroundColor: themeColors.background }} />
       <StatusBar style={isDark ? 'light' : 'dark'} />
 
       {/* Bouton retour */}
@@ -214,13 +216,13 @@ export default function GachaRollsScreen() {
           style={{
             padding: 8,
             borderRadius: 8,
-            backgroundColor: isDark ? '#232323' : '#eee',
+            backgroundColor: themeColors.card, // Utilise la couleur card du thème
             marginRight: 8,
           }}
         >
-          <AntDesign name="arrow-left" size={getFontSize(24)} color={isDark ? '#fff' : '#181818'} />
+          <AntDesign name="arrow-left" size={getFontSize(24)} color={themeColors.text} />
         </TouchableOpacity>
-        <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize(18), fontWeight: 'bold' }}>
+        <Text style={{ color: themeColors.text, fontSize: getFontSize(18), fontWeight: 'bold' }}>
           {t('gachaRolls.back')}
         </Text>
       </View>
@@ -231,13 +233,18 @@ export default function GachaRollsScreen() {
           style={{
             flex: 1,
             padding: 12,
-            backgroundColor: tab === 'list' ? (isDark ? '#444' : '#eee') : 'transparent',
+            backgroundColor: tab === 'list' ? themeColors.card : 'transparent', // Couleur card si sélectionné
             borderRadius: 8,
             marginRight: 4,
           }}
           onPress={() => setTab('list')}
         >
-          <Text style={{ color: isDark ? '#fff' : '#181818', textAlign: 'center', fontWeight: tab === 'list' ? 'bold' : 'normal', fontSize: getFontSize(16) }}>
+          <Text style={{
+            color: themeColors.text,
+            textAlign: 'center',
+            fontWeight: tab === 'list' ? 'bold' : 'normal',
+            fontSize: getFontSize(16)
+          }}>
             {t('gachaRolls.tabs.list')}
           </Text>
         </TouchableOpacity>
@@ -245,13 +252,18 @@ export default function GachaRollsScreen() {
           style={{
             flex: 1,
             padding: 12,
-            backgroundColor: tab === 'simulations' ? (isDark ? '#444' : '#eee') : 'transparent',
+            backgroundColor: tab === 'simulations' ? themeColors.card : 'transparent',
             borderRadius: 8,
             marginLeft: 4,
           }}
           onPress={() => setTab('simulations')}
         >
-          <Text style={{ color: isDark ? '#fff' : '#181818', textAlign: 'center', fontWeight: tab === 'simulations' ? 'bold' : 'normal', fontSize: getFontSize(16) }}>
+          <Text style={{
+            color: themeColors.text,
+            textAlign: 'center',
+            fontWeight: tab === 'simulations' ? 'bold' : 'normal',
+            fontSize: getFontSize(16)
+          }}>
             {t('gachaRolls.tabs.simulations')}
           </Text>
         </TouchableOpacity>
@@ -259,13 +271,18 @@ export default function GachaRollsScreen() {
           style={{
             flex: 1,
             padding: 12,
-            backgroundColor: tab === 'stats' ? (isDark ? '#444' : '#eee') : 'transparent',
+            backgroundColor: tab === 'stats' ? themeColors.card : 'transparent',
             borderRadius: 8,
             marginHorizontal: 4,
           }}
           onPress={() => setTab('stats')}
         >
-          <Text style={{ color: isDark ? '#fff' : '#181818', textAlign: 'center', fontWeight: tab === 'stats' ? 'bold' : 'normal', fontSize: getFontSize(16) }}>
+          <Text style={{
+            color: themeColors.text,
+            textAlign: 'center',
+            fontWeight: tab === 'stats' ? 'bold' : 'normal',
+            fontSize: getFontSize(16)
+          }}>
             {t('gachaRolls.tabs.stats')}
           </Text>
         </TouchableOpacity>
@@ -273,13 +290,18 @@ export default function GachaRollsScreen() {
           style={{
             flex: 1,
             padding: 12,
-            backgroundColor: tab === 'money' ? (isDark ? '#444' : '#eee') : 'transparent',
+            backgroundColor: tab === 'money' ? themeColors.card : 'transparent',
             borderRadius: 8,
             marginLeft: 4,
           }}
           onPress={() => setTab('money')}
         >
-          <Text style={{ color: isDark ? '#fff' : '#181818', textAlign: 'center', fontWeight: tab === 'money' ? 'bold' : 'normal', fontSize: getFontSize(16) }}>
+          <Text style={{
+            color: themeColors.text,
+            textAlign: 'center',
+            fontWeight: tab === 'money' ? 'bold' : 'normal',
+            fontSize: getFontSize(16)
+          }}>
             {t('gachaRolls.tabs.money')}
           </Text>
         </TouchableOpacity>
@@ -328,14 +350,26 @@ export default function GachaRollsScreen() {
       {/* Bouton flottant "+" pour ajouter un roll, uniquement dans l'onglet Liste */}
       {tab === 'list' && (
         <TouchableOpacity
-          style={[
-            styles.fab,
-            { backgroundColor: isDark ? '#444' : '#007AFF' }
-          ]}
+          style={{
+            position: 'absolute',
+            right: 24,
+            bottom: 50,
+            borderRadius: 32,
+            width: 56,
+            height: 56,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: themeColors.primary,
+            elevation: 4,
+            shadowColor: '#000',
+            shadowOpacity: 0.2,
+            shadowRadius: 4,
+            shadowOffset: { width: 0, height: 2 },
+          }}
           onPress={() => setShowModal(true)}
           activeOpacity={0.7}
         >
-          <AntDesign name="plus" size={getFontSize(32)} color="#fff" />
+          <Text style={{ color: '#fff', fontSize: getFontSize(32), fontWeight: 'bold' }}>+</Text>
         </TouchableOpacity>
       )}
 
@@ -353,7 +387,7 @@ export default function GachaRollsScreen() {
           alignItems: 'center'
         }}>
           <View style={{
-            backgroundColor: isDark ? '#232323' : '#fff',
+            backgroundColor: themeColors.card,
             padding: 24,
             borderRadius: 16,
             width: '90%',
