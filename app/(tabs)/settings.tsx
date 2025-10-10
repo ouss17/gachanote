@@ -22,12 +22,6 @@ const LANGUAGES = [
   { code: 'jp', label: '日本語' },
 ];
 
-const FONT_SIZES = [
-  { key: 'small', label: 'Petit', example: 'Aa' },
-  { key: 'normal', label: 'Normal', example: 'Aa' },
-  { key: 'large', label: 'Grand', example: 'Aa' },
-];
-
 const currencies = [
   { currency: '€', label: 'Euro', symbol: '€' },
   { currency: '$', label: 'Dollar', symbol: '$' },
@@ -88,33 +82,6 @@ const Settings = () => {
   };
 
   // Export/Import (placeholders)
-  const handleExport = (type: 'json' | 'gacha') => {
-    Alert.alert('Export', `Export ${type === 'gacha' ? 'par gacha' : 'global'} à venir !`);
-  };
-  const handleImport = () => {
-    try {
-      const data = JSON.parse(importText);
-      if (!data || !Array.isArray(data.rolls)) {
-        Alert.alert('Erreur', "Le fichier n'est pas au format attendu (clé 'rolls' manquante).");
-        return;
-      }
-      // Filtrer les rolls à importer (id non déjà présent)
-      const existingIds = new Set(rolls.map(r => r.id));
-      const newRolls = data.rolls.filter((r: any) => !existingIds.has(r.id));
-      if (newRolls.length === 0) {
-        Alert.alert('Aucun nouveau roll', "Tous les rolls de ce fichier existent déjà.");
-        return;
-      }
-      newRolls.forEach((r: any) => dispatch(addRoll(r)));
-      Alert.alert('Import réussi', `${newRolls.length} roll(s) importé(s) avec succès.`);
-      setImportText('');
-      setShowImportExport(false);
-    } catch (e) {
-      console.log('Import error:', e);
-      Alert.alert('Erreur', "Le fichier n'est pas un JSON valide ou une erreur est survenue.");
-    }
-  };
-
   const handleImportFile = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
@@ -205,7 +172,18 @@ const Settings = () => {
     Alert.alert('Merci !', 'Votre feedback a été envoyé. Merci de contribuer à l\'amélioration de l\'app.');
   };
 
-  // Liste des nationalités avec drapeaux (comme sur l'index)
+  let lang = nationality || 'fr';
+  const texts = require('@/data/texts.json');
+  const t = (key: string) => texts[key]?.[lang] || texts[key]?.fr || key;
+
+  // Update FONT_SIZES with translations
+  const FONT_SIZES_LOCALIZED = [
+    { key: 'small', label: t('settings.fontSize.small'), example: 'Aa' },
+    { key: 'normal', label: t('settings.fontSize.normal'), example: 'Aa' },
+    { key: 'large', label: t('settings.fontSize.large'), example: 'Aa' },
+  ];
+
+  // Update flags with translations
   const flags = [
     { country: 'fr', label: 'Français', icon: require('@/assets/flags/fr.png') },
     { country: 'en', label: 'English', icon: require('@/assets/flags/us.png') },
@@ -217,12 +195,12 @@ const Settings = () => {
       <View style={{ padding: 20 }}>
         {/* Section Paramètres généraux */}
         <Text style={[styles.sectionTitle, { color: themeColors.primary, fontSize: getFontSize(18) }]}>
-          🔧 Paramètres généraux
+          {t('settings.general.title')}
         </Text>
         {/* Langue */}
         <View style={styles.row}>
           <Text style={[styles.label, { color: themeColors.text, fontSize: getFontSize(16) }]}>
-            Langue
+            {t('settings.language')}
           </Text>
           <View style={{ flexDirection: 'row' }}>
             {flags.map(flag => (
@@ -263,7 +241,7 @@ const Settings = () => {
         <View style={styles.row}>
           <Text style={[styles.label, { color: themeColors.text, fontSize: getFontSize(16) }]}
           >
-            Devise
+            {t('settings.currency')}
           </Text>
           <View style={{ flexDirection: 'row' }}>
             {currencies.map(cur => (
@@ -300,7 +278,7 @@ const Settings = () => {
         </View>
         {/* Thème */}
         <View style={styles.row}>
-          <Text style={[styles.label, { color: themeColors.text, fontSize: getFontSize(16) }]}>Thème</Text>
+          <Text style={[styles.label, { color: themeColors.text, fontSize: getFontSize(16) }]}>{t('settings.theme')}</Text>
           <View style={{ flexDirection: 'row' }}>
             {themeModes.map(mode => (
               <TouchableOpacity
@@ -331,9 +309,9 @@ const Settings = () => {
         </View>
         {/* Taille de police */}
         <View style={styles.row}>
-          <Text style={[styles.label, { color: themeColors.text, fontSize: getFontSize(16) }]}>Taille de police</Text>
+          <Text style={[styles.label, { color: themeColors.text, fontSize: getFontSize(16) }]}>{t('settings.fontSize')}</Text>
           <View style={{ flexDirection: 'row' }}>
-            {FONT_SIZES.map(size => (
+            {FONT_SIZES_LOCALIZED.map(size => (
               <TouchableOpacity
                 key={size.key}
                 style={[
@@ -384,7 +362,7 @@ const Settings = () => {
         </View>
         {/* Sons & Vibrations */}
         <View style={styles.row}>
-          <Text style={[styles.label, { color: themeColors.text, fontSize: getFontSize(16) }]}>Sons</Text>
+          <Text style={[styles.label, { color: themeColors.text, fontSize: getFontSize(16) }]}>{t('settings.sounds')}</Text>
           <Switch
             value={sounds}
             onValueChange={v => { dispatch(setSounds(v)); }}
@@ -393,7 +371,7 @@ const Settings = () => {
           />
         </View>
         <View style={styles.row}>
-          <Text style={[styles.label, { color: themeColors.text, fontSize: getFontSize(16) }]}>Vibrations</Text>
+          <Text style={[styles.label, { color: themeColors.text, fontSize: getFontSize(16) }]}>{t('settings.vibrations')}</Text>
           <Switch
             value={vibrations}
             onValueChange={v => { dispatch(setVibrations(v)); }}
@@ -403,21 +381,21 @@ const Settings = () => {
         </View>
 
         {/* Section Données & Confidentialité */}
-        <Text style={[styles.sectionTitle, { color: themeColors.primary, marginTop: 32, fontSize: getFontSize(18) }]}>📊 Données & Confidentialité</Text>
+        <Text style={[styles.sectionTitle, { color: themeColors.primary, marginTop: 32, fontSize: getFontSize(18) }]}>{t('settings.dataPrivacy.title')}</Text>
         <View style={styles.row}>
           <TouchableOpacity style={styles.linkBtn} onPress={() => setShowImportExport(true)}>
-            <Text style={[styles.link, { color: themeColors.primary, fontSize: getFontSize(16) }]}>Import / Export</Text>
+            <Text style={[styles.link, { color: themeColors.primary, fontSize: getFontSize(16) }]}>{t('settings.importExport')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.linkBtn} onPress={handleReset}>
-            <Text style={[styles.link, { color: '#FF3B30', fontWeight: 'bold', fontSize: getFontSize(16) }]}>Remise à zéro</Text>
+            <Text style={[styles.link, { color: '#FF3B30', fontWeight: 'bold', fontSize: getFontSize(16) }]}>{t('settings.reset')}</Text>
           </TouchableOpacity>
         </View>
 
         {/* Section Feedback */}
-        <Text style={[styles.sectionTitle, { color: themeColors.primary, marginTop: 32, fontSize: getFontSize(18) }]}>🙎🏽‍♂️ Partage ton expérience</Text>
+        <Text style={[styles.sectionTitle, { color: themeColors.primary, marginTop: 32, fontSize: getFontSize(18) }]}>{t('settings.feedback.title')}</Text>
         <View style={styles.row}>
           <TouchableOpacity style={styles.linkBtn} onPress={() => setShowFeedbackModal(true)}>
-            <Text style={[styles.link, { color: themeColors.primary, fontSize: getFontSize(16) }]}>Envoyer un feedback anonyme</Text>
+            <Text style={[styles.link, { color: themeColors.primary, fontSize: getFontSize(16) }]}>{t('settings.feedback.sendAnonymous')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -445,28 +423,31 @@ const Settings = () => {
               onPress={() => {}} // Empêche la propagation du clic à l'extérieur
             >
               <Text style={{ fontWeight: 'bold', fontSize: getFontSize(18), color: themeColors.primary, marginBottom: 12 }}>
-                Import / Export des données
+                {t('settings.importExport.title')}
               </Text>
               {/* Export */}
               <Text style={{ color: themeColors.text, marginBottom: 8, fontSize: getFontSize(15) }}>
-                Exporter toutes les données ou seulement celles d'un gacha :
+                {t('settings.importExport.exportAll')}
               </Text>
               <ExportDataButton getFontSize={getFontSize} themeColors={themeColors} />
+              <Text style={{ color: themeColors.text, marginBottom: 8, fontSize: getFontSize(15) }}>
+                {t('settings.importExport.exportOne')}
+              </Text>
               <ExportGachaButton getFontSize={getFontSize} themeColors={themeColors} />
               {/* Import */}
               <Text style={{ color: themeColors.text, marginTop: 16, marginBottom: 4, fontSize: getFontSize(15) }}>
-                Importer des données (JSON) :
+                {t('settings.importExport.importLabel')}
               </Text>
               <TouchableOpacity
                 style={styles.validateBtn}
                 onPress={handleImportFile}
               >
                 <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>
-                  Importer un fichier JSON
+                  {t('settings.importExport.importButton')}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity style={{ marginTop: 16 }} onPress={() => setShowImportExport(false)}>
-                <Text style={{ color: themeColors.primary, textAlign: 'center', fontSize: getFontSize(16) }}>Fermer</Text>
+                <Text style={{ color: themeColors.primary, textAlign: 'center', fontSize: getFontSize(16) }}>{t('settings.close')}</Text>
               </TouchableOpacity>
             </TouchableOpacity>
           </TouchableOpacity>
@@ -496,11 +477,11 @@ const Settings = () => {
               onPress={() => {}} // Empêche la propagation du clic à l'extérieur
             >
               <Text style={{ fontWeight: 'bold', fontSize: getFontSize(18), color: themeColors.primary, marginBottom: 12 }}>
-                Envoyer un feedback anonyme
+                {t('settings.feedback.sendAnonymous')}
               </Text>
               <TextInput
                 style={[styles.input, { fontSize: getFontSize(16) }]}
-                placeholder="Décris ton expérience, tes suggestions ou bugs rencontrés..."
+                placeholder={t('settings.feedback.placeholder')}
                 placeholderTextColor="#888"
                 multiline
                 value={feedbackText}
@@ -510,10 +491,10 @@ const Settings = () => {
                 style={styles.validateBtn}
                 onPress={handleSendFeedback}
               >
-                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>Envoyer</Text>
+                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>{t('settings.send')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={{ marginTop: 16 }} onPress={() => setShowFeedbackModal(false)}>
-                <Text style={{ color: themeColors.primary, textAlign: 'center', fontSize: getFontSize(16) }}>Fermer</Text>
+                <Text style={{ color: themeColors.primary, textAlign: 'center', fontSize: getFontSize(16) }}>{t('settings.close')}</Text>
               </TouchableOpacity>
             </TouchableOpacity>
           </TouchableOpacity>

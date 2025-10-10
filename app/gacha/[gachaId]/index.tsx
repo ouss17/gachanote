@@ -1,3 +1,4 @@
+import { Theme } from '@/constants/Themes';
 import { addRoll, removeRoll, Roll, updateRoll } from '@/redux/slices/rollsSlice';
 import { RootState } from '@/redux/store';
 import { AntDesign } from '@expo/vector-icons';
@@ -26,7 +27,8 @@ export default function GachaRollsScreen() {
   // Sélectionne tous les rolls depuis le store Redux
   const allRolls = useSelector((state: RootState) => state.rolls.rolls);
   const theme = useSelector((state: RootState) => state.theme.mode);
-  const isDark = theme === 'dark';
+  const themeColors = Theme[theme as keyof typeof Theme];
+  const isDark = theme === 'dark' || theme === 'night';
 
   // États pour la gestion du formulaire d'ajout/modification de roll
   const [showModal, setShowModal] = useState(false);
@@ -174,7 +176,7 @@ export default function GachaRollsScreen() {
   };
 
   // Type de ressource pour le gacha courant
-  const resourceType = getResourceType(String(gachaId));
+  const [resourceType, setResourceType] = useState(getResourceType(String(gachaId)));
   const insets = useSafeAreaInsets();
   const { cost: multiCost, label: multiLabel } = getMultiCost(String(gachaId));
   const multiCount = multiCost > 0 ? stats.resource / multiCost : 0;
@@ -197,10 +199,14 @@ export default function GachaRollsScreen() {
     return base;
   }
 
+  let lang = useSelector((state: any) => state.nationality.country) || 'fr';
+  const texts = require('@/data/texts.json');
+  const t = (key: string) => texts[key]?.[lang] || texts[key]?.fr || key;
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#181818' : '#fff' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: themeColors.background }}>
       {/* Espace pour la barre de statut */}
-      <View style={{ height: insets.top, backgroundColor: isDark ? '#181818' : '#fff' }} />
+      <View style={{ height: insets.top, backgroundColor: themeColors.background }} />
       <StatusBar style={isDark ? 'light' : 'dark'} />
 
       {/* Bouton retour */}
@@ -210,14 +216,14 @@ export default function GachaRollsScreen() {
           style={{
             padding: 8,
             borderRadius: 8,
-            backgroundColor: isDark ? '#232323' : '#eee',
+            backgroundColor: themeColors.card, // Utilise la couleur card du thème
             marginRight: 8,
           }}
         >
-          <AntDesign name="arrow-left" size={getFontSize(24)} color={isDark ? '#fff' : '#181818'} />
+          <AntDesign name="arrow-left" size={getFontSize(24)} color={themeColors.text} />
         </TouchableOpacity>
-        <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize(18), fontWeight: 'bold' }}>
-          Retour à l'accueil
+        <Text style={{ color: themeColors.text, fontSize: getFontSize(18), fontWeight: 'bold' }}>
+          {t('gachaRolls.back')}
         </Text>
       </View>
 
@@ -227,56 +233,76 @@ export default function GachaRollsScreen() {
           style={{
             flex: 1,
             padding: 12,
-            backgroundColor: tab === 'list' ? (isDark ? '#444' : '#eee') : 'transparent',
+            backgroundColor: tab === 'list' ? themeColors.card : 'transparent', // Couleur card si sélectionné
             borderRadius: 8,
             marginRight: 4,
           }}
           onPress={() => setTab('list')}
         >
-          <Text style={{ color: isDark ? '#fff' : '#181818', textAlign: 'center', fontWeight: tab === 'list' ? 'bold' : 'normal', fontSize: getFontSize(16) }}>
-            Liste
+          <Text style={{
+            color: themeColors.text,
+            textAlign: 'center',
+            fontWeight: tab === 'list' ? 'bold' : 'normal',
+            fontSize: getFontSize(16)
+          }}>
+            {t('gachaRolls.tabs.list')}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={{
             flex: 1,
             padding: 12,
-            backgroundColor: tab === 'simulations' ? (isDark ? '#444' : '#eee') : 'transparent',
+            backgroundColor: tab === 'simulations' ? themeColors.card : 'transparent',
             borderRadius: 8,
             marginLeft: 4,
           }}
           onPress={() => setTab('simulations')}
         >
-          <Text style={{ color: isDark ? '#fff' : '#181818', textAlign: 'center', fontWeight: tab === 'simulations' ? 'bold' : 'normal', fontSize: getFontSize(16) }}>
-            Simulations
+          <Text style={{
+            color: themeColors.text,
+            textAlign: 'center',
+            fontWeight: tab === 'simulations' ? 'bold' : 'normal',
+            fontSize: getFontSize(16)
+          }}>
+            {t('gachaRolls.tabs.simulations')}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={{
             flex: 1,
             padding: 12,
-            backgroundColor: tab === 'stats' ? (isDark ? '#444' : '#eee') : 'transparent',
+            backgroundColor: tab === 'stats' ? themeColors.card : 'transparent',
             borderRadius: 8,
             marginHorizontal: 4,
           }}
           onPress={() => setTab('stats')}
         >
-          <Text style={{ color: isDark ? '#fff' : '#181818', textAlign: 'center', fontWeight: tab === 'stats' ? 'bold' : 'normal', fontSize: getFontSize(16) }}>
-            Statistiques
+          <Text style={{
+            color: themeColors.text,
+            textAlign: 'center',
+            fontWeight: tab === 'stats' ? 'bold' : 'normal',
+            fontSize: getFontSize(16)
+          }}>
+            {t('gachaRolls.tabs.stats')}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={{
             flex: 1,
             padding: 12,
-            backgroundColor: tab === 'money' ? (isDark ? '#444' : '#eee') : 'transparent',
+            backgroundColor: tab === 'money' ? themeColors.card : 'transparent',
             borderRadius: 8,
             marginLeft: 4,
           }}
           onPress={() => setTab('money')}
         >
-          <Text style={{ color: isDark ? '#fff' : '#181818', textAlign: 'center', fontWeight: tab === 'money' ? 'bold' : 'normal', fontSize: getFontSize(16) }}>
-            Argent
+          <Text style={{
+            color: themeColors.text,
+            textAlign: 'center',
+            fontWeight: tab === 'money' ? 'bold' : 'normal',
+            fontSize: getFontSize(16)
+          }}>
+            {t('gachaRolls.tabs.money')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -324,14 +350,26 @@ export default function GachaRollsScreen() {
       {/* Bouton flottant "+" pour ajouter un roll, uniquement dans l'onglet Liste */}
       {tab === 'list' && (
         <TouchableOpacity
-          style={[
-            styles.fab,
-            { backgroundColor: isDark ? '#444' : '#007AFF' }
-          ]}
+          style={{
+            position: 'absolute',
+            right: 24,
+            bottom: 50,
+            borderRadius: 32,
+            width: 56,
+            height: 56,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: themeColors.primary,
+            elevation: 4,
+            shadowColor: '#000',
+            shadowOpacity: 0.2,
+            shadowRadius: 4,
+            shadowOffset: { width: 0, height: 2 },
+          }}
           onPress={() => setShowModal(true)}
           activeOpacity={0.7}
         >
-          <AntDesign name="plus" size={getFontSize(32)} color="#fff" />
+          <Text style={{ color: '#fff', fontSize: getFontSize(32), fontWeight: 'bold' }}>+</Text>
         </TouchableOpacity>
       )}
 
@@ -349,18 +387,50 @@ export default function GachaRollsScreen() {
           alignItems: 'center'
         }}>
           <View style={{
-            backgroundColor: isDark ? '#232323' : '#fff',
+            backgroundColor: themeColors.card,
             padding: 24,
             borderRadius: 16,
             width: '90%',
           }}>
             <Text style={[styles.title, { color: isDark ? '#fff' : '#181818', fontSize: getFontSize(24) }]}>
-              {editRoll ? 'Modifier le tirage' : 'Ajouter un tirage'}
+              {editRoll ? t('gachaRolls.modal.editTitle') : t('gachaRolls.modal.addTitle')}
             </Text>
+
+            {/* Sélecteur du type de ressource - déplacé en haut */}
+            <Text style={{ color: isDark ? '#fff' : '#181818', marginBottom: 4, fontSize: getFontSize(16) }}>
+              Type de ressource <Text style={{ color: '#FF3B30' }}>*</Text>
+            </Text>
+            <View style={{ flexDirection: 'row', marginBottom: 16 }}>
+              {[
+                getResourceType(String(gachaId)), // type principal du gacha
+                'ticket', // on ajoute toujours "ticket"
+              ].map(type => (
+                <TouchableOpacity
+                  key={type}
+                  style={{
+                    backgroundColor: resourceType === type ? '#007AFF' : (isDark ? '#232323' : '#eee'),
+                    borderRadius: 8,
+                    paddingVertical: 8,
+                    paddingHorizontal: 16,
+                    marginRight: 8,
+                  }}
+                  onPress={() => setResourceType(type)}
+                >
+                  <Text style={{
+                    color: resourceType === type ? '#fff' : (isDark ? '#fff' : '#181818'),
+                    fontWeight: resourceType === type ? 'bold' : 'normal',
+                    fontSize: getFontSize(15),
+                  }}>
+                    {type === 'ticket' ? 'Ticket' : type.toUpperCase()}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
             {/* Champ Montant de la ressource */}
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
               <Text style={{ color: isDark ? '#fff' : '#181818', marginRight: 4, fontSize: getFontSize(16) }}>
-                Montant de la ressource <Text style={{ color: '#FF3B30' }}>*</Text>
+                {t('gachaRolls.form.resourceAmount')} <Text style={{ color: '#FF3B30' }}>*</Text>
               </Text>
             </View>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
@@ -375,13 +445,17 @@ export default function GachaRollsScreen() {
                 blurOnSubmit={false}
               />
               <Text style={{ marginLeft: 8, color: isDark ? '#fff' : '#181818', fontWeight: 'bold', fontSize: getFontSize(16) }}>
-                {resourceType.toUpperCase()}
+                {resourceType === 'ticket'
+                  ? Number(resourceAmount) > 1
+                    ? 'Tickets'
+                    : 'Ticket'
+                  : resourceType.toUpperCase()}
               </Text>
             </View>
 
             {/* Champ Nom de la vedette */}
             <Text style={{ color: isDark ? '#fff' : '#181818', marginBottom: 4, fontSize: getFontSize(16) }}>
-              Nom de la vedette
+              {t('gachaRolls.form.nameFeatured')}
             </Text>
             <TextInput
               ref={nameFeaturedRef}
@@ -396,7 +470,7 @@ export default function GachaRollsScreen() {
 
             {/* Champ Nombre de vedettes */}
             <Text style={{ color: isDark ? '#fff' : '#181818', marginBottom: 4, fontSize: getFontSize(16) }}>
-              Nombre de vedettes <Text style={{ color: '#FF3B30' }}>*</Text>
+              {t('gachaRolls.form.featuredCount')} <Text style={{ color: '#FF3B30' }}>*</Text>
             </Text>
             <TextInput
               ref={featuredCountRef}
@@ -412,7 +486,7 @@ export default function GachaRollsScreen() {
 
             {/* Champ Nombre de spooks */}
             <Text style={{ color: isDark ? '#fff' : '#181818', marginBottom: 4, fontSize: getFontSize(16) }}>
-              Nombre de spooks
+              {t('gachaRolls.form.spookCount')}
             </Text>
             <TextInput
               ref={spookCountRef}
@@ -428,7 +502,7 @@ export default function GachaRollsScreen() {
 
             {/* Champ Nombre de side units featuré */}
             <Text style={{ color: isDark ? '#fff' : '#181818', marginBottom: 4, fontSize: getFontSize(16) }}>
-              Nombre de side units featuré
+              {t('gachaRolls.form.sideUnitCount')}
             </Text>
             <TextInput
               style={[styles.input, { fontSize: getFontSize(16) }]}
@@ -441,15 +515,22 @@ export default function GachaRollsScreen() {
 
             {/* Champ Date */}
             <Text style={{ color: isDark ? '#fff' : '#181818', marginBottom: 4, fontSize: getFontSize(16) }}>
-              Date <Text style={{ color: '#FF3B30' }}>*</Text>
+              {t('common.date')} <Text style={{ color: '#FF3B30' }}>*</Text>
             </Text>
             <TouchableOpacity
               style={[styles.input, { justifyContent: 'center' }]}
               onPress={() => setShowDatePicker(true)}
               activeOpacity={0.7}
             >
-              <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize(16) }}>
-                {date.toLocaleDateString('fr-FR')}
+              <Text
+                style={{
+                  color: theme === 'dark' || theme === 'night' ? '#181818' : '#181818', // noir pour dark et blue/night
+                  fontSize: getFontSize(16),
+                }}
+              >
+                {date.toLocaleDateString(
+                  lang === 'en' ? 'en-US' : lang === 'jap' ? 'ja-JP' : 'fr-FR'
+                )}
               </Text>
             </TouchableOpacity>
             {showDatePicker && (
@@ -466,7 +547,7 @@ export default function GachaRollsScreen() {
             )}
 
             {/* Bouton de validation */}
-            <Button title={editRoll ? 'Modifier' : 'Ajouter'} onPress={handleAdd} />
+            <Button title={editRoll ? t('common.edit') : t('common.add')} onPress={handleAdd} />
 
             {/* Bouton Annuler */}
             <TouchableOpacity
@@ -476,7 +557,7 @@ export default function GachaRollsScreen() {
                 resetForm();
               }}
             >
-              <Text style={{ color: '#007AFF', textAlign: 'center', fontSize: getFontSize(16) }}>Annuler</Text>
+              <Text style={{ color: '#007AFF', textAlign: 'center', fontSize: getFontSize(16) }}>{t('common.cancel')}</Text>
             </TouchableOpacity>
           </View>
         </View>

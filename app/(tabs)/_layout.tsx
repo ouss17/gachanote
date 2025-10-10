@@ -1,15 +1,14 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform } from 'react-native';
 import { useSelector } from 'react-redux';
 
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { Theme } from '@/constants/Themes';
 import { setOnboardingSeen } from '@/redux/slices/onboardingSlice';
 import { useDispatch } from 'react-redux';
 import DemoScreen from '../DemoScreen';
-import { Theme } from '@/constants/Themes';
 
 type ThemeMode = 'light' | 'dark' | 'night';
 
@@ -29,6 +28,10 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textSecondary,
+        tabBarStyle: {
+          backgroundColor: colors.card, // adapte le fond du menu au thème
+          borderTopColor: colors.border, // adapte la bordure au thème
+        },
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarIconStyle: {
@@ -41,6 +44,7 @@ export default function TabLayout() {
           fontSize: 13,
           letterSpacing: 1,
           marginBottom: 8,
+          color: colors.text, // adapte la couleur du texte au thème
         },
       }}>
       <Tabs.Screen

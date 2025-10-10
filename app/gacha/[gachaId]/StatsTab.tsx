@@ -1,4 +1,6 @@
+import { Theme } from '@/constants/Themes';
 import { Text, TouchableOpacity, View } from 'react-native';
+import { useSelector } from 'react-redux';
 
 /**
  * Onglet "Statistiques" d'un gacha.
@@ -32,16 +34,24 @@ export default function StatsTab({
   currency: string;
   getFontSize: (base: number) => number;
 }) {
+  const theme = useSelector((state: any) => state.theme.mode);
+  const themeColors = Theme[theme as keyof typeof Theme];
+
+  // Add translation setup
+  const texts = require('@/data/texts.json');
+  let lang = useSelector((state: any) => state.nationality.country) || 'fr';
+  const t = (key: string) => texts[key]?.[lang] || texts[key]?.fr || key;
+
   return (
     <View style={{
       padding: 24,
       borderRadius: 16,
-      backgroundColor: isDark ? '#232323' : '#fff',
+      backgroundColor: themeColors.card,
       marginBottom: 24,
       alignItems: 'center'
     }}>
-      <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize(18), fontWeight: 'bold', marginBottom: 12 }}>
-        Statistiques
+      <Text style={{ color: themeColors.text, fontSize: getFontSize(18), fontWeight: 'bold', marginBottom: 12 }}>
+        {t('gachaRolls.stats.title')}
       </Text>
       <View style={{
         flexDirection: 'row',
@@ -55,21 +65,21 @@ export default function StatsTab({
         alignSelf: 'center',
       }}>
         <StatCircle
-          label={`Ressources\n(${resourceType.toUpperCase()})`}
+          label={`${t('gachaRolls.form.resourceAmount')}\n(${resourceType.toUpperCase()})`}
           value={stats.resource.toString()}
-          color={isDark ? '#232323' : '#fff'}
-          borderColor="#007AFF"
+          color={themeColors.card}
+          borderColor={themeColors.primary}
           fontSize={getFontSize(20)}
           labelFontSize={getFontSize(13)}
         />
         <StatCircle
-          label="Vedettes"
+          label={t('common.featured')}
           value={
             showStatsPercent.featured && stats.resource > 0
               ? `${((stats.featured / stats.resource) * 100).toFixed(2)}%`
               : stats.featured.toString()
           }
-          color={isDark ? '#232323' : '#fff'}
+          color={themeColors.card}
           borderColor="#FF9500"
           onPress={() =>
             setShowStatsPercent((s: any) => ({ ...s, featured: !s.featured }))
@@ -78,13 +88,13 @@ export default function StatsTab({
           labelFontSize={getFontSize(13)}
         />
         <StatCircle
-          label="Spooks"
+          label={t('common.spook')}
           value={
             showStatsPercent.spook && stats.resource > 0
               ? `${((stats.spook / stats.resource) * 100).toFixed(2)}%`
               : stats.spook.toString()
           }
-          color={isDark ? '#232323' : '#fff'}
+          color={themeColors.card}
           borderColor="#00B894"
           onPress={() =>
             setShowStatsPercent((s: any) => ({ ...s, spook: !s.spook }))
@@ -93,13 +103,13 @@ export default function StatsTab({
           labelFontSize={getFontSize(13)}
         />
         <StatCircle
-          label="Side units"
+          label={t('common.sideUnits')}
           value={
             showStatsPercent.sideUnit && stats.resource > 0
               ? `${((stats.sideUnit / stats.resource) * 100).toFixed(2)}%`
               : stats.sideUnit?.toString()
           }
-          color={isDark ? '#232323' : '#fff'}
+          color={themeColors.card}
           borderColor="#6C47FF"
           onPress={() =>
             setShowStatsPercent((s: any) => ({ ...s, sideUnit: !s.sideUnit }))
@@ -112,16 +122,16 @@ export default function StatsTab({
       <View style={{
         marginTop: 24,
         alignItems: 'center',
-        backgroundColor: isDark ? '#232323' : '#f2f2f2',
+        backgroundColor: themeColors.background,
         borderRadius: 12,
         padding: 16,
         width: '100%',
         maxWidth: 320,
       }}>
-        <Text style={{ color: isDark ? '#fff' : '#181818', fontWeight: 'bold', fontSize: getFontSize(16) }}>
-          Argent dépensé
+        <Text style={{ color: themeColors.text, fontWeight: 'bold', fontSize: getFontSize(16) }}>
+          {t('gachaRolls.stats.moneySpent')}
         </Text>
-        <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize(22), fontWeight: 'bold', marginTop: 8 }}>
+        <Text style={{ color: themeColors.text, fontSize: getFontSize(22), fontWeight: 'bold', marginTop: 8 }}>
           {totalMoney.toLocaleString('fr-FR')} {currency}
         </Text>
       </View>
