@@ -3,7 +3,7 @@ import { addBanner, addSimulationRoll, clearBannerRolls, removeBanner, Simulatio
 import { RootState } from '@/redux/store';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, FlatList, Modal, StyleSheet, Text, TextInput, TouchableOpacity, Vibration, View } from 'react-native';
+import { Alert, FlatList, Modal, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, Vibration, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 export default function SimulationsTab({ getFontSize }: { getFontSize: (base: number) => number }) {
@@ -20,6 +20,10 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
   const [featuredInputs, setFeaturedInputs] = useState([{ name: '', rate: '0.7' }]);
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
+
+  // new states for "Afficher tous les résultats" modal
+  const [showAllResultsModal, setShowAllResultsModal] = useState(false);
+  const [modalRolls, setModalRolls] = useState<any[]>([]);
 
   const { cost: multiCost, label: multiLabel } = getMultiCost(String(gachaId));
 
@@ -124,123 +128,178 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
       <FlatList
         data={filteredBanners}
         keyExtractor={item => item.id}
-        renderItem={({ item: banner }) => (
-          <View style={{
-            marginTop: 24,
-            padding: 16,
-            borderWidth: 1,
-            borderColor: themeColors.border,
-            borderRadius: 12,
-            backgroundColor: themeColors.card
-          }}>
-            <Text style={{ fontWeight: 'bold', fontSize: getFontSize(16), color: themeColors.text }}>{banner.name}</Text>
-            <Text style={{ color: themeColors.placeholder, marginBottom: 8, fontSize: getFontSize(14) }}>
-              {banner.characters.map(c => `${c.name} (${c.rate}%)`).join(', ')}
-            </Text>
-            <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-              <TouchableOpacity
-                style={[styles.addBtn, { marginRight: 8, backgroundColor: themeColors.primary }]}
-                onPress={() => handleSimulateRoll(banner, 1)}
-              >
-                <Text style={{ color: '#fff', fontSize: getFontSize(14) }}>Tirage simple</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.addBtn, { marginRight: 8, backgroundColor: themeColors.primary }]}
-                onPress={() => handleSimulateRoll(banner, 10)}
-              >
-                <Text style={{ color: '#fff', fontSize: getFontSize(14) }}>Tirage x10</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.addBtn, { backgroundColor: themeColors.primary }]}
-                onPress={() => handleSimulateRoll(banner, 100)}
-              >
-                <Text style={{ color: '#fff', fontSize: getFontSize(14) }}>Tirage x100</Text>
-              </TouchableOpacity>
-            </View>
-            {/* Historique des résultats */}
-            {banner.rolls.length > 0 && (
-              <View>
-                <Text style={{ fontWeight: 'bold', marginTop: 8, fontSize: getFontSize(15), color: themeColors.text }}>Résultats :</Text>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginLeft: 8 }}>
-                  {banner.rolls.map(roll => (
-                    <View
-                      key={roll.id}
-                      style={{
-                        backgroundColor: themeColors.simulationResultBg ?? '#fdecec',
-                        borderRadius: 8,
-                        paddingHorizontal: 8,
-                        paddingVertical: 2,
-                        marginRight: 6,
-                        marginBottom: 6,
-                        flexDirection: 'row',
-                        alignItems: 'center',
+        renderItem={({ item: banner }) => {
+          // aggregate total counts across all rolls for this banner
+          const aggregated: { [name: string]: number } = {};
+          banner.rolls.forEach(roll => {
+            roll.results.forEach((r: any) => {
+              aggregated[r.name] = (aggregated[r.name] || 0) + r.count;
+            });
+          });
+
+          // ORDER: ensure featured characters that were obtained appear first (most left),
+          // then the other obtained characters sorted by count desc
+          const orderedEntries: [string, number][] = (() => {
+            const featuredNames = banner.characters.filter(c => c.isFeatured).map(c => c.name);
+            const obtainedNames = Object.keys(aggregated);
+
+            // featured obtained, keep banner order
+            const featuredEntries = featuredNames
+              .filter(n => obtainedNames.includes(n))
+              .map(n => [n, aggregated[n]] as [string, number]);
+
+            // other obtained names sorted by count desc
+            const otherEntries = obtainedNames
+              .filter(n => !featuredNames.includes(n))
+              .map(n => [n, aggregated[n]] as [string, number])
+              .sort((a, b) => b[1] - a[1]);
+
+            return [...featuredEntries, ...otherEntries];
+          })();
+
+          return (
+            <View style={{
+              marginTop: 24,
+              padding: 16,
+              borderWidth: 1,
+              borderColor: themeColors.border,
+              borderRadius: 12,
+              backgroundColor: themeColors.card
+            }}>
+              {/* Title bigger and centered */}
+              <Text style={{
+                fontWeight: 'bold',
+                fontSize: getFontSize(20),
+                color: themeColors.text,
+                textAlign: 'center',
+                marginBottom: 8
+              }}>{banner.name}</Text>
+
+              <Text style={{ color: themeColors.placeholder, marginBottom: 8, fontSize: getFontSize(14) }}>
+                {banner.characters.map(c => `${c.name} (${c.rate}%)`).join(', ')}
+              </Text>
+
+              <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+                <TouchableOpacity
+                  style={[styles.addBtn, { marginRight: 8, backgroundColor: themeColors.primary }]}
+                  onPress={() => handleSimulateRoll(banner, 1)}
+                >
+                  <Text style={{ color: '#fff', fontSize: getFontSize(14) }}>Tirage simple</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.addBtn, { marginRight: 8, backgroundColor: themeColors.primary }]}
+                  onPress={() => handleSimulateRoll(banner, 10)}
+                >
+                  <Text style={{ color: '#fff', fontSize: getFontSize(14) }}>Tirage x10</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.addBtn, { backgroundColor: themeColors.primary }]}
+                  onPress={() => handleSimulateRoll(banner, 100)}
+                >
+                  <Text style={{ color: '#fff', fontSize: getFontSize(14) }}>Tirage x100</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Results header with "Afficher tous les résultats" */}
+              {banner.rolls.length > 0 && (
+                <View>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
+                    <Text style={{ fontWeight: 'bold', fontSize: getFontSize(15), color: themeColors.text }}>Résultats :</Text>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setModalRolls(banner.rolls);
+                        setShowAllResultsModal(true);
                       }}
                     >
-                      <Text style={{ color: themeColors.simulationResultText ?? '#d32f2f', fontWeight: 'bold', fontSize: getFontSize(13) }}>
-                        {roll.results.map(r => `${r.name}×${r.count}`).join(', ')}
-                      </Text>
-                      <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(12), marginLeft: 4 }}>
-                        ({roll.resourceUsed / (multiCost / 10)} tirage{roll.resourceUsed / (multiCost / 10) > 1 ? 's' : ''})
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-                <Text style={{ color: themeColors.placeholder, marginTop: 4, fontSize: getFontSize(14) }}>
-                  Ressource utilisée : {banner.totalResourceUsed} {multiLabel.replace(/.*?([a-zA-Z]+)$/, '$1')}
-                </Text>
-              </View>
-            )}
-            {/* Statistiques de la bannière */}
-            {banner.rolls.length > 0 && (() => {
-              const stats = getBannerStats(banner);
-              return (
-                <View style={{ marginTop: 8 }}>
-                  <Text style={{ fontWeight: 'bold', marginBottom: 4, fontSize: getFontSize(15), color: themeColors.text }}>Statistiques :</Text>
-                  <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(14) }}>
-                    Total de tirages simulés : {stats.totalRolls} {multiLabel.replace(/.*?([a-zA-Z]+)$/, '$1')}
-                  </Text>
-                  {stats.rates.map(r => (
-                    <Text key={r.name} style={{ color: themeColors.primary, marginLeft: 8, fontSize: getFontSize(14) }}>
-                      {r.name} : {r.count} fois ({r.rate}%)
+                      <Text style={{ color: themeColors.primary, fontSize: getFontSize(13) }}>Afficher tous les résultats</Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Aggregated results in small chips (only characters + counts) */}
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 8 }}>
+                    {orderedEntries.map(([name, count]) => (
+                      <View
+                        key={name}
+                        style={{
+                          backgroundColor: themeColors.simulationResultBg ?? '#fdecec',
+                          borderRadius: 8,
+                          paddingHorizontal: 8,
+                          paddingVertical: 6,
+                          marginRight: 6,
+                          marginBottom: 6,
+                          minWidth: 80,
+                          alignItems: 'center',
+                        }}
+                      >
+                        <Text style={{ color: themeColors.simulationResultText ?? '#d32f2f', fontWeight: 'bold', fontSize: getFontSize(13) }}>{name}</Text>
+                        <Text style={{ color: themeColors.text, fontSize: getFontSize(12), marginTop: 2 }}>{count}×</Text>
+                      </View>
+                    ))}
+                  </View>
+
+                  {/* Resources used - enlarged with number below */}
+                  <View style={{ marginTop: 12, alignItems: 'center' }}>
+                    <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(14) }}>Ressource utilisée</Text>
+                    <Text style={{ color: themeColors.text, fontWeight: 'bold', fontSize: getFontSize(18), marginTop: 6 }}>
+                      {banner.totalResourceUsed} {multiLabel.replace(/.*?([a-zA-Z]+)$/, '$1')}
                     </Text>
-                  ))}
+                  </View>
                 </View>
-              );
-            })()}
-            <View style={{ flexDirection: 'row', marginTop: 12 }}>
-              <TouchableOpacity
-                style={[styles.addBtn, { backgroundColor: '#FF3B30', marginRight: 8 }]}
-                onPress={() => {
-                  Alert.alert(
-                    'Confirmation',
-                    'Supprimer cette bannière et tout son historique ?',
-                    [
-                      { text: 'Annuler', style: 'cancel' },
-                      { text: 'Supprimer', style: 'destructive', onPress: () => dispatch(removeBanner(banner.id)) }
-                    ]
-                  );
-                }}
-              >
-                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(14) }}>Supprimer</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.addBtn, { backgroundColor: '#FFA500' }]}
-                onPress={() => {
-                  Alert.alert(
-                    'Confirmation',
-                    'Réinitialiser l\'historique de cette bannière ?',
-                    [
-                      { text: 'Annuler', style: 'cancel' },
-                      { text: 'Réinitialiser', style: 'destructive', onPress: () => dispatch(clearBannerRolls(banner.id)) }
-                    ]
-                  );
-                }}
-              >
-                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(14) }}>Réinitialiser</Text>
-              </TouchableOpacity>
+              )}
+
+              {/* Statistiques (inchangées) */}
+              {banner.rolls.length > 0 && (() => {
+                const stats = getBannerStats(banner);
+                return (
+                  <View style={{ marginTop: 8 }}>
+                    <Text style={{ fontWeight: 'bold', marginBottom: 4, fontSize: getFontSize(15), color: themeColors.text }}>Statistiques :</Text>
+                    <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(14) }}>
+                      Total de tirages simulés : {stats.totalRolls} {multiLabel.replace(/.*?([a-zA-Z]+)$/, '$1')}
+                    </Text>
+                    {stats.rates.map(r => (
+                      <Text key={r.name} style={{ color: themeColors.primary, marginLeft: 8, fontSize: getFontSize(14) }}>
+                        {r.name} : {r.count} fois ({r.rate}%)
+                      </Text>
+                    ))}
+                  </View>
+                );
+              })()}
+
+              <View style={{ flexDirection: 'row', marginTop: 12 }}>
+                <TouchableOpacity
+                  style={[styles.addBtn, { backgroundColor: '#FF3B30', marginRight: 8 }]}
+                  onPress={() => {
+                    Alert.alert(
+                      'Confirmation',
+                      'Supprimer cette bannière et tout son historique ?',
+                      [
+                        { text: 'Annuler', style: 'cancel' },
+                        { text: 'Supprimer', style: 'destructive', onPress: () => dispatch(removeBanner(banner.id)) }
+                      ]
+                    );
+                  }}
+                >
+                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(14) }}>Supprimer</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.addBtn, { backgroundColor: '#FFA500' }]}
+                  onPress={() => {
+                    Alert.alert(
+                      'Confirmation',
+                      'Réinitialiser l\'historique de cette bannière ?',
+                      [
+                        { text: 'Annuler', style: 'cancel' },
+                        { text: 'Réinitialiser', style: 'destructive', onPress: () => dispatch(clearBannerRolls(banner.id)) }
+                      ]
+                    );
+                  }}
+                >
+                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(14) }}>Réinitialiser</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
-        )}
+          );
+        }}
         contentContainerStyle={{ paddingBottom: 80 }}
         ListEmptyComponent={
           <Text style={{ color: themeColors.placeholder, textAlign: 'center', marginTop: 24, fontSize: getFontSize(15) }}>
@@ -248,6 +307,45 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
           </Text>
         }
       />
+
+      {/* Modal pour afficher tous les tirages (popup) */}
+      <Modal visible={showAllResultsModal} animationType="slide" transparent onRequestClose={() => setShowAllResultsModal(false)}>
+        <TouchableWithoutFeedback onPress={() => setShowAllResultsModal(false)}>
+          <View style={{
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
+            {/* Prevent outer touch from closing when tapping inside the content */}
+            <TouchableWithoutFeedback onPress={() => { /* noop to block propagation */ }}>
+              <View style={{
+                backgroundColor: themeColors.card,
+                padding: 16,
+                borderRadius: 12,
+                width: '92%',
+                maxHeight: '80%',
+              }}>
+                <Text style={{ color: themeColors.text, fontWeight: 'bold', fontSize: getFontSize(18), marginBottom: 8 }}>Tous les résultats</Text>
+                <FlatList
+                  data={modalRolls}
+                  keyExtractor={(r) => r.id}
+                  renderItem={({ item: roll }) => (
+                    <View style={{ borderWidth: 1, borderColor: themeColors.border, borderRadius: 10, padding: 10, marginBottom: 8, backgroundColor: themeColors.background }}>
+                      <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(12) }}>{new Date(roll.date).toLocaleString()}</Text>
+                      <Text style={{ color: themeColors.text, fontWeight: 'bold', marginTop: 6 }}>{roll.results.map((r: any) => `${r.name}×${r.count}`).join(', ')}</Text>
+                      <Text style={{ color: themeColors.placeholder, marginTop: 6 }}>{roll.resourceUsed} {multiLabel.replace(/.*?([a-zA-Z]+)$/, '$1')}</Text>
+                    </View>
+                  )}
+                />
+                <TouchableOpacity onPress={() => setShowAllResultsModal(false)} style={{ marginTop: 8, alignSelf: 'center' }}>
+                  <Text style={{ color: themeColors.primary, fontSize: getFontSize(16) }}>Fermer</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
 
       {/* Modal pour ajouter une bannière */}
       <Modal
@@ -387,7 +485,8 @@ function getBannerStats(banner: SimulationBanner) {
   const rates = Object.entries(counts).map(([name, count]) => ({
     name,
     count,
-    rate: totalRolls > 0 ? ((count / totalRolls) * 100).toFixed(2) : '0.00',
+    // increase precision: 4 decimal places
+    rate: totalRolls > 0 ? ((count / totalRolls) * 100).toFixed(4) : '0.0000',
   }));
   return { totalRolls, rates };
 }
