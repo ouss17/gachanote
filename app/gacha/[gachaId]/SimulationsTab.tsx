@@ -23,6 +23,7 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
   const [name, setName] = useState('');
   const [rate, setRate] = useState('0.7');
   const [featuredInputs, setFeaturedInputs] = useState([{ name: '', rate: '0.7' }]);
+  const [pityThreshold, setPityThreshold] = useState('90'); // default shown in form (string for TextInput)
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
 
@@ -31,6 +32,34 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
   const [modalRolls, setModalRolls] = useState<any[]>([]);
 
   const { cost: multiCost, label: multiLabel } = getMultiCost(String(gachaId));
+
+  // Calcule le nombre de pulls effectués depuis le dernier obtention du "vedette" (premier personnage)
+  // On utilise roll.resourceUsed pour estimer le nombre de pulls dans chaque roll :
+  // pullsInRoll ≈ Math.floor(resourceUsed / (multiCost / 10))
+  const computePityProgress = (banner: SimulationBanner) => {
+    const vedetteName = banner?.characters?.[0]?.name;
+    if (!vedetteName || !banner || !banner.rolls || banner.rolls.length === 0) return 0;
+    let pullsSinceVedette = 0;
+    // itérer du plus récent au plus ancien
+    const rollsReversed = banner.rolls.slice().reverse();
+    for (const roll of rollsReversed) {
+      // compter combien de vedette sont présents dans ce roll
+      const vedetteCountInRoll = roll.results.reduce((sum: number, r: any) => {
+        return sum + (r.name === vedetteName ? r.count : 0);
+      }, 0);
+
+      // approximer le nombre de pulls dans ce roll (utiliser floor)
+      const pullsInRoll = multiCost && multiCost > 0 ? Math.floor(roll.resourceUsed / (multiCost / 10)) : 0;
+
+      // si ce roll contient la vedette, on considère que le dernier vedette est à l'intérieur de ce roll
+      if (vedetteCountInRoll > 0) {
+        break;
+      }
+
+      pullsSinceVedette += pullsInRoll || 0;
+    }
+    return pullsSinceVedette;
+  };
 
   // Validation helpers
   const validateCharacters = (chars: SimulationCharacter[]) => {
@@ -89,11 +118,13 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
       rolls: [],
       totalResourceUsed: 0,
       gachaId: String(gachaId),
+      pityThreshold: pityThreshold ? Number(pityThreshold) : null,
     };
     dispatch(addBanner(banner));
     setName('');
     setRate('0.7');
     setFeaturedInputs([{ name: '', rate: '0.7' }]);
+    setPityThreshold('90');
   };
 
   const MAX_ROLLS = 100000;
@@ -109,16 +140,53 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
     }
     Vibration.vibrate(50);
     const results: { [name: string]: number } = {};
+    // Use banner-specific pityThreshold if provided, otherwise fallback to default 90
+    const PITY_DEFAULT = 90;
+    const PITY_THRESHOLD = typeof banner.pityThreshold === 'number' ? banner.pityThreshold : PITY_DEFAULT;
+
+    const featuredChars = banner.characters.filter(c => c.isFeatured);
+    const hasFeatured = featuredChars.length > 0;
+    const featuredTotalRate = featuredChars.reduce((s, c) => s + Number(c.rate), 0);
+
+    // target the vedette (first character) for pity
+    const vedette = banner.characters[0];
+    const vedetteName = vedette?.name;
+    const vedetteRate = vedette ? Number(vedette.rate) : 0;
+    const hasVedette = !!vedetteName;
+
+    // start pity counter from history (pulls since last vedette)
+    let consecutiveNoVedette = computePityProgress(banner);
+    console.debug('pity start', { bannerId: banner.id, consecutiveNoVedette, PITY_THRESHOLD });
+
     for (let i = 0; i < count; i++) {
-      let obtained = null;
-      for (const char of banner.characters) {
-        if (Math.random() * 100 < char.rate) {
-          obtained = char.name;
-          break;
+      let obtained: string | null = null;
+
+      // pity activation when threshold reached (if pity enabled) -> force vedette
+      // Interpret threshold N as "guarantee on the Nth pull".
+      // consecutiveNoVedette counts how many pulls WITHOUT vedette have already occurred.
+      // To guarantee on the Nth pull we must force when consecutiveNoVedette >= N-1.
+      const pityTriggerAt = PITY_THRESHOLD > 0 ? Math.max(0, PITY_THRESHOLD - 1) : Number.POSITIVE_INFINITY;
+      if (hasVedette && PITY_THRESHOLD > 0 && consecutiveNoVedette >= pityTriggerAt) {
+        console.debug('pity forced (vedette)', { bannerId: banner.id, pullIndex: i, consecutiveNoVedette, pityTriggerAt });
+        obtained = vedetteName;
+      } else {
+        for (const char of banner.characters) {
+          if (Math.random() * 100 < char.rate) {
+            obtained = char.name;
+            break;
+          }
         }
       }
+
       if (obtained) {
+        // check if obtained is the vedette
+        const isVedetteObtained = obtained === vedetteName;
+        if (isVedetteObtained) console.debug('vedette obtained', { bannerId: banner.id, obtained, i, consecutiveNoVedette });
         results[obtained] = (results[obtained] || 0) + 1;
+        if (isVedetteObtained) consecutiveNoVedette = 0;
+        else consecutiveNoVedette++;
+      } else {
+        consecutiveNoVedette++;
       }
     }
     const rollResult = Object.entries(results).map(([name, count]) => ({ name, count }));
@@ -436,6 +504,15 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
               onChangeText={setRate}
               keyboardType="numeric"
             />
+            <Text style={{ marginTop: 8, marginBottom: 4, fontSize: getFontSize(13), color: themeColors.placeholder }}>Pity threshold (nombre de tirages sans featured avant garantie, vide = désactivé)</Text>
+            <TextInput
+              style={[styles.input, { fontSize: getFontSize(16), color: themeColors.text, backgroundColor: themeColors.card, borderColor: themeColors.border }]}
+              placeholder="Ex: 90"
+              placeholderTextColor={themeColors.placeholder}
+              value={pityThreshold}
+              onChangeText={setPityThreshold}
+              keyboardType="numeric"
+            />
 
             {/* Ajout de personnages featurés */}
             <Text style={{ marginTop: 12, fontWeight: 'bold', fontSize: getFontSize(15), color: themeColors.text }}>{t('simulationsTab.featuredCharacters')}</Text>
@@ -491,6 +568,7 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
               setName('');
               setRate('0.7');
               setFeaturedInputs([{ name: '', rate: '0.7' }]);
+              setPityThreshold('90');
             }}>
               <Text style={{ color: themeColors.primary, textAlign: 'center', fontSize: getFontSize(16) }}>{t('common.cancel')}</Text>
             </TouchableOpacity>
@@ -584,5 +662,16 @@ const styles = StyleSheet.create({
     padding: 14,
     alignItems: 'center',
     marginTop: 16,
+  },
+  pityBarBg: {
+    width: 140,
+    height: 8,
+    backgroundColor: '#EEE',
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  pityBarFill: {
+    height: '100%',
+    borderRadius: 8,
   },
 });
