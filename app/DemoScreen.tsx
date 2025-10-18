@@ -1,41 +1,26 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { useEffect, useState } from 'react';
+import { setNationality } from '@/redux/slices/nationalitySlice';
+import { RootState } from '@/redux/store';
+import React from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 import Onboarding from 'react-native-onboarding-swiper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useDispatch, useSelector } from 'react-redux';
 
-const DEMO_LANG_KEY = 'demo_language';
-
-/**
- * Composant d'onboarding/démo affiché au premier lancement de l'application.
- * Présente les principales fonctionnalités de Gachanote à l'utilisateur.
- *
- * @param onFinish Fonction appelée à la fin ou lors du skip de la démo.
- */
+// Demo uses app nationalitySlice for language selection
 export default function DemoScreen({ onFinish }: { onFinish: () => void }) {
   const insets = useSafeAreaInsets();
-
-  const [lang, setLang] = useState<'en' | 'fr' | 'jp'>('fr');
+  const dispatch = useDispatch();
+  const lang = useSelector((s: RootState) => s.nationality.country) || 'fr';
   const texts = require('@/data/texts.json');
   const t = (key: string) => texts[key]?.[lang] || texts[key]?.fr || key;
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const saved = await AsyncStorage.getItem(DEMO_LANG_KEY);
-        if (saved === 'en' || saved === 'fr' || saved === 'jp') setLang(saved);
-      } catch (e) { /* ignore */ }
-    })();
-  }, []);
-
-  const onChangeLang = async (next: 'en' | 'fr' | 'jp') => {
-    setLang(next);
-    try { await AsyncStorage.setItem(DEMO_LANG_KEY, next); } catch (e) { /* ignore */ }
+  const onChangeLang = (next: 'en' | 'fr' | 'jp') => {
+    dispatch(setNationality({ country: next }));
   };
 
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
-      {/* Language selector */}
+      {/* Language selector (uses nationalitySlice) */}
       <View style={{ flexDirection: 'row', justifyContent: 'center', padding: 12, marginTop: insets.top }}>
         {(['fr','en','jp'] as const).map(code => (
           <TouchableOpacity
