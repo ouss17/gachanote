@@ -523,5 +523,125 @@
         "en": "Search a gacha...",
         "fr": "Rechercher un gacha...",
         "jp": "ガチャを検索..."
+    },
+    "demo.welcome.title": {
+        "en": "Welcome to Gachanote",
+        "fr": "Bienvenue sur Gachanote",
+        "jp": "Gachanoteへようこそ"
+    },
+    "demo.welcome.subtitle": {
+        "en": "Track your rolls and spending on gacha games.",
+        "fr": "Suivez vos tirages et vos dépenses sur vos jeux gacha favoris.",
+        "jp": "ガチャの履歴と支出を追跡できます。"
+    },
+    "demo.selectGacha.title": {
+        "en": "Select a gacha",
+        "fr": "Sélectionnez un gacha",
+        "jp": "ガチャを選択"
+    },
+    "demo.selectGacha.subtitle": {
+        "en": "Choose a gacha to start tracking rolls.",
+        "fr": "Sur l’accueil, choisissez le gacha de votre choix pour commencer à suivre vos tirages.",
+        "jp": "開始するガチャを選んでください。"
+    },
+    "demo.gachaDetail.title": {
+        "en": "Gacha details",
+        "fr": "Détail du gacha",
+        "jp": "ガチャ詳細"
+    },
+    "demo.gachaDetail.subtitle": {
+        "en": "See specific rolls and details for the selected gacha.",
+        "fr": "Retrouvez ici tous les rolls spécifiques au gacha sélectionné.",
+        "jp": "選択したガチャの詳細を確認できます。"
+    },
+    "demo.addRoll.title": {
+        "en": "Add a roll",
+        "fr": "Ajoutez un tirage",
+        "jp": "ガチャを追加"
+    },
+    "demo.addRoll.subtitle": {
+        "en": "Fill fields like in the example. Resources, featured and date are required.",
+        "fr": "Renseignez les champs comme dans l’exemple. Les ressources mises, vedettes obtenues et la date sont obligatoires.",
+        "jp": "サンプルのように入力してください。リソース、獲得キャラ、日付は必須です。"
+    },
+    "demo.savedResults.title": {
+        "en": "Saved results",
+        "fr": "Résultats enregistrés",
+        "jp": "保存された結果"
+    },
+    "demo.savedResults.subtitle": {
+        "en": "Results are saved and available offline.",
+        "fr": "Vos résultats sont sauvegardés et consultables à tout moment même hors ligne.",
+        "jp": "結果は保存され、オフラインでも確認できます。"
+    },
+    "demo.simulations.title": {
+        "en": "Custom simulations",
+        "fr": "Simulations personnalisées",
+        "jp": "カスタムシミュレーション"
+    },
+    "demo.simulations.subtitle": {
+        "en": "Create banners and simulate draws to estimate your chances.",
+        "fr": "Créez vos propres bannières et simulez des tirages comme dans le jeu pour estimer vos chances.",
+        "jp": "バナーを作成して排出率をシミュレートできます。"
+    },
+    "demo.simulationForm.title": {
+        "en": "Create a banner",
+        "fr": "Créer une bannière",
+        "jp": "バナーを作成"
+    },
+    "demo.simulationForm.subtitle": {
+        "en": "Add a featured unit and side units with drop rates to configure the banner.",
+        "fr": "Ajoutez le personnage vedette et les side units avec leurs taux de drop pour configurer la bannière.",
+        "jp": "ピックアップとサイドユニットを追加して確率を設定します。"
+    },
+    "demo.simulationResult.title": {
+        "en": "Make draws",
+        "fr": "Faire des tirages",
+        "jp": "ガチャを引く"
+    },
+    "demo.simulationResult.subtitle": {
+        "en": "Perform single, x10 or x100 draws and view aggregated results.",
+        "fr": "Effectuez des tirages simples, x10 ou x100 et consultez les résultats agrégés.",
+        "jp": "単発・10連・100連で結果を確認できます。"
+    },
+    "demo.moneyTab.title": {
+        "en": "Money tab",
+        "fr": "Onglet Argent",
+        "jp": "マネー"
+    },
+    "demo.moneyTab.subtitle": {
+        "en": "Record and track your spending per gacha.",
+        "fr": "Pour les cash players, enregistrez et suivez vos dépenses sur chaque gacha.",
+        "jp": "ガチャごとの支出を記録・管理できます。"
+    },
+    "demo.gachaStats.title": {
+        "en": "Gacha statistics",
+        "fr": "Statistiques du gacha",
+        "jp": "ガチャ統計"
+    },
+    "demo.gachaStats.subtitle": {
+        "en": "See obtained units, resources and total money spent.",
+        "fr": "Consultez le nombre de persos obtenus, les ressources et l’argent total mis sur ce gacha.",
+        "jp": "獲得キャラ、リソース、総支出を確認できます。"
+    },
+    "demo.globalStats.title": {
+        "en": "Global statistics",
+        "fr": "Statistiques globales",
+        "jp": "グローバル統計"
+    },
+    "demo.globalStats.subtitle": {
+        "en": "Visualize spending across all gachas and filter by date.",
+        "fr": "Visualisez l’argent mis sur tous vos gachas, voyez sur quel jeu vous dépensez le plus et filtrez par date pour des périodes spécifiques.",
+        "jp": "全ガチャの支出を比較し、期間でフィルタリングできます。"
+    },
+    "demo.settings.title": {
+        "en": "Customize settings",
+        "fr": "Personnalisez les paramètres",
+        "jp": "設定をカスタマイズ"
+    },
+    "demo.settings.subtitle": {
+        "en": "Manage options and adapt the app to your preferences.",
+        "fr": "Gérez les options et adaptez l’application selon vos préférences.",
+        "jp": "オプションを管理してアプリをカスタマイズできます。"
     }
 }
