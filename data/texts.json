@@ -99,6 +99,11 @@
         "fr": "Vibrations",
         "jp": "バイブレーション"
     },
+    "settings.viewDemo": {
+        "en": "View demo again",
+        "fr": "Revoir la démo",
+        "jp": "デモを見る"
+    },
     "settings.dataPrivacy.title": {
         "en": "📊 Data & Privacy",
         "fr": "📊 Données & Confidentialité",

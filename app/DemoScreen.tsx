@@ -22,7 +22,6 @@ export default function DemoScreen({ onFinish }: { onFinish: () => void }) {
     <View
       style={{ flex: 1, backgroundColor: '#fff' }}
       accessible={true}
-      accessibilityRole="dialog"
       accessibilityLabel={t('settings.general.title') || 'Demo onboarding'}
     >
       {/* Language selector (uses nationalitySlice) */}
