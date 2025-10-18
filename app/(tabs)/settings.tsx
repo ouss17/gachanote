@@ -4,6 +4,7 @@ import { Theme } from '@/constants/Themes';
 import { setDevise } from '@/redux/slices/deviseSlice';
 import { addMoney, resetMoney } from '@/redux/slices/moneySlice';
 import { setNationality } from '@/redux/slices/nationalitySlice';
+import { setOnboardingSeen } from '@/redux/slices/onboardingSlice';
 import { addRoll, resetRolls } from '@/redux/slices/rollsSlice';
 import { setFontSize, setSounds, setVibrations } from '@/redux/slices/settingsSlice';
 import { addBanner, addSimulationRoll, resetSimulations } from '@/redux/slices/simulationsSlice';
@@ -15,6 +16,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import React, { useState } from 'react';
 import { Alert, Image, Modal, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
+import DemoScreen from '../DemoScreen';
 
 const LANGUAGES = [
   { code: 'fr', label: 'Français' },
@@ -37,6 +39,7 @@ const themeModes = [
 
 const Settings = () => {
   const dispatch = useDispatch();
+  const [showDemo, setShowDemo] = useState(false);
   const theme = useSelector((state: RootState) => state.theme.mode);
   const themeColors = Theme[theme as keyof typeof Theme];
   const nationality = useSelector((state: RootState) => state.nationality.country);
@@ -432,6 +435,32 @@ const Settings = () => {
             <Text style={[styles.link, { color: themeColors.primary, fontSize: getFontSize(16) }]}>{t('settings.feedback.sendAnonymous')}</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Move "Voir la démo" under Vibrations (visually below) */}
+        <View style={{ marginTop: 8 }}>
+          <TouchableOpacity
+            style={[styles.linkBtn, { backgroundColor: 'transparent' }]}
+            onPress={() => setShowDemo(true)}
+            accessibilityRole="button"
+            accessible={true}
+            accessibilityLabel={t('settings.viewDemo') || 'View demo'}
+          >
+            <Text style={[styles.link, { color: themeColors.primary, fontSize: getFontSize(16) }]}>{t('settings.viewDemo') || 'Voir la démo'}</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Demo modal (replay onboarding) */}
+        <Modal visible={showDemo} animationType="slide" transparent>
+          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }}>
+            <View style={{ flex: 1 }}>
+              <DemoScreen onFinish={() => {
+                // mark onboarding as seen and close demo
+                try { dispatch(setOnboardingSeen()); } catch (e) { /* ignore */ }
+                setShowDemo(false);
+              }} />
+            </View>
+          </View>
+        </Modal>
 
         {/* Modal Import/Export */}
         <Modal visible={showImportExport} animationType="slide" transparent>
