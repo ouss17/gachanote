@@ -65,6 +65,10 @@ export default function RollsTab({
       {/* Champ de recherche, affiché seulement s'il y a au moins un roll */}
       {rolls.length > 0 && (
         <TextInput
+          accessible={true}
+          accessibilityRole="search"
+          accessibilityLabel={t('gachaRolls.searchPlaceholder')}
+          accessibilityHint={t('gachaRolls.searchPlaceholder')}
           style={{
             borderWidth: 1,
             borderColor: themeColors.border,
@@ -87,6 +91,9 @@ export default function RollsTab({
         keyExtractor={item => item.id}
         renderItem={({ item }) => (
           <View
+            accessible={true}
+            accessibilityRole="text"
+            accessibilityLabel={`${item.nameFeatured ? item.nameFeatured + ', ' : ''}${t('common.date')}: ${new Date(item.date).toLocaleDateString(lang === 'en' ? 'en-US' : lang === 'jap' ? 'ja-JP' : 'fr-FR')}, ${t('common.resource')}: ${item.resourceAmount}`}
             style={{
               marginVertical: 8,
               padding: 8,
@@ -98,13 +105,17 @@ export default function RollsTab({
           >
             {/* Nom de la vedette si présent */}
             {item.nameFeatured ? (
-              <Text style={{
-                fontWeight: 'bold',
-                fontSize: getFontSize ? getFontSize(18) : 18,
-                textAlign: 'center',
-                color: themeColors.text,
-                marginBottom: 8,
-              }}>
+              <Text
+                accessibilityRole="header"
+                accessible={true}
+                accessibilityLabel={item.nameFeatured}
+                style={{
+                  fontWeight: 'bold',
+                  fontSize: getFontSize ? getFontSize(18) : 18,
+                  textAlign: 'center',
+                  color: themeColors.text,
+                  marginBottom: 8,
+                }}>
                 {item.nameFeatured}
               </Text>
             ) : null}
@@ -138,6 +149,10 @@ export default function RollsTab({
             {/* Actions d'édition et suppression */}
             <View style={{ flexDirection: 'row', marginTop: 8 }}>
               <TouchableOpacity
+                accessibilityRole="button"
+                accessible={true}
+                accessibilityLabel={t('common.edit')}
+                accessibilityHint={`Edit roll ${item.nameFeatured ?? ''}`}
                 onPress={() => {
                   setEditRoll(item);
                   setResourceAmount(item.resourceAmount.toString());
@@ -153,6 +168,10 @@ export default function RollsTab({
                 <AntDesign name="edit" size={getFontSize ? getFontSize(20) : 20} color={themeColors.primary} />
               </TouchableOpacity>
               <TouchableOpacity
+                accessibilityRole="button"
+                accessible={true}
+                accessibilityLabel={t('common.delete')}
+                accessibilityHint={`Delete roll ${item.nameFeatured ?? ''}`}
                 onPress={() => dispatch(removeRoll(item.id))}
               >
                 <AntDesign name="delete" size={getFontSize ? getFontSize(20) : 20} color="#FF3B30" />

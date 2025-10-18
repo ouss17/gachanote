@@ -191,7 +191,11 @@ const Settings = () => {
   ];
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: themeColors.background }}>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: themeColors.background }}
+      accessible={true}
+      accessibilityLabel={t('settings.general.title') || 'Settings'}
+    >
       <View style={{ padding: 20 }}>
         {/* Section Paramètres généraux */}
         <Text style={[styles.sectionTitle, { color: themeColors.primary, fontSize: getFontSize(18) }]}>
@@ -206,6 +210,10 @@ const Settings = () => {
             {flags.map(flag => (
               <TouchableOpacity
                 key={flag.country}
+                accessibilityRole="button"
+                accessible={true}
+                accessibilityLabel={t('settings.language') + ` ${flag.label}`}
+                accessibilityState={{ selected: nationality === flag.country }}
                 style={[
                   styles.chip,
                   {
@@ -218,8 +226,7 @@ const Settings = () => {
                     justifyContent: 'center',
                   },
                 ]}
-                onPress={() => dispatch(setNationality({ country: flag.country }))}
-              >
+                onPress={() => dispatch(setNationality({ country: flag.country }))} >
                 <Image
                   source={flag.icon}
                   style={{
@@ -247,6 +254,10 @@ const Settings = () => {
             {currencies.map(cur => (
               <TouchableOpacity
                 key={cur.currency}
+                accessibilityRole="button"
+                accessible={true}
+                accessibilityLabel={`${t('settings.currency')} ${cur.label}`}
+                accessibilityState={{ selected: devise === cur.currency }}
                 style={[
                   styles.chip,
                   {
@@ -259,8 +270,7 @@ const Settings = () => {
                     justifyContent: 'center',
                   },
                 ]}
-                onPress={() => dispatch(setDevise({ currency: cur.currency }))}
-              >
+                onPress={() => dispatch(setDevise({ currency: cur.currency }))} >
                 <Text
                   style={{
                     fontSize: getFontSize(22),
@@ -283,6 +293,10 @@ const Settings = () => {
             {themeModes.map(mode => (
               <TouchableOpacity
                 key={mode.key}
+                accessibilityRole="button"
+                accessible={true}
+                accessibilityLabel={`${t('settings.theme')} ${mode.key}`}
+                accessibilityState={{ selected: theme === mode.key }}
                 style={[
                   styles.chip,
                   {
@@ -314,6 +328,10 @@ const Settings = () => {
             {FONT_SIZES_LOCALIZED.map(size => (
               <TouchableOpacity
                 key={size.key}
+                accessibilityRole="button"
+                accessible={true}
+                accessibilityLabel={`${t('settings.fontSize')} ${size.label}`}
+                accessibilityState={{ selected: fontSize === size.key }}
                 style={[
                   styles.chip,
                   {
@@ -364,6 +382,8 @@ const Settings = () => {
         <View style={styles.row}>
           <Text style={[styles.label, { color: themeColors.text, fontSize: getFontSize(16) }]}>{t('settings.sounds')}</Text>
           <Switch
+            accessibilityLabel={t('settings.sounds')}
+            accessibilityState={{ checked: sounds }}
             value={sounds}
             onValueChange={v => { dispatch(setSounds(v)); }}
             thumbColor={sounds ? (themeColors.primary) : (themeColors.card)}
@@ -373,6 +393,8 @@ const Settings = () => {
         <View style={styles.row}>
           <Text style={[styles.label, { color: themeColors.text, fontSize: getFontSize(16) }]}>{t('settings.vibrations')}</Text>
           <Switch
+            accessibilityLabel={t('settings.vibrations')}
+            accessibilityState={{ checked: vibrations }}
             value={vibrations}
             onValueChange={v => { dispatch(setVibrations(v)); }}
             thumbColor={vibrations ? (themeColors.primary) : (themeColors.card)}
@@ -383,10 +405,22 @@ const Settings = () => {
         {/* Section Données & Confidentialité */}
         <Text style={[styles.sectionTitle, { color: themeColors.primary, marginTop: 32, fontSize: getFontSize(18) }]}>{t('settings.dataPrivacy.title')}</Text>
         <View style={styles.row}>
-          <TouchableOpacity style={styles.linkBtn} onPress={() => setShowImportExport(true)}>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessible={true}
+            accessibilityLabel={t('settings.importExport')}
+            style={styles.linkBtn}
+            onPress={() => setShowImportExport(true)}
+          >
             <Text style={[styles.link, { color: themeColors.primary, fontSize: getFontSize(16) }]}>{t('settings.importExport')}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.linkBtn} onPress={handleReset}>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessible={true}
+            accessibilityLabel={t('settings.reset')}
+            style={styles.linkBtn}
+            onPress={handleReset}
+          >
             <Text style={[styles.link, { color: '#FF3B30', fontWeight: 'bold', fontSize: getFontSize(16) }]}>{t('settings.reset')}</Text>
           </TouchableOpacity>
         </View>
@@ -480,6 +514,8 @@ const Settings = () => {
                 {t('settings.feedback.sendAnonymous')}
               </Text>
               <TextInput
+                accessibilityLabel={t('settings.feedback.placeholder')}
+                accessible={true}
                 style={[styles.input, { fontSize: getFontSize(16) }]}
                 placeholder={t('settings.feedback.placeholder')}
                 placeholderTextColor="#888"

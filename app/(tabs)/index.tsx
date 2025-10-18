@@ -46,11 +46,20 @@ export default function HomeScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      accessible={true}
+      accessibilityLabel="Home screen"
+    >
       <StatusBar style={isDark ? 'light' : 'dark'} />
 
       {/* Titre principal */}
-      <Text style={[styles.title, { color: colors.text, fontSize: getFontSize(32) }]}>
+      <Text
+        style={[styles.title, { color: colors.text, fontSize: getFontSize(32) }]}
+        accessibilityRole="header"
+        accessible={true}
+        accessibilityLabel="Gachanote"
+      >
         Gachanote
       </Text>
 
@@ -69,6 +78,9 @@ export default function HomeScreen() {
             fontSize: getFontSize(16),
           },
         ]}
+        accessible={true}
+        accessibilityLabel={t('home.searchPlaceholder')}
+        accessibilityHint="Filter the list of gachas by name"
       />
 
       {/* Liste des gachas filtrés */}
@@ -85,9 +97,22 @@ export default function HomeScreen() {
               },
             ]}
             onPress={() => router.push(`/gacha/${item.id}`)}
+            accessibilityRole="button"
+            accessible={true}
+            accessibilityLabel={`Open ${item.name}`}
+            accessibilityHint={`Open the ${item.name} gacha details`}
           >
-            <Image source={item.logo} style={styles.logo} resizeMode="contain" />
-            <Text style={[styles.gachaName, { color: colors.text, fontSize: getFontSize(20) }]}>
+            <Image
+              source={item.logo}
+              style={styles.logo}
+              resizeMode="contain"
+              accessible={true}
+              accessibilityLabel={`${item.name} logo`}
+            />
+            <Text
+              style={[styles.gachaName, { color: colors.text, fontSize: getFontSize(20) }]}
+              accessible={false}
+            >
               {item.name}
             </Text>
           </TouchableOpacity>

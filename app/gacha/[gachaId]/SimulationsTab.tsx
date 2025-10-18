@@ -32,6 +32,21 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
 
   const { cost: multiCost, label: multiLabel } = getMultiCost(String(gachaId));
 
+  // Validation helpers
+  const validateCharacters = (chars: SimulationCharacter[]) => {
+    if (!chars || chars.length === 0) return 'no-characters';
+    const names = new Set<string>();
+    for (const c of chars) {
+      if (!c.name || !String(c.name).trim()) return 'empty-name';
+      const r = Number(c.rate);
+      if (Number.isNaN(r) || r < 0 || r > 100) return 'invalid-rate';
+      const key = String(c.name).trim().toLowerCase();
+      if (names.has(key)) return 'duplicate-name';
+      names.add(key);
+    }
+    return null; // ok
+  };
+
   const handleAddFeatured = () => {
     const lastInput = featuredInputs[featuredInputs.length - 1];
     if (!lastInput.name || !lastInput.rate) return;
@@ -43,7 +58,6 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
 
   const handleAddBanner = () => {
     if (!name || !rate) return;
-    const id = Date.now().toString();
     const characters: SimulationCharacter[] = [
       { name, rate: parseFloat(rate), isFeatured: false },
       ...featuredInputs
@@ -54,6 +68,20 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
           isFeatured: true,
         })),
     ];
+
+    const err = validateCharacters(characters);
+    if (err) {
+      const map: any = {
+        'no-characters': t('simulationsTab.validation.noCharacters'),
+        'empty-name': t('simulationsTab.validation.emptyName'),
+        'invalid-rate': t('simulationsTab.validation.invalidRate'),
+        'duplicate-name': t('simulationsTab.validation.duplicateName'),
+      };
+      Alert.alert(map[err] || 'Invalid input');
+      return;
+    }
+
+    const id = Date.now().toString();
     const banner: SimulationBanner = {
       id,
       name,
@@ -68,7 +96,17 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
     setFeaturedInputs([{ name: '', rate: '0.7' }]);
   };
 
+  const MAX_ROLLS = 100000;
   const handleSimulateRoll = (banner: SimulationBanner, count: number) => {
+    const err = validateCharacters(banner.characters);
+    if (err) {
+      Alert.alert(t('simulationsTab.validation.invalidBanner') || t(`simulationsTab.validation.${err}`));
+      return;
+    }
+    if (count > MAX_ROLLS) {
+      Alert.alert(t('simulationsTab.validation.tooManyRolls'));
+      return;
+    }
     Vibration.vibrate(50);
     const results: { [name: string]: number } = {};
     for (let i = 0; i < count; i++) {
@@ -84,7 +122,7 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
       }
     }
     const rollResult = Object.entries(results).map(([name, count]) => ({ name, count }));
-    const resourceUsed = count * (multiCost / 10);
+    const resourceUsed = Math.round(count * (multiCost / 10));
     dispatch(addSimulationRoll({
       bannerId: banner.id,
       roll: {
@@ -165,6 +203,8 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
             return [...featuredEntries, ...otherEntries];
           })();
 
+          const bannerIsValid = validateCharacters(banner.characters) === null;
+
           return (
             <View style={{
               marginTop: 24,
@@ -189,19 +229,22 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
 
               <View style={{ flexDirection: 'row', marginBottom: 8 }}>
                 <TouchableOpacity
-                  style={[styles.addBtn, { marginRight: 8, backgroundColor: themeColors.primary }]}
+                  disabled={!bannerIsValid}
+                  style={[styles.addBtn, { marginRight: 8, backgroundColor: themeColors.primary, opacity: bannerIsValid ? 1 : 0.5 }]}
                   onPress={() => handleSimulateRoll(banner, 1)}
                 >
                   <Text style={{ color: '#fff', fontSize: getFontSize(14) }}>{t('simulationsTab.draw.single')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.addBtn, { marginRight: 8, backgroundColor: themeColors.primary }]}
+                  disabled={!bannerIsValid}
+                  style={[styles.addBtn, { marginRight: 8, backgroundColor: themeColors.primary, opacity: bannerIsValid ? 1 : 0.5 }]}
                   onPress={() => handleSimulateRoll(banner, 10)}
                 >
                   <Text style={{ color: '#fff', fontSize: getFontSize(14) }}>{t('simulationsTab.draw.x10')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.addBtn, { backgroundColor: themeColors.primary }]}
+                  disabled={!bannerIsValid}
+                  style={[styles.addBtn, { backgroundColor: themeColors.primary, opacity: bannerIsValid ? 1 : 0.5 }]}
                   onPress={() => handleSimulateRoll(banner, 100)}
                 >
                   <Text style={{ color: '#fff', fontSize: getFontSize(14) }}>{t('simulationsTab.draw.x100')}</Text>

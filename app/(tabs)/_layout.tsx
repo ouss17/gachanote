@@ -1,6 +1,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
+import { View } from 'react-native';
 import { useSelector } from 'react-redux';
 
 import { HapticTab } from '@/components/HapticTab';
@@ -24,50 +25,55 @@ export default function TabLayout() {
   }
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textSecondary,
-        tabBarStyle: {
-          backgroundColor: colors.card, // adapte le fond du menu au thème
-          borderTopColor: colors.border, // adapte la bordure au thème
-        },
-        headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarIconStyle: {
-          marginBottom: 2,
-          alignItems: 'center',
-          justifyContent: 'center',
-        },
-        tabBarLabelStyle: {
-          fontWeight: '700',
-          fontSize: 13,
-          letterSpacing: 1,
-          marginBottom: 8,
-          color: colors.text, // adapte la couleur du texte au thème
-        },
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="statistiques"
-        options={{
-          title: 'Statistiques',
-          tabBarIcon: ({ color }) => <MaterialIcons name="bar-chart" size={28} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: 'Paramètres',
-          tabBarIcon: ({ color }) => <MaterialIcons name="settings" size={28} color={color} />,
-        }}
-      />
-    </Tabs>
+    <View accessible={true} accessibilityLabel="Gachanote tabs" style={{ flex: 1 }}>
+      <Tabs
+        screenOptions={{
+          tabBarActiveTintColor: colors.primary,
+          tabBarInactiveTintColor: colors.textSecondary,
+          tabBarStyle: {
+            backgroundColor: colors.card, // adapte le fond du menu au thème
+            borderTopColor: colors.border, // adapte la bordure au thème
+          },
+          headerShown: false,
+          tabBarButton: HapticTab,
+          tabBarIconStyle: {
+            marginBottom: 2,
+            alignItems: 'center',
+            justifyContent: 'center',
+          },
+          tabBarLabelStyle: {
+            fontWeight: '700',
+            fontSize: 13,
+            letterSpacing: 1,
+            marginBottom: 8,
+            color: colors.text, // adapte la couleur du texte au thème
+          },
+        }}>
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: 'Home',
+            tabBarAccessibilityLabel: 'Home tab',
+            tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          }}
+        />
+        <Tabs.Screen
+          name="statistiques"
+          options={{
+            title: 'Statistiques',
+            tabBarAccessibilityLabel: 'Statistiques tab',
+            tabBarIcon: ({ color }) => <MaterialIcons name="bar-chart" size={28} color={color} />,
+          }}
+        />
+        <Tabs.Screen
+          name="settings"
+          options={{
+            title: 'Paramètres',
+            tabBarAccessibilityLabel: 'Paramètres tab',
+            tabBarIcon: ({ color }) => <MaterialIcons name="settings" size={28} color={color} />,
+          }}
+        />
+      </Tabs>
+    </View>
   );
 }
