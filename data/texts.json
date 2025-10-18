@@ -473,5 +473,55 @@
         "en": "See the money spent across all your gachas, find out which game costs you the most, and filter by date for specific periods.",
         "fr": "Visualisez l’argent mis sur tous vos gachas, voyez sur quel jeu vous dépensez le plus et filtrez par date pour des périodes spécifiques.",
         "jp": "すべてのガチャに使った金額を確認し、最も費用がかかっているゲームを見つけ、日付でフィルターして特定の期間を表示できます。"
+    },
+    "simulationsTab.draw.single": {
+        "en": "Draw",
+        "fr": "Tirage simple",
+        "jp": "単発"
+    },
+    "simulationsTab.draw.x10": {
+        "en": "Draw x10",
+        "fr": "Tirage x10",
+        "jp": "10連"
+    },
+    "simulationsTab.draw.x100": {
+        "en": "Draw x100",
+        "fr": "Tirage x100",
+        "jp": "100連"
+    },
+    "simulationsTab.viewAllResults": {
+        "en": "View all results",
+        "fr": "Afficher tous les résultats",
+        "jp": "すべての結果を表示"
+    },
+    "simulationsTab.viewAllResultsTitle": {
+        "en": "All results",
+        "fr": "Tous les résultats",
+        "jp": "すべての結果"
+    },
+    "simulationsTab.resourceUsed": {
+        "en": "Resource used",
+        "fr": "Ressource utilisée",
+        "jp": "使用リソース"
+    },
+    "simulationsTab.dropRate": {
+        "en": "Drop rate (%)",
+        "fr": "Taux de drop (%)",
+        "jp": "排出率 (%)"
+    },
+    "simulationsTab.noBanners": {
+        "en": "No banner found.",
+        "fr": "Aucune bannière trouvée.",
+        "jp": "バナーが見つかりません。"
+    },
+    "simulationsTab.totalSimulated": {
+        "en": "Total simulated rolls",
+        "fr": "Total de tirages simulés",
+        "jp": "シミュレートされた合計ガチャ数"
+    },
+    "home.searchPlaceholder": {
+        "en": "Search a gacha...",
+        "fr": "Rechercher un gacha...",
+        "jp": "ガチャを検索..."
     }
 }

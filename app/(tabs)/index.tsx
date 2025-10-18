@@ -1,14 +1,14 @@
+import { Theme } from '@/constants/Themes';
 import { GACHAS } from '@/data/gachas';
 import { setOnboardingSeen } from '@/redux/slices/onboardingSlice';
 import { RootState } from '@/redux/store';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
-import { FlatList, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { FlatList, Image, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import DemoScreen from '../DemoScreen';
-import { Theme } from '@/constants/Themes';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -21,6 +21,11 @@ export default function HomeScreen() {
       : theme === 'dark'
       ? Theme.dark
       : Theme.light;
+
+  // translation (like other screens)
+  const lang = useSelector((state: any) => state.nationality?.country) || 'fr';
+  const texts = require('@/data/texts.json');
+  const t = (key: string) => texts[key]?.[lang] || texts[key]?.fr || key;
 
   const [search, setSearch] = useState('');
 
@@ -51,7 +56,7 @@ export default function HomeScreen() {
 
       {/* Champ de recherche */}
       <TextInput
-        placeholder="Rechercher un gacha..."
+        placeholder={t('home.searchPlaceholder')}
         placeholderTextColor={colors.placeholder}
         value={search}
         onChangeText={setSearch}

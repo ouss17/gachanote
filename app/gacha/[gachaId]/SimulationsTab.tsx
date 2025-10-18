@@ -14,6 +14,11 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
   const theme = useSelector((state: RootState) => state.theme.mode);
   const themeColors = Theme[theme as keyof typeof Theme];
 
+  // translation setup (like MoneyTab)
+  let lang = useSelector((state: any) => state.nationality.country) || 'fr';
+  const texts = require('@/data/texts.json');
+  const t = (key: string) => texts[key]?.[lang] || texts[key]?.fr || key;
+
   // Champs du formulaire
   const [name, setName] = useState('');
   const [rate, setRate] = useState('0.7');
@@ -101,7 +106,7 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
     <View style={{ flex: 1, padding: 16, backgroundColor: themeColors.background }}>
       {/* Phrase d'accroche dynamique */}
       <Text style={{ fontSize: getFontSize(15), color: themeColors.primary, marginBottom: 8, fontWeight: 'bold' }}>
-        Crée tes propres bannières, choisis les personnages et leurs taux de drop, et simule ta chance comme si tu étais sur le vrai jeu !
+        {t('simulationsTab.intro')}
       </Text>
 
       {/* Champ de recherche */}
@@ -117,14 +122,14 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
             backgroundColor: themeColors.card,
             color: themeColors.text,
           }}
-          placeholder="Rechercher une bannière"
+          placeholder={t('simulationsTab.searchPlaceholder')}
           placeholderTextColor={themeColors.placeholder}
           value={search}
           onChangeText={setSearch}
         />
       )}
 
-      <Text style={{ marginTop: 8, fontWeight: 'bold', fontSize: getFontSize(18), color: themeColors.text }}>Bannières existantes</Text>
+      <Text style={{ marginTop: 8, fontWeight: 'bold', fontSize: getFontSize(18), color: themeColors.text }}>{t('simulationsTab.existingBanners')}</Text>
       <FlatList
         data={filteredBanners}
         keyExtractor={item => item.id}
@@ -184,19 +189,19 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
                   style={[styles.addBtn, { marginRight: 8, backgroundColor: themeColors.primary }]}
                   onPress={() => handleSimulateRoll(banner, 1)}
                 >
-                  <Text style={{ color: '#fff', fontSize: getFontSize(14) }}>Tirage simple</Text>
+                  <Text style={{ color: '#fff', fontSize: getFontSize(14) }}>{t('simulationsTab.draw.single')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.addBtn, { marginRight: 8, backgroundColor: themeColors.primary }]}
                   onPress={() => handleSimulateRoll(banner, 10)}
                 >
-                  <Text style={{ color: '#fff', fontSize: getFontSize(14) }}>Tirage x10</Text>
+                  <Text style={{ color: '#fff', fontSize: getFontSize(14) }}>{t('simulationsTab.draw.x10')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.addBtn, { backgroundColor: themeColors.primary }]}
                   onPress={() => handleSimulateRoll(banner, 100)}
                 >
-                  <Text style={{ color: '#fff', fontSize: getFontSize(14) }}>Tirage x100</Text>
+                  <Text style={{ color: '#fff', fontSize: getFontSize(14) }}>{t('simulationsTab.draw.x100')}</Text>
                 </TouchableOpacity>
               </View>
 
@@ -204,14 +209,14 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
               {banner.rolls.length > 0 && (
                 <View>
                   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
-                    <Text style={{ fontWeight: 'bold', fontSize: getFontSize(15), color: themeColors.text }}>Résultats :</Text>
+                    <Text style={{ fontWeight: 'bold', fontSize: getFontSize(15), color: themeColors.text }}>{t('simulationsTab.results')} :</Text>
                     <TouchableOpacity
                       onPress={() => {
                         setModalRolls(banner.rolls);
                         setShowAllResultsModal(true);
                       }}
                     >
-                      <Text style={{ color: themeColors.primary, fontSize: getFontSize(13) }}>Afficher tous les résultats</Text>
+                      <Text style={{ color: themeColors.primary, fontSize: getFontSize(13) }}>{t('simulationsTab.viewAllResults')}</Text>
                     </TouchableOpacity>
                   </View>
 
@@ -239,7 +244,7 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
 
                   {/* Resources used - enlarged with number below */}
                   <View style={{ marginTop: 12, alignItems: 'center' }}>
-                    <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(14) }}>Ressource utilisée</Text>
+                    <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(14) }}>{t('simulationsTab.resourceUsed')}</Text>
                     <Text style={{ color: themeColors.text, fontWeight: 'bold', fontSize: getFontSize(18), marginTop: 6 }}>
                       {banner.totalResourceUsed} {multiLabel.replace(/.*?([a-zA-Z]+)$/, '$1')}
                     </Text>
@@ -252,9 +257,9 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
                 const stats = getBannerStats(banner);
                 return (
                   <View style={{ marginTop: 8 }}>
-                    <Text style={{ fontWeight: 'bold', marginBottom: 4, fontSize: getFontSize(15), color: themeColors.text }}>Statistiques :</Text>
+                    <Text style={{ fontWeight: 'bold', marginBottom: 4, fontSize: getFontSize(15), color: themeColors.text }}>{t('simulationsTab.statistics')} :</Text>
                     <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(14) }}>
-                      Total de tirages simulés : {stats.totalRolls} {multiLabel.replace(/.*?([a-zA-Z]+)$/, '$1')}
+                      {t('simulationsTab.totalSimulated')}: {stats.totalRolls} {multiLabel.replace(/.*?([a-zA-Z]+)$/, '$1')}
                     </Text>
                     {stats.rates.map(r => (
                       <Text key={r.name} style={{ color: themeColors.primary, marginLeft: 8, fontSize: getFontSize(14) }}>
@@ -270,31 +275,31 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
                   style={[styles.addBtn, { backgroundColor: '#FF3B30', marginRight: 8 }]}
                   onPress={() => {
                     Alert.alert(
-                      'Confirmation',
-                      'Supprimer cette bannière et tout son historique ?',
+                      t('settings.reset') === 'Reset' ? 'Confirmation' : t('settings.reset'), // simple localized title fallback
+                      t('simulationsTab.deleteBannerConfirmMessage'),
                       [
-                        { text: 'Annuler', style: 'cancel' },
-                        { text: 'Supprimer', style: 'destructive', onPress: () => dispatch(removeBanner(banner.id)) }
+                        { text: t('common.cancel'), style: 'cancel' },
+                        { text: t('common.delete'), style: 'destructive', onPress: () => dispatch(removeBanner(banner.id)) }
                       ]
                     );
                   }}
                 >
-                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(14) }}>Supprimer</Text>
+                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(14) }}>{t('common.delete')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.addBtn, { backgroundColor: '#FFA500' }]}
                   onPress={() => {
                     Alert.alert(
-                      'Confirmation',
-                      'Réinitialiser l\'historique de cette bannière ?',
+                      t('settings.reset') === 'Reset' ? 'Confirmation' : t('settings.reset'),
+                      t('simulationsTab.resetBannerConfirmMessage'),
                       [
-                        { text: 'Annuler', style: 'cancel' },
-                        { text: 'Réinitialiser', style: 'destructive', onPress: () => dispatch(clearBannerRolls(banner.id)) }
+                        { text: t('common.cancel'), style: 'cancel' },
+                        { text: t('common.reset'), style: 'destructive', onPress: () => dispatch(clearBannerRolls(banner.id)) }
                       ]
                     );
                   }}
                 >
-                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(14) }}>Réinitialiser</Text>
+                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(14) }}>{t('common.reset')}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -303,7 +308,7 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
         contentContainerStyle={{ paddingBottom: 80 }}
         ListEmptyComponent={
           <Text style={{ color: themeColors.placeholder, textAlign: 'center', marginTop: 24, fontSize: getFontSize(15) }}>
-            Aucune bannière trouvée.
+            {t('simulationsTab.noBanners')}
           </Text>
         }
       />
@@ -326,7 +331,7 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
                 width: '92%',
                 maxHeight: '80%',
               }}>
-                <Text style={{ color: themeColors.text, fontWeight: 'bold', fontSize: getFontSize(18), marginBottom: 8 }}>Tous les résultats</Text>
+                <Text style={{ color: themeColors.text, fontWeight: 'bold', fontSize: getFontSize(18), marginBottom: 8 }}>{t('simulationsTab.viewAllResultsTitle')}</Text>
                 <FlatList
                   data={modalRolls}
                   keyExtractor={(r) => r.id}
@@ -339,7 +344,7 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
                   )}
                 />
                 <TouchableOpacity onPress={() => setShowAllResultsModal(false)} style={{ marginTop: 8, alignSelf: 'center' }}>
-                  <Text style={{ color: themeColors.primary, fontSize: getFontSize(16) }}>Fermer</Text>
+                  <Text style={{ color: themeColors.primary, fontSize: getFontSize(16) }}>{t('settings.close')}</Text>
                 </TouchableOpacity>
               </View>
             </TouchableWithoutFeedback>
@@ -366,16 +371,16 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
             borderRadius: 16,
             width: '90%',
           }}>
-            <Text style={[styles.title, { fontSize: getFontSize(18), color: themeColors.text }]}>Créer une bannière de simulation</Text>
+            <Text style={[styles.title, { fontSize: getFontSize(18), color: themeColors.text }]}>{t('simulationsTab.addBannerModalTitle')}</Text>
             <TextInput
               style={[styles.input, { fontSize: getFontSize(16), color: themeColors.text, backgroundColor: themeColors.card, borderColor: themeColors.border }]
               }
-              placeholder="Nom du perso vedette"
+              placeholder={t('gachaRolls.form.nameFeatured')}
               placeholderTextColor={themeColors.placeholder}
               value={name}
               onChangeText={setName}
             />
-            <Text style={{ marginBottom: 4, fontSize: getFontSize(14), color: themeColors.text }}>Taux de drop (%)</Text>
+            <Text style={{ marginBottom: 4, fontSize: getFontSize(14), color: themeColors.text }}>{t('simulationsTab.dropRate')}</Text>
             <TextInput
               style={[styles.input, { fontSize: getFontSize(16), color: themeColors.text, backgroundColor: themeColors.card, borderColor: themeColors.border }]
               }
@@ -387,13 +392,13 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
             />
 
             {/* Ajout de personnages featurés */}
-            <Text style={{ marginTop: 12, fontWeight: 'bold', fontSize: getFontSize(15), color: themeColors.text }}>Personnages featurés (optionnel)</Text>
+            <Text style={{ marginTop: 12, fontWeight: 'bold', fontSize: getFontSize(15), color: themeColors.text }}>{t('simulationsTab.featuredCharacters')}</Text>
             {featuredInputs.map((input, idx) => (
               <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
                 <TextInput
                   style={[styles.input, { flex: 1, marginRight: 8, fontSize: getFontSize(16), color: themeColors.text, backgroundColor: themeColors.card, borderColor: themeColors.border }]
                   }
-                  placeholder="Nom du perso"
+                  placeholder={t('gachaRolls.form.nameFeatured')}
                   placeholderTextColor={themeColors.placeholder}
                   value={input.name}
                   onChangeText={text => {
@@ -405,7 +410,7 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
                 <TextInput
                   style={[styles.input, { width: 70, marginRight: 8, fontSize: getFontSize(16), color: themeColors.text, backgroundColor: themeColors.card, borderColor: themeColors.border }]
                   }
-                  placeholder="Taux"
+                  placeholder={t('simulationsTab.dropRate')}
                   placeholderTextColor={themeColors.placeholder}
                   value={input.rate}
                   onChangeText={text => {
@@ -433,7 +438,7 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
             ))}
 
             <TouchableOpacity style={[styles.validateBtn, { backgroundColor: themeColors.success }]} onPress={() => { handleAddBanner(); setShowModal(false); }}>
-              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>Ajouter la bannière</Text>
+              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>{t('simulationsTab.addBannerButton')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={{ marginTop: 16 }} onPress={() => {
               setShowModal(false);
@@ -441,7 +446,7 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
               setRate('0.7');
               setFeaturedInputs([{ name: '', rate: '0.7' }]);
             }}>
-              <Text style={{ color: themeColors.primary, textAlign: 'center', fontSize: getFontSize(16) }}>Annuler</Text>
+              <Text style={{ color: themeColors.primary, textAlign: 'center', fontSize: getFontSize(16) }}>{t('common.cancel')}</Text>
             </TouchableOpacity>
           </View>
         </View>
