@@ -1,6 +1,10 @@
-import { Image, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useEffect, useState } from 'react';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
 import Onboarding from 'react-native-onboarding-swiper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+const DEMO_LANG_KEY = 'demo_language';
 
 /**
  * Composant d'onboarding/démo affiché au premier lancement de l'application.
@@ -11,75 +15,131 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 export default function DemoScreen({ onFinish }: { onFinish: () => void }) {
   const insets = useSafeAreaInsets();
 
+  const [lang, setLang] = useState<'en' | 'fr' | 'jp'>('fr');
+  const texts = require('@/data/texts.json');
+  const t = (key: string) => texts[key]?.[lang] || texts[key]?.fr || key;
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const saved = await AsyncStorage.getItem(DEMO_LANG_KEY);
+        if (saved === 'en' || saved === 'fr' || saved === 'jp') setLang(saved);
+      } catch (e) { /* ignore */ }
+    })();
+  }, []);
+
+  const onChangeLang = async (next: 'en' | 'fr' | 'jp') => {
+    setLang(next);
+    try { await AsyncStorage.setItem(DEMO_LANG_KEY, next); } catch (e) { /* ignore */ }
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
+      {/* Language selector */}
+      <View style={{ flexDirection: 'row', justifyContent: 'center', padding: 12, marginTop: insets.top }}>
+        {(['fr','en','jp'] as const).map(code => (
+          <TouchableOpacity
+            key={code}
+            onPress={() => onChangeLang(code)}
+            style={{
+              marginHorizontal: 8,
+              paddingVertical: 6,
+              paddingHorizontal: 12,
+              borderRadius: 20,
+              backgroundColor: lang === code ? '#6C4BFF' : '#EEE'
+            }}
+          >
+            <Text style={{ color: lang === code ? '#fff' : '#333', fontWeight: '600' }}>
+              {code.toUpperCase()}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
       <Onboarding
         onDone={onFinish}
         onSkip={onFinish}
         bottomBarHighlight={false}
         containerStyles={{ flex: 1 }}
-        bottomBarColor="#fff" // Ajoute un fond blanc à la barre du bas
-        bottomBarHeight={72 + insets.bottom} // Augmente la hauteur de la barre du bas
+        bottomBarColor="#fff"
+        bottomBarHeight={72 + insets.bottom}
         pages={[
           {
             backgroundColor: '#fff',
             image: <Image source={require('@/assets/images/icon.png')} style={{ width: 120, height: 120 }} />,
-            title: 'Bienvenue sur Gachanote',
-            subtitle: 'Suivez vos tirages et vos dépenses sur vos jeux gacha favoris.',
-          },
-          {
-            backgroundColor: '#f2f2f2',
-            image: <Image source={require('@/assets/flags/fr.png')} style={{ width: 80, height: 60 }} />,
-            title: 'Choisissez votre nationalité',
-            subtitle: 'La devise s’adapte automatiquement.',
+            title: t('demo.welcome.title'),
+            subtitle: t('demo.welcome.subtitle'),
           },
           {
             backgroundColor: '#fff',
-            image: <Image source={require('@/assets/demo/accueil.jpg')} style={{ width: 220, height: 400, borderRadius: 16 }} />,
-            title: 'Sélectionnez un gacha',
-            subtitle: 'Sur l’accueil, choisissez le gacha de votre choix pour commencer à suivre vos tirages.',
+            image: <Image source={require('@/assets/demo/accueilv2.jpg')} style={{ width: 220, height: 400, borderRadius: 16 }} />,
+            title: t('demo.selectGacha.title'),
+            subtitle: t('demo.selectGacha.subtitle'),
           },
           {
             backgroundColor: '#fff',
-            image: <Image source={require('@/assets/demo/detail_1.jpg')} style={{ width: 220, height: 400, borderRadius: 16 }} />,
-            title: 'Détail du gacha',
-            subtitle: 'Retrouvez ici tous les rolls spécifiques au gacha sélectionné.',
+            image: <Image source={require('@/assets/demo/rollsv2.jpg')} style={{ width: 220, height: 400, borderRadius: 16 }} />,
+            title: t('demo.gachaDetail.title'),
+            subtitle: t('demo.gachaDetail.subtitle'),
           },
           {
             backgroundColor: '#fff',
-            image: <Image source={require('@/assets/demo/form_1.jpg')} style={{ width: 220, height: 400, borderRadius: 16 }} />,
-            title: 'Ajoutez un tirage',
-            subtitle: 'Renseignez les champs comme dans l’exemple. Les ressources mises, vedettes obtenues et la date sont obligatoires.',
+            image: <Image source={require('@/assets/demo/form_rolls.jpg')} style={{ width: 220, height: 400, borderRadius: 16 }} />,
+            title: t('demo.addRoll.title'),
+            subtitle: t('demo.addRoll.subtitle'),
           },
           {
             backgroundColor: '#fff',
-            image: <Image source={require('@/assets/demo/detail_2.jpg')} style={{ width: 220, height: 400, borderRadius: 16 }} />,
-            title: 'Résultats enregistrés',
-            subtitle: 'Vos résultats sont sauvegardés et consultables à tout moment.',
+            image: <Image source={require('@/assets/demo/rolls_result.jpg')} style={{ width: 220, height: 400, borderRadius: 16 }} />,
+            title: t('demo.savedResults.title'),
+            subtitle: t('demo.savedResults.subtitle'),
+          },
+
+          // Simulation pages
+          {
+            backgroundColor: '#fff',
+            image: <Image source={require('@/assets/demo/simulationsv2.jpg')} style={{ width: 220, height: 400, borderRadius: 16 }} />,
+            title: t('demo.simulations.title'),
+            subtitle: t('demo.simulations.subtitle'),
           },
           {
             backgroundColor: '#fff',
-            image: <Image source={require('@/assets/demo/form_2.jpg')} style={{ width: 220, height: 400, borderRadius: 16 }} />,
-            title: 'Onglet Argent',
-            subtitle: 'Pour les cash players, enregistrez et suivez vos dépenses sur chaque gacha.',
+            image: <Image source={require('@/assets/demo/simulation_form.jpg')} style={{ width: 220, height: 400, borderRadius: 16 }} />,
+            title: t('demo.simulationForm.title'),
+            subtitle: t('demo.simulationForm.subtitle'),
           },
           {
             backgroundColor: '#fff',
-            image: <Image source={require('@/assets/demo/detail_3.jpg')} style={{ width: 220, height: 400, borderRadius: 16 }} />,
-            title: 'Dépenses enregistrées',
-            subtitle: 'Comme pour les rolls, vos dépenses sont sauvegardées et affichées.',
+            image: <Image source={require('@/assets/demo/simulation_result.jpg')} style={{ width: 220, height: 400, borderRadius: 16 }} />,
+            title: t('demo.simulationResult.title'),
+            subtitle: t('demo.simulationResult.subtitle'),
+          },
+
+          {
+            backgroundColor: '#fff',
+            image: <Image source={require('@/assets/demo/moneyv2.jpg')} style={{ width: 220, height: 400, borderRadius: 16 }} />,
+            title: t('demo.moneyTab.title'),
+            subtitle: t('demo.moneyTab.subtitle'),
           },
           {
             backgroundColor: '#fff',
-            image: <Image source={require('@/assets/demo/detail_4.jpg')} style={{ width: 220, height: 400, borderRadius: 16 }} />,
-            title: 'Statistiques du gacha',
-            subtitle: 'Consultez le nombre de persos obtenus, les ressources et l’argent total mis sur ce gacha.',
+            image: <Image source={require('@/assets/demo/detail_4v2.jpg')} style={{ width: 220, height: 400, borderRadius: 16 }} />,
+            title: t('demo.gachaStats.title'),
+            subtitle: t('demo.gachaStats.subtitle'),
           },
           {
             backgroundColor: '#fff',
-            image: <Image source={require('@/assets/demo/stats.jpg')} style={{ width: 220, height: 400, borderRadius: 16 }} />,
-            title: 'Statistiques globales',
-            subtitle: 'Visualisez l’argent mis sur tous vos gachas, voyez sur quel jeu vous dépensez le plus et filtrez par date pour des périodes spécifiques.',
+            image: <Image source={require('@/assets/demo/statsv2.jpg')} style={{ width: 220, height: 400, borderRadius: 16 }} />,
+            title: t('demo.globalStats.title'),
+            subtitle: t('demo.globalStats.subtitle'),
+          },
+
+          // Settings page
+          {
+            backgroundColor: '#fff',
+            image: <Image source={require('@/assets/demo/settingsv2.jpg')} style={{ width: 220, height: 420, borderRadius: 16 }} />,
+            title: t('demo.settings.title'),
+            subtitle: t('demo.settings.subtitle'),
           },
         ]}
       />

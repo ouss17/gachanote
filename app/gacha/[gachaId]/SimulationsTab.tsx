@@ -96,9 +96,12 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
     }));
   };
 
+  // show newest banners first (most recently added first)
   const filteredBanners = banners
     .filter(b => b.gachaId === String(gachaId))
-    .filter(b => b.name.toLowerCase().includes(search.trim().toLowerCase()));
+    .filter(b => b.name.toLowerCase().includes(search.trim().toLowerCase()))
+    .slice()
+    .reverse();
 
   const hasAnyBanner = banners.some(b => b.gachaId === String(gachaId));
 
