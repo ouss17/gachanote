@@ -99,6 +99,36 @@
         "fr": "Vibrations",
         "jp": "バイブレーション"
     },
+    "settings.pity.title": {
+        "en": "Pity (global)",
+        "fr": "Pity (global)",
+        "jp": "ピティ（全体）"
+    },
+    "settings.pity.description": {
+        "en": "Enable/disable the global pity system. You can still set per‑banner pity in simulations.",
+        "fr": "Activer/désactiver le système de pity global. Tu peux toujours définir une pity par bannière dans les simulations.",
+        "jp": "グローバルピティシステムを有効/無効にします。バナーごとに設定することもできます。"
+    },
+    "settings.pity.defaultLabel": {
+        "en": "Default threshold",
+        "fr": "Seuil par défaut",
+        "jp": "デフォルトしきい値"
+    },
+    "simulationsTab.pityInfoButton": {
+        "en": "Pity info",
+        "fr": "Info pity",
+        "jp": "ピティ情報"
+    },
+    "simulationsTab.pityInfoTitle": {
+        "en": "How pity works",
+        "fr": "Comment fonctionne la pity",
+        "jp": "ピティの仕組み"
+    },
+    "simulationsTab.pityInfo": {
+        "en": "Pity guarantees the banner \"vedette\" (first character) on the Nth pull after N-1 pulls without it. You can set per‑banner pity or use the global default. Disable global pity to rely only on per‑banner settings.",
+        "fr": "La pity garantit le personnage « vedette » (premier personnage) au Nᵉ tirage après N‑1 tirages sans lui. Tu peux définir une pity par bannière ou utiliser la valeur globale. Désactive la pity globale pour n'utiliser que les paramètres par bannière.",
+        "jp": "ピティは N-1 回の未入手の後、N 回目に「ヴェデット」（最初のキャラ）を保証します。バナーごとの設定かグローバルのデフォルトを使えます。グローバルピティを無効にするとバナーごとの設定のみが使われます。"
+    },
     "settings.viewDemo": {
         "en": "View demo again",
         "fr": "Revoir la démo",
@@ -513,6 +543,21 @@
         "en": "Drop rate (%)",
         "fr": "Taux de drop (%)",
         "jp": "排出率 (%)"
+    },
+    "simulationsTab.pityThresholdLabel": {
+        "en": "Pity threshold",
+        "fr": "Seuil de pity",
+        "jp": "ピティ閾値"
+    },
+    "simulationsTab.pityRemaining": {
+        "en": "remaining",
+        "fr": "restant(s)",
+        "jp": "残り"
+    },
+    "simulationsTab.pityOnNext": {
+        "en": "Pity on next pull",
+        "fr": "Pity au tirage suivant",
+        "jp": "次のガチャでピティ発動"
     },
     "simulationsTab.noBanners": {
         "en": "No banner found.",

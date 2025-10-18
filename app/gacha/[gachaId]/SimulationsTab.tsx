@@ -139,36 +139,30 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
       return;
     }
     Vibration.vibrate(50);
+
     const results: { [name: string]: number } = {};
-    // Use banner-specific pityThreshold if provided, otherwise fallback to default 90
-    const PITY_DEFAULT = 90;
-    const PITY_THRESHOLD = typeof banner.pityThreshold === 'number' ? banner.pityThreshold : PITY_DEFAULT;
 
-    const featuredChars = banner.characters.filter(c => c.isFeatured);
-    const hasFeatured = featuredChars.length > 0;
-    const featuredTotalRate = featuredChars.reduce((s, c) => s + Number(c.rate), 0);
-
-    // target the vedette (first character) for pity
+    // vedette = first character (target of pity)
     const vedette = banner.characters[0];
     const vedetteName = vedette?.name;
-    const vedetteRate = vedette ? Number(vedette.rate) : 0;
-    const hasVedette = !!vedetteName;
+
+    // determine pity threshold for this banner (null = disabled)
+    const PITY_THRESHOLD = typeof banner.pityThreshold === 'number' && banner.pityThreshold > 0 ? banner.pityThreshold : null;
 
     // start pity counter from history (pulls since last vedette)
     let consecutiveNoVedette = computePityProgress(banner);
     console.debug('pity start', { bannerId: banner.id, consecutiveNoVedette, PITY_THRESHOLD });
 
+    // interpret threshold N as "guarantee on the Nth pull" -> trigger when consecutiveNoVedette >= N-1
+    const pityTriggerAt = PITY_THRESHOLD ? Math.max(0, PITY_THRESHOLD - 1) : Number.POSITIVE_INFINITY;
+
     for (let i = 0; i < count; i++) {
       let obtained: string | null = null;
 
-      // pity activation when threshold reached (if pity enabled) -> force vedette
-      // Interpret threshold N as "guarantee on the Nth pull".
-      // consecutiveNoVedette counts how many pulls WITHOUT vedette have already occurred.
-      // To guarantee on the Nth pull we must force when consecutiveNoVedette >= N-1.
-      const pityTriggerAt = PITY_THRESHOLD > 0 ? Math.max(0, PITY_THRESHOLD - 1) : Number.POSITIVE_INFINITY;
-      if (hasVedette && PITY_THRESHOLD > 0 && consecutiveNoVedette >= pityTriggerAt) {
-        console.debug('pity forced (vedette)', { bannerId: banner.id, pullIndex: i, consecutiveNoVedette, pityTriggerAt });
+      // force vedette when the counter indicates the current pull should be guaranteed
+      if (vedetteName && PITY_THRESHOLD && consecutiveNoVedette >= pityTriggerAt) {
         obtained = vedetteName;
+        console.debug('pity forced (vedette)', { bannerId: banner.id, pullIndex: i + 1, consecutiveNoVedette, PITY_THRESHOLD });
       } else {
         for (const char of banner.characters) {
           if (Math.random() * 100 < char.rate) {
@@ -179,16 +173,18 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
       }
 
       if (obtained) {
-        // check if obtained is the vedette
-        const isVedetteObtained = obtained === vedetteName;
-        if (isVedetteObtained) console.debug('vedette obtained', { bannerId: banner.id, obtained, i, consecutiveNoVedette });
         results[obtained] = (results[obtained] || 0) + 1;
-        if (isVedetteObtained) consecutiveNoVedette = 0;
-        else consecutiveNoVedette++;
+        if (obtained === vedetteName) {
+          console.debug('vedette obtained', { bannerId: banner.id, obtained, i: i + 1 });
+          consecutiveNoVedette = 0;
+        } else {
+          consecutiveNoVedette++;
+        }
       } else {
         consecutiveNoVedette++;
       }
     }
+
     const rollResult = Object.entries(results).map(([name, count]) => ({ name, count }));
     const resourceUsed = Math.round(count * (multiCost / 10));
     dispatch(addSimulationRoll({
@@ -282,14 +278,39 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
               borderRadius: 12,
               backgroundColor: themeColors.card
             }}>
-              {/* Title bigger and centered */}
-              <Text style={{
-                fontWeight: 'bold',
-                fontSize: getFontSize(20),
-                color: themeColors.text,
-                textAlign: 'center',
-                marginBottom: 8
-              }}>{banner.name}</Text>
+              {/* Title + pity threshold badge (configured value shown right) */}
+              {(() => {
+                const threshold = typeof banner.pityThreshold === 'number' && banner.pityThreshold > 0 ? banner.pityThreshold : null;
+                const badgeText = threshold ? `${t('simulationsTab.pityThresholdLabel') || 'Pity'}: ${threshold}` : null;
+                const progress = computePityProgress(banner);
+                const remaining = threshold ? Math.max(0, threshold - progress) : null;
+
+                return (
+                  <View style={{ marginBottom: 8 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                      <Text style={{
+                        fontWeight: 'bold',
+                        fontSize: getFontSize(20),
+                        color: themeColors.text,
+                        textAlign: 'left',
+                        flex: 1
+                      }}>{banner.name}</Text>
+                      {badgeText ? (
+                        <View style={styles.pityBadge}>
+                          <Text style={styles.pityBadgeText}>{badgeText}</Text>
+                        </View>
+                      ) : null}
+                    </View>
+
+                    {/* Remaining pulls until pity: shown under title (left) */}
+                    {remaining !== null && (
+                      <Text style={{ color: themeColors.placeholder, marginTop: 6, fontSize: getFontSize(13) }}>
+                        {remaining === 0 ? (t('simulationsTab.pityOnNext') || 'Pity on next pull') : `${remaining} ${t('simulationsTab.pityRemaining') || 'remaining'}`}
+                      </Text>
+                    )}
+                  </View>
+                );
+              })()}
 
               <Text style={{ color: themeColors.placeholder, marginBottom: 8, fontSize: getFontSize(14) }}>
                 {banner.characters.map(c => `${c.name} (${c.rate}%)`).join(', ')}
@@ -673,5 +694,17 @@ const styles = StyleSheet.create({
   pityBarFill: {
     height: '100%',
     borderRadius: 8,
+  },
+  pityBadge: {
+    backgroundColor: '#FFCC00',
+    borderRadius: 12,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    marginLeft: 8,
+  },
+  pityBadgeText: {
+    color: '#333',
+    fontWeight: 'bold',
+    fontSize: 12,
   },
 });
