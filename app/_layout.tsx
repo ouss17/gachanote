@@ -4,6 +4,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SystemUI from 'expo-system-ui';
 import { useEffect } from 'react';
+import { View } from 'react-native';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -29,12 +30,18 @@ export default function RootLayout() {
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="+not-found" options={{ headerShown: false }} />
-            <Stack.Screen name="gacha/[gachaId]/index" options={{ headerShown: false }} />
-          </Stack>
-          <StatusBar style="auto" />
+          <View
+            accessible={true}
+            accessibilityLabel="Gachanote application"
+            style={{ flex: 1 }}
+          >
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="+not-found" options={{ headerShown: false }} />
+              <Stack.Screen name="gacha/[gachaId]/index" options={{ headerShown: false }} />
+            </Stack>
+            <StatusBar style="auto" />
+          </View>
         </ThemeProvider>
       </PersistGate>
     </Provider>

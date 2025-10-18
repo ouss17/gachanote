@@ -42,15 +42,70 @@ export default function StatsTab({
   let lang = useSelector((state: any) => state.nationality.country) || 'fr';
   const t = (key: string) => texts[key]?.[lang] || texts[key]?.fr || key;
 
+  // StatCircle moved inside the component so it can use `t` from closure (fixes "Cannot find name 't'")
+  const StatCircle = ({
+    label,
+    value,
+    color,
+    borderColor,
+    onPress,
+    selected,
+    fontSize,
+    labelFontSize,
+  }: {
+    label: string;
+    value: string;
+    color: string;
+    borderColor: string;
+    onPress?: () => void;
+    selected?: boolean;
+    fontSize: number;
+    labelFontSize: number;
+  }) => {
+    return (
+      <TouchableOpacity
+        activeOpacity={onPress ? 0.7 : 1}
+        onPress={onPress}
+        accessibilityRole={onPress ? 'button' : 'text'}
+        accessible={true}
+        accessibilityLabel={`${label.replace(/\n/g, ' ')} — ${value}`}
+        accessibilityHint={onPress ? t('common.edit') || 'Toggle percent/absolute' : undefined}
+        accessibilityState={{ selected: !!selected }}
+        style={{ alignItems: 'center', marginHorizontal: 12 }}
+      >
+        <View
+          style={{
+            width: 90,
+            height: 90,
+            borderRadius: 45,
+            borderWidth: 5,
+            borderColor,
+            backgroundColor: color,
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginBottom: 8,
+          }}
+        >
+          <Text style={{ fontWeight: 'bold', fontSize, color: borderColor }}>{value}</Text>
+        </View>
+        <Text style={{ color: borderColor, fontWeight: 'bold', textAlign: 'center', fontSize: labelFontSize }}>{label}</Text>
+      </TouchableOpacity>
+    );
+  };
+
   return (
-    <View style={{
-      padding: 24,
-      borderRadius: 16,
-      backgroundColor: themeColors.card,
-      marginBottom: 24,
-      alignItems: 'center'
-    }}>
-      <Text style={{ color: themeColors.text, fontSize: getFontSize(18), fontWeight: 'bold', marginBottom: 12 }}>
+    <View
+      accessible={true}
+      accessibilityLabel={t('gachaRolls.stats.title')}
+      style={{
+        padding: 24,
+        borderRadius: 16,
+        backgroundColor: themeColors.card,
+        marginBottom: 24,
+        alignItems: 'center'
+      }}
+    >
+      <Text accessibilityRole="header" style={{ color: themeColors.text, fontSize: getFontSize(18), fontWeight: 'bold', marginBottom: 12 }}>
         {t('gachaRolls.stats.title')}
       </Text>
       <View style={{
@@ -71,6 +126,7 @@ export default function StatsTab({
           borderColor={themeColors.primary}
           fontSize={getFontSize(20)}
           labelFontSize={getFontSize(13)}
+          selected={false}
         />
         <StatCircle
           label={t('common.featured')}
@@ -84,6 +140,7 @@ export default function StatsTab({
           onPress={() =>
             setShowStatsPercent((s: any) => ({ ...s, featured: !s.featured }))
           }
+          selected={!!showStatsPercent.featured}
           fontSize={getFontSize(20)}
           labelFontSize={getFontSize(13)}
         />
@@ -99,6 +156,7 @@ export default function StatsTab({
           onPress={() =>
             setShowStatsPercent((s: any) => ({ ...s, spook: !s.spook }))
           }
+          selected={!!showStatsPercent.spook}
           fontSize={getFontSize(20)}
           labelFontSize={getFontSize(13)}
         />
@@ -114,6 +172,7 @@ export default function StatsTab({
           onPress={() =>
             setShowStatsPercent((s: any) => ({ ...s, sideUnit: !s.sideUnit }))
           }
+          selected={!!showStatsPercent.sideUnit}
           fontSize={getFontSize(20)}
           labelFontSize={getFontSize(13)}
         />
@@ -131,63 +190,16 @@ export default function StatsTab({
         <Text style={{ color: themeColors.text, fontWeight: 'bold', fontSize: getFontSize(16) }}>
           {t('gachaRolls.stats.moneySpent')}
         </Text>
-        <Text style={{ color: themeColors.text, fontSize: getFontSize(22), fontWeight: 'bold', marginTop: 8 }}>
+        <Text
+          accessible={true}
+          accessibilityRole="text"
+          accessibilityLabel={`${totalMoney.toLocaleString('fr-FR')} ${currency}`}
+          style={{ color: themeColors.text, fontSize: getFontSize(22), fontWeight: 'bold', marginTop: 8 }}
+        >
           {totalMoney.toLocaleString('fr-FR')} {currency}
         </Text>
       </View>
     </View>
-  );
-}
-
-/**
- * Affiche un cercle statistique interactif (valeur ou pourcentage).
- *
- * @param label Libellé du cercle
- * @param value Valeur affichée
- * @param color Couleur de fond
- * @param borderColor Couleur de la bordure et du texte
- * @param onPress Fonction appelée au clic (pour basculer valeur/pourcentage)
- * @param fontSize Taille de la valeur
- * @param labelFontSize Taille du label
- */
-function StatCircle({
-  label,
-  value,
-  color,
-  borderColor,
-  onPress,
-  fontSize,
-  labelFontSize,
-}: {
-  label: string,
-  value: string,
-  color: string,
-  borderColor: string,
-  onPress?: () => void,
-  fontSize: number,
-  labelFontSize: number,
-}) {
-  return (
-    <TouchableOpacity
-      activeOpacity={onPress ? 0.7 : 1}
-      onPress={onPress}
-      style={{ alignItems: 'center', marginHorizontal: 12 }}
-    >
-      <View style={{
-        width: 90,
-        height: 90,
-        borderRadius: 45,
-        borderWidth: 5,
-        borderColor,
-        backgroundColor: color,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 8,
-      }}>
-        <Text style={{ fontWeight: 'bold', fontSize, color: borderColor }}>{value}</Text>
-      </View>
-      <Text style={{ color: borderColor, fontWeight: 'bold', textAlign: 'center', fontSize: labelFontSize }}>{label}</Text>
-    </TouchableOpacity>
   );
 }
 

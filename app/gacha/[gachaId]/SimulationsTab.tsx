@@ -23,6 +23,7 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
   const [name, setName] = useState('');
   const [rate, setRate] = useState('0.7');
   const [featuredInputs, setFeaturedInputs] = useState([{ name: '', rate: '0.7' }]);
+  const [pityThreshold, setPityThreshold] = useState('90'); // default shown in form (string for TextInput)
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
 
@@ -31,6 +32,49 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
   const [modalRolls, setModalRolls] = useState<any[]>([]);
 
   const { cost: multiCost, label: multiLabel } = getMultiCost(String(gachaId));
+
+  // Calcule le nombre de pulls effectués depuis le dernier obtention du "vedette" (premier personnage)
+  // On utilise roll.resourceUsed pour estimer le nombre de pulls dans chaque roll :
+  // pullsInRoll ≈ Math.floor(resourceUsed / (multiCost / 10))
+  const computePityProgress = (banner: SimulationBanner) => {
+    const vedetteName = banner?.characters?.[0]?.name;
+    if (!vedetteName || !banner || !banner.rolls || banner.rolls.length === 0) return 0;
+    let pullsSinceVedette = 0;
+    // itérer du plus récent au plus ancien
+    const rollsReversed = banner.rolls.slice().reverse();
+    for (const roll of rollsReversed) {
+      // compter combien de vedette sont présents dans ce roll
+      const vedetteCountInRoll = roll.results.reduce((sum: number, r: any) => {
+        return sum + (r.name === vedetteName ? r.count : 0);
+      }, 0);
+
+      // approximer le nombre de pulls dans ce roll (utiliser floor)
+      const pullsInRoll = multiCost && multiCost > 0 ? Math.floor(roll.resourceUsed / (multiCost / 10)) : 0;
+
+      // si ce roll contient la vedette, on considère que le dernier vedette est à l'intérieur de ce roll
+      if (vedetteCountInRoll > 0) {
+        break;
+      }
+
+      pullsSinceVedette += pullsInRoll || 0;
+    }
+    return pullsSinceVedette;
+  };
+
+  // Validation helpers
+  const validateCharacters = (chars: SimulationCharacter[]) => {
+    if (!chars || chars.length === 0) return 'no-characters';
+    const names = new Set<string>();
+    for (const c of chars) {
+      if (!c.name || !String(c.name).trim()) return 'empty-name';
+      const r = Number(c.rate);
+      if (Number.isNaN(r) || r < 0 || r > 100) return 'invalid-rate';
+      const key = String(c.name).trim().toLowerCase();
+      if (names.has(key)) return 'duplicate-name';
+      names.add(key);
+    }
+    return null; // ok
+  };
 
   const handleAddFeatured = () => {
     const lastInput = featuredInputs[featuredInputs.length - 1];
@@ -43,7 +87,6 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
 
   const handleAddBanner = () => {
     if (!name || !rate) return;
-    const id = Date.now().toString();
     const characters: SimulationCharacter[] = [
       { name, rate: parseFloat(rate), isFeatured: false },
       ...featuredInputs
@@ -54,6 +97,20 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
           isFeatured: true,
         })),
     ];
+
+    const err = validateCharacters(characters);
+    if (err) {
+      const map: any = {
+        'no-characters': t('simulationsTab.validation.noCharacters'),
+        'empty-name': t('simulationsTab.validation.emptyName'),
+        'invalid-rate': t('simulationsTab.validation.invalidRate'),
+        'duplicate-name': t('simulationsTab.validation.duplicateName'),
+      };
+      Alert.alert(map[err] || 'Invalid input');
+      return;
+    }
+
+    const id = Date.now().toString();
     const banner: SimulationBanner = {
       id,
       name,
@@ -61,30 +118,75 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
       rolls: [],
       totalResourceUsed: 0,
       gachaId: String(gachaId),
+      pityThreshold: pityThreshold ? Number(pityThreshold) : null,
     };
     dispatch(addBanner(banner));
     setName('');
     setRate('0.7');
     setFeaturedInputs([{ name: '', rate: '0.7' }]);
+    setPityThreshold('90');
   };
 
+  const MAX_ROLLS = 100000;
   const handleSimulateRoll = (banner: SimulationBanner, count: number) => {
+    const err = validateCharacters(banner.characters);
+    if (err) {
+      Alert.alert(t('simulationsTab.validation.invalidBanner') || t(`simulationsTab.validation.${err}`));
+      return;
+    }
+    if (count > MAX_ROLLS) {
+      Alert.alert(t('simulationsTab.validation.tooManyRolls'));
+      return;
+    }
     Vibration.vibrate(50);
+
     const results: { [name: string]: number } = {};
+
+    // vedette = first character (target of pity)
+    const vedette = banner.characters[0];
+    const vedetteName = vedette?.name;
+
+    // determine pity threshold for this banner (null = disabled)
+    const PITY_THRESHOLD = typeof banner.pityThreshold === 'number' && banner.pityThreshold > 0 ? banner.pityThreshold : null;
+
+    // start pity counter from history (pulls since last vedette)
+    let consecutiveNoVedette = computePityProgress(banner);
+    console.debug('pity start', { bannerId: banner.id, consecutiveNoVedette, PITY_THRESHOLD });
+
+    // interpret threshold N as "guarantee on the Nth pull" -> trigger when consecutiveNoVedette >= N-1
+    const pityTriggerAt = PITY_THRESHOLD ? Math.max(0, PITY_THRESHOLD - 1) : Number.POSITIVE_INFINITY;
+
     for (let i = 0; i < count; i++) {
-      let obtained = null;
-      for (const char of banner.characters) {
-        if (Math.random() * 100 < char.rate) {
-          obtained = char.name;
-          break;
+      let obtained: string | null = null;
+
+      // force vedette when the counter indicates the current pull should be guaranteed
+      if (vedetteName && PITY_THRESHOLD && consecutiveNoVedette >= pityTriggerAt) {
+        obtained = vedetteName;
+        console.debug('pity forced (vedette)', { bannerId: banner.id, pullIndex: i + 1, consecutiveNoVedette, PITY_THRESHOLD });
+      } else {
+        for (const char of banner.characters) {
+          if (Math.random() * 100 < char.rate) {
+            obtained = char.name;
+            break;
+          }
         }
       }
+
       if (obtained) {
         results[obtained] = (results[obtained] || 0) + 1;
+        if (obtained === vedetteName) {
+          console.debug('vedette obtained', { bannerId: banner.id, obtained, i: i + 1 });
+          consecutiveNoVedette = 0;
+        } else {
+          consecutiveNoVedette++;
+        }
+      } else {
+        consecutiveNoVedette++;
       }
     }
+
     const rollResult = Object.entries(results).map(([name, count]) => ({ name, count }));
-    const resourceUsed = count * (multiCost / 10);
+    const resourceUsed = Math.round(count * (multiCost / 10));
     dispatch(addSimulationRoll({
       bannerId: banner.id,
       roll: {
@@ -165,6 +267,8 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
             return [...featuredEntries, ...otherEntries];
           })();
 
+          const bannerIsValid = validateCharacters(banner.characters) === null;
+
           return (
             <View style={{
               marginTop: 24,
@@ -174,14 +278,39 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
               borderRadius: 12,
               backgroundColor: themeColors.card
             }}>
-              {/* Title bigger and centered */}
-              <Text style={{
-                fontWeight: 'bold',
-                fontSize: getFontSize(20),
-                color: themeColors.text,
-                textAlign: 'center',
-                marginBottom: 8
-              }}>{banner.name}</Text>
+              {/* Title + pity threshold badge (configured value shown right) */}
+              {(() => {
+                const threshold = typeof banner.pityThreshold === 'number' && banner.pityThreshold > 0 ? banner.pityThreshold : null;
+                const badgeText = threshold ? `${t('simulationsTab.pityThresholdLabel') || 'Pity'}: ${threshold}` : null;
+                const progress = computePityProgress(banner);
+                const remaining = threshold ? Math.max(0, threshold - progress) : null;
+
+                return (
+                  <View style={{ marginBottom: 8 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                      <Text style={{
+                        fontWeight: 'bold',
+                        fontSize: getFontSize(20),
+                        color: themeColors.text,
+                        textAlign: 'left',
+                        flex: 1
+                      }}>{banner.name}</Text>
+                      {badgeText ? (
+                        <View style={styles.pityBadge}>
+                          <Text style={styles.pityBadgeText}>{badgeText}</Text>
+                        </View>
+                      ) : null}
+                    </View>
+
+                    {/* Remaining pulls until pity: shown under title (left) */}
+                    {remaining !== null && (
+                      <Text style={{ color: themeColors.placeholder, marginTop: 6, fontSize: getFontSize(13) }}>
+                        {remaining === 0 ? (t('simulationsTab.pityOnNext') || 'Pity on next pull') : `${remaining} ${t('simulationsTab.pityRemaining') || 'remaining'}`}
+                      </Text>
+                    )}
+                  </View>
+                );
+              })()}
 
               <Text style={{ color: themeColors.placeholder, marginBottom: 8, fontSize: getFontSize(14) }}>
                 {banner.characters.map(c => `${c.name} (${c.rate}%)`).join(', ')}
@@ -189,19 +318,22 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
 
               <View style={{ flexDirection: 'row', marginBottom: 8 }}>
                 <TouchableOpacity
-                  style={[styles.addBtn, { marginRight: 8, backgroundColor: themeColors.primary }]}
+                  disabled={!bannerIsValid}
+                  style={[styles.addBtn, { marginRight: 8, backgroundColor: themeColors.primary, opacity: bannerIsValid ? 1 : 0.5 }]}
                   onPress={() => handleSimulateRoll(banner, 1)}
                 >
                   <Text style={{ color: '#fff', fontSize: getFontSize(14) }}>{t('simulationsTab.draw.single')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.addBtn, { marginRight: 8, backgroundColor: themeColors.primary }]}
+                  disabled={!bannerIsValid}
+                  style={[styles.addBtn, { marginRight: 8, backgroundColor: themeColors.primary, opacity: bannerIsValid ? 1 : 0.5 }]}
                   onPress={() => handleSimulateRoll(banner, 10)}
                 >
                   <Text style={{ color: '#fff', fontSize: getFontSize(14) }}>{t('simulationsTab.draw.x10')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.addBtn, { backgroundColor: themeColors.primary }]}
+                  disabled={!bannerIsValid}
+                  style={[styles.addBtn, { backgroundColor: themeColors.primary, opacity: bannerIsValid ? 1 : 0.5 }]}
                   onPress={() => handleSimulateRoll(banner, 100)}
                 >
                   <Text style={{ color: '#fff', fontSize: getFontSize(14) }}>{t('simulationsTab.draw.x100')}</Text>
@@ -393,6 +525,15 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
               onChangeText={setRate}
               keyboardType="numeric"
             />
+            <Text style={{ marginTop: 8, marginBottom: 4, fontSize: getFontSize(13), color: themeColors.placeholder }}>Pity threshold (nombre de tirages sans featured avant garantie, vide = désactivé)</Text>
+            <TextInput
+              style={[styles.input, { fontSize: getFontSize(16), color: themeColors.text, backgroundColor: themeColors.card, borderColor: themeColors.border }]}
+              placeholder="Ex: 90"
+              placeholderTextColor={themeColors.placeholder}
+              value={pityThreshold}
+              onChangeText={setPityThreshold}
+              keyboardType="numeric"
+            />
 
             {/* Ajout de personnages featurés */}
             <Text style={{ marginTop: 12, fontWeight: 'bold', fontSize: getFontSize(15), color: themeColors.text }}>{t('simulationsTab.featuredCharacters')}</Text>
@@ -448,6 +589,7 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
               setName('');
               setRate('0.7');
               setFeaturedInputs([{ name: '', rate: '0.7' }]);
+              setPityThreshold('90');
             }}>
               <Text style={{ color: themeColors.primary, textAlign: 'center', fontSize: getFontSize(16) }}>{t('common.cancel')}</Text>
             </TouchableOpacity>
@@ -541,5 +683,28 @@ const styles = StyleSheet.create({
     padding: 14,
     alignItems: 'center',
     marginTop: 16,
+  },
+  pityBarBg: {
+    width: 140,
+    height: 8,
+    backgroundColor: '#EEE',
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  pityBarFill: {
+    height: '100%',
+    borderRadius: 8,
+  },
+  pityBadge: {
+    backgroundColor: '#FFCC00',
+    borderRadius: 12,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    marginLeft: 8,
+  },
+  pityBadgeText: {
+    color: '#333',
+    fontWeight: 'bold',
+    fontSize: 12,
   },
 });
