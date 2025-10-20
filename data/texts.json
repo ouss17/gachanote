@@ -1,4 +1,19 @@
 {
+    "navBar.home": {
+        "en": "Home",
+        "fr": "Accueil",
+        "jp": "ホーム"
+    },
+    "navBar.settings": {
+        "en": "Settings",
+        "fr": "Paramètres",
+        "jp": "設定"
+    },
+    "navBar.stats": {
+        "en": "Statistics",
+        "fr": "Statistiques",
+        "jp": "統計"
+    },
     "common.add": {
         "en": "Add",
         "fr": "Ajouter",

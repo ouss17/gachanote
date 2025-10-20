@@ -18,6 +18,11 @@ export default function TabLayout() {
   const onboardingSeen = useSelector((state: any) => state.onboarding.seen);
   const dispatch = useDispatch();
 
+    // translation (like other screens)
+  const lang = useSelector((state: any) => state.nationality?.country) || 'fr';
+  const texts = require('@/data/texts.json');
+  const t = (key: string) => texts[key]?.[lang] || texts[key]?.fr || key;
+
   const colors = Theme[theme] || Theme.light;
 
   if (!onboardingSeen) {
@@ -52,7 +57,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="index"
           options={{
-            title: 'Home',
+            title: t('navBar.home'),
             tabBarAccessibilityLabel: 'Home tab',
             tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
           }}
@@ -60,7 +65,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="statistiques"
           options={{
-            title: 'Statistiques',
+            title: t('navBar.stats'),
             tabBarAccessibilityLabel: 'Statistiques tab',
             tabBarIcon: ({ color }) => <MaterialIcons name="bar-chart" size={28} color={color} />,
           }}
@@ -68,7 +73,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="settings"
           options={{
-            title: 'Paramètres',
+            title: t('navBar.settings'),
             tabBarAccessibilityLabel: 'Paramètres tab',
             tabBarIcon: ({ color }) => <MaterialIcons name="settings" size={28} color={color} />,
           }}
