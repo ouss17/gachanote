@@ -3,7 +3,7 @@ import { addBanner, addSimulationRoll, clearBannerRolls, removeBanner, Simulatio
 import { RootState } from '@/redux/store';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, FlatList, Modal, StyleSheet, Text, TextInput, TouchableOpacity, Vibration, View } from 'react-native';
+import { Alert, FlatList, Modal, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, Vibration, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 export default function SimulationsTab({ getFontSize }: { getFontSize: (base: number) => number }) {
@@ -14,14 +14,67 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
   const theme = useSelector((state: RootState) => state.theme.mode);
   const themeColors = Theme[theme as keyof typeof Theme];
 
+  // translation setup (like MoneyTab)
+  let lang = useSelector((state: any) => state.nationality.country) || 'fr';
+  const texts = require('@/data/texts.json');
+  const t = (key: string) => texts[key]?.[lang] || texts[key]?.fr || key;
+
   // Champs du formulaire
   const [name, setName] = useState('');
   const [rate, setRate] = useState('0.7');
   const [featuredInputs, setFeaturedInputs] = useState([{ name: '', rate: '0.7' }]);
+  const [pityThreshold, setPityThreshold] = useState('90'); // default shown in form (string for TextInput)
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
 
+  // new states for "Afficher tous les résultats" modal
+  const [showAllResultsModal, setShowAllResultsModal] = useState(false);
+  const [modalRolls, setModalRolls] = useState<any[]>([]);
+
   const { cost: multiCost, label: multiLabel } = getMultiCost(String(gachaId));
+
+  // Calcule le nombre de pulls effectués depuis le dernier obtention du "vedette" (premier personnage)
+  // On utilise roll.resourceUsed pour estimer le nombre de pulls dans chaque roll :
+  // pullsInRoll ≈ Math.floor(resourceUsed / (multiCost / 10))
+  const computePityProgress = (banner: SimulationBanner) => {
+    const vedetteName = banner?.characters?.[0]?.name;
+    if (!vedetteName || !banner || !banner.rolls || banner.rolls.length === 0) return 0;
+    let pullsSinceVedette = 0;
+    // itérer du plus récent au plus ancien
+    const rollsReversed = banner.rolls.slice().reverse();
+    for (const roll of rollsReversed) {
+      // compter combien de vedette sont présents dans ce roll
+      const vedetteCountInRoll = roll.results.reduce((sum: number, r: any) => {
+        return sum + (r.name === vedetteName ? r.count : 0);
+      }, 0);
+
+      // approximer le nombre de pulls dans ce roll (utiliser floor)
+      const pullsInRoll = multiCost && multiCost > 0 ? Math.floor(roll.resourceUsed / (multiCost / 10)) : 0;
+
+      // si ce roll contient la vedette, on considère que le dernier vedette est à l'intérieur de ce roll
+      if (vedetteCountInRoll > 0) {
+        break;
+      }
+
+      pullsSinceVedette += pullsInRoll || 0;
+    }
+    return pullsSinceVedette;
+  };
+
+  // Validation helpers
+  const validateCharacters = (chars: SimulationCharacter[]) => {
+    if (!chars || chars.length === 0) return 'no-characters';
+    const names = new Set<string>();
+    for (const c of chars) {
+      if (!c.name || !String(c.name).trim()) return 'empty-name';
+      const r = Number(c.rate);
+      if (Number.isNaN(r) || r < 0 || r > 100) return 'invalid-rate';
+      const key = String(c.name).trim().toLowerCase();
+      if (names.has(key)) return 'duplicate-name';
+      names.add(key);
+    }
+    return null; // ok
+  };
 
   const handleAddFeatured = () => {
     const lastInput = featuredInputs[featuredInputs.length - 1];
@@ -34,7 +87,6 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
 
   const handleAddBanner = () => {
     if (!name || !rate) return;
-    const id = Date.now().toString();
     const characters: SimulationCharacter[] = [
       { name, rate: parseFloat(rate), isFeatured: false },
       ...featuredInputs
@@ -45,6 +97,20 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
           isFeatured: true,
         })),
     ];
+
+    const err = validateCharacters(characters);
+    if (err) {
+      const map: any = {
+        'no-characters': t('simulationsTab.validation.noCharacters'),
+        'empty-name': t('simulationsTab.validation.emptyName'),
+        'invalid-rate': t('simulationsTab.validation.invalidRate'),
+        'duplicate-name': t('simulationsTab.validation.duplicateName'),
+      };
+      Alert.alert(map[err] || 'Invalid input');
+      return;
+    }
+
+    const id = Date.now().toString();
     const banner: SimulationBanner = {
       id,
       name,
@@ -52,30 +118,75 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
       rolls: [],
       totalResourceUsed: 0,
       gachaId: String(gachaId),
+      pityThreshold: pityThreshold ? Number(pityThreshold) : null,
     };
     dispatch(addBanner(banner));
     setName('');
     setRate('0.7');
     setFeaturedInputs([{ name: '', rate: '0.7' }]);
+    setPityThreshold('90');
   };
 
+  const MAX_ROLLS = 100000;
   const handleSimulateRoll = (banner: SimulationBanner, count: number) => {
+    const err = validateCharacters(banner.characters);
+    if (err) {
+      Alert.alert(t('simulationsTab.validation.invalidBanner') || t(`simulationsTab.validation.${err}`));
+      return;
+    }
+    if (count > MAX_ROLLS) {
+      Alert.alert(t('simulationsTab.validation.tooManyRolls'));
+      return;
+    }
     Vibration.vibrate(50);
+
     const results: { [name: string]: number } = {};
+
+    // vedette = first character (target of pity)
+    const vedette = banner.characters[0];
+    const vedetteName = vedette?.name;
+
+    // determine pity threshold for this banner (null = disabled)
+    const PITY_THRESHOLD = typeof banner.pityThreshold === 'number' && banner.pityThreshold > 0 ? banner.pityThreshold : null;
+
+    // start pity counter from history (pulls since last vedette)
+    let consecutiveNoVedette = computePityProgress(banner);
+    console.debug('pity start', { bannerId: banner.id, consecutiveNoVedette, PITY_THRESHOLD });
+
+    // interpret threshold N as "guarantee on the Nth pull" -> trigger when consecutiveNoVedette >= N-1
+    const pityTriggerAt = PITY_THRESHOLD ? Math.max(0, PITY_THRESHOLD - 1) : Number.POSITIVE_INFINITY;
+
     for (let i = 0; i < count; i++) {
-      let obtained = null;
-      for (const char of banner.characters) {
-        if (Math.random() * 100 < char.rate) {
-          obtained = char.name;
-          break;
+      let obtained: string | null = null;
+
+      // force vedette when the counter indicates the current pull should be guaranteed
+      if (vedetteName && PITY_THRESHOLD && consecutiveNoVedette >= pityTriggerAt) {
+        obtained = vedetteName;
+        console.debug('pity forced (vedette)', { bannerId: banner.id, pullIndex: i + 1, consecutiveNoVedette, PITY_THRESHOLD });
+      } else {
+        for (const char of banner.characters) {
+          if (Math.random() * 100 < char.rate) {
+            obtained = char.name;
+            break;
+          }
         }
       }
+
       if (obtained) {
         results[obtained] = (results[obtained] || 0) + 1;
+        if (obtained === vedetteName) {
+          console.debug('vedette obtained', { bannerId: banner.id, obtained, i: i + 1 });
+          consecutiveNoVedette = 0;
+        } else {
+          consecutiveNoVedette++;
+        }
+      } else {
+        consecutiveNoVedette++;
       }
     }
+
     const rollResult = Object.entries(results).map(([name, count]) => ({ name, count }));
-    const resourceUsed = count * (multiCost / 10);
+    const resourceUsed = Math.round(count * (multiCost / 10));
     dispatch(addSimulationRoll({
       bannerId: banner.id,
       roll: {
@@ -87,9 +198,12 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
     }));
   };
 
+  // show newest banners first (most recently added first)
   const filteredBanners = banners
     .filter(b => b.gachaId === String(gachaId))
-    .filter(b => b.name.toLowerCase().includes(search.trim().toLowerCase()));
+    .filter(b => b.name.toLowerCase().includes(search.trim().toLowerCase()))
+    .slice()
+    .reverse();
 
   const hasAnyBanner = banners.some(b => b.gachaId === String(gachaId));
 
@@ -97,7 +211,7 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
     <View style={{ flex: 1, padding: 16, backgroundColor: themeColors.background }}>
       {/* Phrase d'accroche dynamique */}
       <Text style={{ fontSize: getFontSize(15), color: themeColors.primary, marginBottom: 8, fontWeight: 'bold' }}>
-        Crée tes propres bannières, choisis les personnages et leurs taux de drop, et simule ta chance comme si tu étais sur le vrai jeu !
+        {t('simulationsTab.intro')}
       </Text>
 
       {/* Champ de recherche */}
@@ -113,141 +227,265 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
             backgroundColor: themeColors.card,
             color: themeColors.text,
           }}
-          placeholder="Rechercher une bannière"
+          placeholder={t('simulationsTab.searchPlaceholder')}
           placeholderTextColor={themeColors.placeholder}
           value={search}
           onChangeText={setSearch}
         />
       )}
 
-      <Text style={{ marginTop: 8, fontWeight: 'bold', fontSize: getFontSize(18), color: themeColors.text }}>Bannières existantes</Text>
+      <Text style={{ marginTop: 8, fontWeight: 'bold', fontSize: getFontSize(18), color: themeColors.text }}>{t('simulationsTab.existingBanners')}</Text>
       <FlatList
         data={filteredBanners}
         keyExtractor={item => item.id}
-        renderItem={({ item: banner }) => (
-          <View style={{
-            marginTop: 24,
-            padding: 16,
-            borderWidth: 1,
-            borderColor: themeColors.border,
-            borderRadius: 12,
-            backgroundColor: themeColors.card
-          }}>
-            <Text style={{ fontWeight: 'bold', fontSize: getFontSize(16), color: themeColors.text }}>{banner.name}</Text>
-            <Text style={{ color: themeColors.placeholder, marginBottom: 8, fontSize: getFontSize(14) }}>
-              {banner.characters.map(c => `${c.name} (${c.rate}%)`).join(', ')}
-            </Text>
-            <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-              <TouchableOpacity
-                style={[styles.addBtn, { marginRight: 8, backgroundColor: themeColors.primary }]}
-                onPress={() => handleSimulateRoll(banner, 1)}
-              >
-                <Text style={{ color: '#fff', fontSize: getFontSize(14) }}>Tirage simple</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.addBtn, { marginRight: 8, backgroundColor: themeColors.primary }]}
-                onPress={() => handleSimulateRoll(banner, 10)}
-              >
-                <Text style={{ color: '#fff', fontSize: getFontSize(14) }}>Tirage x10</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.addBtn, { backgroundColor: themeColors.primary }]}
-                onPress={() => handleSimulateRoll(banner, 100)}
-              >
-                <Text style={{ color: '#fff', fontSize: getFontSize(14) }}>Tirage x100</Text>
-              </TouchableOpacity>
-            </View>
-            {/* Historique des résultats */}
-            {banner.rolls.length > 0 && (
-              <View>
-                <Text style={{ fontWeight: 'bold', marginTop: 8, fontSize: getFontSize(15), color: themeColors.text }}>Résultats :</Text>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginLeft: 8 }}>
-                  {banner.rolls.map(roll => (
-                    <View
-                      key={roll.id}
-                      style={{
-                        backgroundColor: themeColors.simulationResultBg ?? '#fdecec',
-                        borderRadius: 8,
-                        paddingHorizontal: 8,
-                        paddingVertical: 2,
-                        marginRight: 6,
-                        marginBottom: 6,
-                        flexDirection: 'row',
-                        alignItems: 'center',
+        renderItem={({ item: banner }) => {
+          // aggregate total counts across all rolls for this banner
+          const aggregated: { [name: string]: number } = {};
+          banner.rolls.forEach(roll => {
+            roll.results.forEach((r: any) => {
+              aggregated[r.name] = (aggregated[r.name] || 0) + r.count;
+            });
+          });
+
+          // ORDER: ensure featured characters that were obtained appear first (most left),
+          // then the other obtained characters sorted by count desc
+          const orderedEntries: [string, number][] = (() => {
+            const featuredNames = banner.characters.filter(c => c.isFeatured).map(c => c.name);
+            const obtainedNames = Object.keys(aggregated);
+
+            // featured obtained, keep banner order
+            const featuredEntries = featuredNames
+              .filter(n => obtainedNames.includes(n))
+              .map(n => [n, aggregated[n]] as [string, number]);
+
+            // other obtained names sorted by count desc
+            const otherEntries = obtainedNames
+              .filter(n => !featuredNames.includes(n))
+              .map(n => [n, aggregated[n]] as [string, number])
+              .sort((a, b) => b[1] - a[1]);
+
+            return [...featuredEntries, ...otherEntries];
+          })();
+
+          const bannerIsValid = validateCharacters(banner.characters) === null;
+
+          return (
+            <View style={{
+              marginTop: 24,
+              padding: 16,
+              borderWidth: 1,
+              borderColor: themeColors.border,
+              borderRadius: 12,
+              backgroundColor: themeColors.card
+            }}>
+              {/* Title + pity threshold badge (configured value shown right) */}
+              {(() => {
+                const threshold = typeof banner.pityThreshold === 'number' && banner.pityThreshold > 0 ? banner.pityThreshold : null;
+                const badgeText = threshold ? `${t('simulationsTab.pityThresholdLabel') || 'Pity'}: ${threshold}` : null;
+                const progress = computePityProgress(banner);
+                const remaining = threshold ? Math.max(0, threshold - progress) : null;
+
+                return (
+                  <View style={{ marginBottom: 8 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                      <Text style={{
+                        fontWeight: 'bold',
+                        fontSize: getFontSize(20),
+                        color: themeColors.text,
+                        textAlign: 'left',
+                        flex: 1
+                      }}>{banner.name}</Text>
+                      {badgeText ? (
+                        <View style={styles.pityBadge}>
+                          <Text style={styles.pityBadgeText}>{badgeText}</Text>
+                        </View>
+                      ) : null}
+                    </View>
+
+                    {/* Remaining pulls until pity: shown under title (left) */}
+                    {remaining !== null && (
+                      <Text style={{ color: themeColors.placeholder, marginTop: 6, fontSize: getFontSize(13) }}>
+                        {remaining === 0 ? (t('simulationsTab.pityOnNext') || 'Pity on next pull') : `${remaining} ${t('simulationsTab.pityRemaining') || 'remaining'}`}
+                      </Text>
+                    )}
+                  </View>
+                );
+              })()}
+
+              <Text style={{ color: themeColors.placeholder, marginBottom: 8, fontSize: getFontSize(14) }}>
+                {banner.characters.map(c => `${c.name} (${c.rate}%)`).join(', ')}
+              </Text>
+
+              <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+                <TouchableOpacity
+                  disabled={!bannerIsValid}
+                  style={[styles.addBtn, { marginRight: 8, backgroundColor: themeColors.primary, opacity: bannerIsValid ? 1 : 0.5 }]}
+                  onPress={() => handleSimulateRoll(banner, 1)}
+                >
+                  <Text style={{ color: '#fff', fontSize: getFontSize(14) }}>{t('simulationsTab.draw.single')}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  disabled={!bannerIsValid}
+                  style={[styles.addBtn, { marginRight: 8, backgroundColor: themeColors.primary, opacity: bannerIsValid ? 1 : 0.5 }]}
+                  onPress={() => handleSimulateRoll(banner, 10)}
+                >
+                  <Text style={{ color: '#fff', fontSize: getFontSize(14) }}>{t('simulationsTab.draw.x10')}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  disabled={!bannerIsValid}
+                  style={[styles.addBtn, { backgroundColor: themeColors.primary, opacity: bannerIsValid ? 1 : 0.5 }]}
+                  onPress={() => handleSimulateRoll(banner, 100)}
+                >
+                  <Text style={{ color: '#fff', fontSize: getFontSize(14) }}>{t('simulationsTab.draw.x100')}</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Results header with "Afficher tous les résultats" */}
+              {banner.rolls.length > 0 && (
+                <View>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
+                    <Text style={{ fontWeight: 'bold', fontSize: getFontSize(15), color: themeColors.text }}>{t('simulationsTab.results')} :</Text>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setModalRolls(banner.rolls);
+                        setShowAllResultsModal(true);
                       }}
                     >
-                      <Text style={{ color: themeColors.simulationResultText ?? '#d32f2f', fontWeight: 'bold', fontSize: getFontSize(13) }}>
-                        {roll.results.map(r => `${r.name}×${r.count}`).join(', ')}
-                      </Text>
-                      <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(12), marginLeft: 4 }}>
-                        ({roll.resourceUsed / (multiCost / 10)} tirage{roll.resourceUsed / (multiCost / 10) > 1 ? 's' : ''})
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-                <Text style={{ color: themeColors.placeholder, marginTop: 4, fontSize: getFontSize(14) }}>
-                  Ressource utilisée : {banner.totalResourceUsed} {multiLabel.replace(/.*?([a-zA-Z]+)$/, '$1')}
-                </Text>
-              </View>
-            )}
-            {/* Statistiques de la bannière */}
-            {banner.rolls.length > 0 && (() => {
-              const stats = getBannerStats(banner);
-              return (
-                <View style={{ marginTop: 8 }}>
-                  <Text style={{ fontWeight: 'bold', marginBottom: 4, fontSize: getFontSize(15), color: themeColors.text }}>Statistiques :</Text>
-                  <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(14) }}>
-                    Total de tirages simulés : {stats.totalRolls} {multiLabel.replace(/.*?([a-zA-Z]+)$/, '$1')}
-                  </Text>
-                  {stats.rates.map(r => (
-                    <Text key={r.name} style={{ color: themeColors.primary, marginLeft: 8, fontSize: getFontSize(14) }}>
-                      {r.name} : {r.count} fois ({r.rate}%)
+                      <Text style={{ color: themeColors.primary, fontSize: getFontSize(13) }}>{t('simulationsTab.viewAllResults')}</Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Aggregated results in small chips (only characters + counts) */}
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 8 }}>
+                    {orderedEntries.map(([name, count]) => (
+                      <View
+                        key={name}
+                        style={{
+                          backgroundColor: themeColors.simulationResultBg ?? '#fdecec',
+                          borderRadius: 8,
+                          paddingHorizontal: 8,
+                          paddingVertical: 6,
+                          marginRight: 6,
+                          marginBottom: 6,
+                          minWidth: 80,
+                          alignItems: 'center',
+                        }}
+                      >
+                        <Text style={{ color: themeColors.simulationResultText ?? '#d32f2f', fontWeight: 'bold', fontSize: getFontSize(13) }}>{name}</Text>
+                        <Text style={{ color: themeColors.text, fontSize: getFontSize(12), marginTop: 2 }}>{count}×</Text>
+                      </View>
+                    ))}
+                  </View>
+
+                  {/* Resources used - enlarged with number below */}
+                  <View style={{ marginTop: 12, alignItems: 'center' }}>
+                    <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(14) }}>{t('simulationsTab.resourceUsed')}</Text>
+                    <Text style={{ color: themeColors.text, fontWeight: 'bold', fontSize: getFontSize(18), marginTop: 6 }}>
+                      {banner.totalResourceUsed} {multiLabel.replace(/.*?([a-zA-Z]+)$/, '$1')}
                     </Text>
-                  ))}
+                  </View>
                 </View>
-              );
-            })()}
-            <View style={{ flexDirection: 'row', marginTop: 12 }}>
-              <TouchableOpacity
-                style={[styles.addBtn, { backgroundColor: '#FF3B30', marginRight: 8 }]}
-                onPress={() => {
-                  Alert.alert(
-                    'Confirmation',
-                    'Supprimer cette bannière et tout son historique ?',
-                    [
-                      { text: 'Annuler', style: 'cancel' },
-                      { text: 'Supprimer', style: 'destructive', onPress: () => dispatch(removeBanner(banner.id)) }
-                    ]
-                  );
-                }}
-              >
-                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(14) }}>Supprimer</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.addBtn, { backgroundColor: '#FFA500' }]}
-                onPress={() => {
-                  Alert.alert(
-                    'Confirmation',
-                    'Réinitialiser l\'historique de cette bannière ?',
-                    [
-                      { text: 'Annuler', style: 'cancel' },
-                      { text: 'Réinitialiser', style: 'destructive', onPress: () => dispatch(clearBannerRolls(banner.id)) }
-                    ]
-                  );
-                }}
-              >
-                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(14) }}>Réinitialiser</Text>
-              </TouchableOpacity>
+              )}
+
+              {/* Statistiques (inchangées) */}
+              {banner.rolls.length > 0 && (() => {
+                const stats = getBannerStats(banner);
+                return (
+                  <View style={{ marginTop: 8 }}>
+                    <Text style={{ fontWeight: 'bold', marginBottom: 4, fontSize: getFontSize(15), color: themeColors.text }}>{t('simulationsTab.statistics')} :</Text>
+                    <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(14) }}>
+                      {t('simulationsTab.totalSimulated')}: {stats.totalRolls} {multiLabel.replace(/.*?([a-zA-Z]+)$/, '$1')}
+                    </Text>
+                    {stats.rates.map(r => (
+                      <Text key={r.name} style={{ color: themeColors.primary, marginLeft: 8, fontSize: getFontSize(14) }}>
+                        {r.name} : {r.count} fois ({r.rate}%)
+                      </Text>
+                    ))}
+                  </View>
+                );
+              })()}
+
+              <View style={{ flexDirection: 'row', marginTop: 12 }}>
+                <TouchableOpacity
+                  style={[styles.addBtn, { backgroundColor: '#FF3B30', marginRight: 8 }]}
+                  onPress={() => {
+                    Alert.alert(
+                      t('settings.reset') === 'Reset' ? 'Confirmation' : t('settings.reset'), // simple localized title fallback
+                      t('simulationsTab.deleteBannerConfirmMessage'),
+                      [
+                        { text: t('common.cancel'), style: 'cancel' },
+                        { text: t('common.delete'), style: 'destructive', onPress: () => dispatch(removeBanner(banner.id)) }
+                      ]
+                    );
+                  }}
+                >
+                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(14) }}>{t('common.delete')}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.addBtn, { backgroundColor: '#FFA500' }]}
+                  onPress={() => {
+                    Alert.alert(
+                      t('settings.reset') === 'Reset' ? 'Confirmation' : t('settings.reset'),
+                      t('simulationsTab.resetBannerConfirmMessage'),
+                      [
+                        { text: t('common.cancel'), style: 'cancel' },
+                        { text: t('common.reset'), style: 'destructive', onPress: () => dispatch(clearBannerRolls(banner.id)) }
+                      ]
+                    );
+                  }}
+                >
+                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(14) }}>{t('common.reset')}</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
-        )}
+          );
+        }}
         contentContainerStyle={{ paddingBottom: 80 }}
         ListEmptyComponent={
           <Text style={{ color: themeColors.placeholder, textAlign: 'center', marginTop: 24, fontSize: getFontSize(15) }}>
-            Aucune bannière trouvée.
+            {t('simulationsTab.noBanners')}
           </Text>
         }
       />
+
+      {/* Modal pour afficher tous les tirages (popup) */}
+      <Modal visible={showAllResultsModal} animationType="slide" transparent onRequestClose={() => setShowAllResultsModal(false)}>
+        <TouchableWithoutFeedback onPress={() => setShowAllResultsModal(false)}>
+          <View style={{
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
+            {/* Prevent outer touch from closing when tapping inside the content */}
+            <TouchableWithoutFeedback onPress={() => { /* noop to block propagation */ }}>
+              <View style={{
+                backgroundColor: themeColors.card,
+                padding: 16,
+                borderRadius: 12,
+                width: '92%',
+                maxHeight: '80%',
+              }}>
+                <Text style={{ color: themeColors.text, fontWeight: 'bold', fontSize: getFontSize(18), marginBottom: 8 }}>{t('simulationsTab.viewAllResultsTitle')}</Text>
+                <FlatList
+                  data={modalRolls}
+                  keyExtractor={(r) => r.id}
+                  renderItem={({ item: roll }) => (
+                    <View style={{ borderWidth: 1, borderColor: themeColors.border, borderRadius: 10, padding: 10, marginBottom: 8, backgroundColor: themeColors.background }}>
+                      <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(12) }}>{new Date(roll.date).toLocaleString()}</Text>
+                      <Text style={{ color: themeColors.text, fontWeight: 'bold', marginTop: 6 }}>{roll.results.map((r: any) => `${r.name}×${r.count}`).join(', ')}</Text>
+                      <Text style={{ color: themeColors.placeholder, marginTop: 6 }}>{roll.resourceUsed} {multiLabel.replace(/.*?([a-zA-Z]+)$/, '$1')}</Text>
+                    </View>
+                  )}
+                />
+                <TouchableOpacity onPress={() => setShowAllResultsModal(false)} style={{ marginTop: 8, alignSelf: 'center' }}>
+                  <Text style={{ color: themeColors.primary, fontSize: getFontSize(16) }}>{t('settings.close')}</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
 
       {/* Modal pour ajouter une bannière */}
       <Modal
@@ -268,16 +506,16 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
             borderRadius: 16,
             width: '90%',
           }}>
-            <Text style={[styles.title, { fontSize: getFontSize(18), color: themeColors.text }]}>Créer une bannière de simulation</Text>
+            <Text style={[styles.title, { fontSize: getFontSize(18), color: themeColors.text }]}>{t('simulationsTab.addBannerModalTitle')}</Text>
             <TextInput
               style={[styles.input, { fontSize: getFontSize(16), color: themeColors.text, backgroundColor: themeColors.card, borderColor: themeColors.border }]
               }
-              placeholder="Nom du perso vedette"
+              placeholder={t('gachaRolls.form.nameFeatured')}
               placeholderTextColor={themeColors.placeholder}
               value={name}
               onChangeText={setName}
             />
-            <Text style={{ marginBottom: 4, fontSize: getFontSize(14), color: themeColors.text }}>Taux de drop (%)</Text>
+            <Text style={{ marginBottom: 4, fontSize: getFontSize(14), color: themeColors.text }}>{t('simulationsTab.dropRate')}</Text>
             <TextInput
               style={[styles.input, { fontSize: getFontSize(16), color: themeColors.text, backgroundColor: themeColors.card, borderColor: themeColors.border }]
               }
@@ -287,15 +525,24 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
               onChangeText={setRate}
               keyboardType="numeric"
             />
+            <Text style={{ marginTop: 8, marginBottom: 4, fontSize: getFontSize(13), color: themeColors.placeholder }}>Pity threshold (nombre de tirages sans featured avant garantie, vide = désactivé)</Text>
+            <TextInput
+              style={[styles.input, { fontSize: getFontSize(16), color: themeColors.text, backgroundColor: themeColors.card, borderColor: themeColors.border }]}
+              placeholder="Ex: 90"
+              placeholderTextColor={themeColors.placeholder}
+              value={pityThreshold}
+              onChangeText={setPityThreshold}
+              keyboardType="numeric"
+            />
 
             {/* Ajout de personnages featurés */}
-            <Text style={{ marginTop: 12, fontWeight: 'bold', fontSize: getFontSize(15), color: themeColors.text }}>Personnages featurés (optionnel)</Text>
+            <Text style={{ marginTop: 12, fontWeight: 'bold', fontSize: getFontSize(15), color: themeColors.text }}>{t('simulationsTab.featuredCharacters')}</Text>
             {featuredInputs.map((input, idx) => (
               <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
                 <TextInput
                   style={[styles.input, { flex: 1, marginRight: 8, fontSize: getFontSize(16), color: themeColors.text, backgroundColor: themeColors.card, borderColor: themeColors.border }]
                   }
-                  placeholder="Nom du perso"
+                  placeholder={t('gachaRolls.form.nameFeatured')}
                   placeholderTextColor={themeColors.placeholder}
                   value={input.name}
                   onChangeText={text => {
@@ -307,7 +554,7 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
                 <TextInput
                   style={[styles.input, { width: 70, marginRight: 8, fontSize: getFontSize(16), color: themeColors.text, backgroundColor: themeColors.card, borderColor: themeColors.border }]
                   }
-                  placeholder="Taux"
+                  placeholder={t('simulationsTab.dropRate')}
                   placeholderTextColor={themeColors.placeholder}
                   value={input.rate}
                   onChangeText={text => {
@@ -335,15 +582,16 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
             ))}
 
             <TouchableOpacity style={[styles.validateBtn, { backgroundColor: themeColors.success }]} onPress={() => { handleAddBanner(); setShowModal(false); }}>
-              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>Ajouter la bannière</Text>
+              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>{t('simulationsTab.addBannerButton')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={{ marginTop: 16 }} onPress={() => {
               setShowModal(false);
               setName('');
               setRate('0.7');
               setFeaturedInputs([{ name: '', rate: '0.7' }]);
+              setPityThreshold('90');
             }}>
-              <Text style={{ color: themeColors.primary, textAlign: 'center', fontSize: getFontSize(16) }}>Annuler</Text>
+              <Text style={{ color: themeColors.primary, textAlign: 'center', fontSize: getFontSize(16) }}>{t('common.cancel')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -387,7 +635,8 @@ function getBannerStats(banner: SimulationBanner) {
   const rates = Object.entries(counts).map(([name, count]) => ({
     name,
     count,
-    rate: totalRolls > 0 ? ((count / totalRolls) * 100).toFixed(2) : '0.00',
+    // increase precision: 4 decimal places
+    rate: totalRolls > 0 ? ((count / totalRolls) * 100).toFixed(4) : '0.0000',
   }));
   return { totalRolls, rates };
 }
@@ -434,5 +683,28 @@ const styles = StyleSheet.create({
     padding: 14,
     alignItems: 'center',
     marginTop: 16,
+  },
+  pityBarBg: {
+    width: 140,
+    height: 8,
+    backgroundColor: '#EEE',
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  pityBarFill: {
+    height: '100%',
+    borderRadius: 8,
+  },
+  pityBadge: {
+    backgroundColor: '#FFCC00',
+    borderRadius: 12,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    marginLeft: 8,
+  },
+  pityBadgeText: {
+    color: '#333',
+    fontWeight: 'bold',
+    fontSize: 12,
   },
 });

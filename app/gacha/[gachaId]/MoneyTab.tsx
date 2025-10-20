@@ -82,7 +82,11 @@ export default function MoneyTab({ gachaId, isDark, getFontSize }: { gachaId: st
   const t = (key: string) => texts[key]?.[lang] || texts[key]?.fr || key;
 
   return (
-    <View style={{ flex: 1 }}>
+    <View
+      style={{ flex: 1 }}
+      accessible={true}
+      accessibilityLabel={t('money.add') + ' screen' || 'Money tab'}
+    >
       {/* Filtres de dates, affichés seulement s'il y a au moins une entrée pour ce gacha */}
       {hasAnyEntry && (
         <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 16, alignItems: 'center' }}>
@@ -91,6 +95,10 @@ export default function MoneyTab({ gachaId, isDark, getFontSize }: { gachaId: st
             <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(12) }}>{t('statistiques.startDate')}</Text>
             <Text
               onPress={() => setShowStartPicker(true)}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel={startDate ? startDate.toLocaleDateString(lang === 'en' ? 'en-US' : lang === 'jap' ? 'ja-JP' : 'fr-FR') : t('statistiques.choose')}
+              accessibilityHint={t('statistiques.startDate')}
               style={{
                 color: themeColors.text,
                 borderWidth: 1,
@@ -123,6 +131,10 @@ export default function MoneyTab({ gachaId, isDark, getFontSize }: { gachaId: st
             <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(12) }}>{t('statistiques.endDate')}</Text>
             <Text
               onPress={() => setShowEndPicker(true)}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel={endDate ? endDate.toLocaleDateString(lang === 'en' ? 'en-US' : lang === 'jap' ? 'ja-JP' : 'fr-FR') : t('statistiques.choose')}
+              accessibilityHint={t('statistiques.endDate')}
               style={{
                 color: themeColors.text,
                 borderWidth: 1,
@@ -167,6 +179,10 @@ export default function MoneyTab({ gachaId, isDark, getFontSize }: { gachaId: st
               borderWidth: 1,
               borderColor: themeColors.border,
             }}
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.reset')}
+            accessibilityHint={t('statistiques.choose')}
           >
             <Text style={{ color: themeColors.primary, fontSize: getFontSize(14), fontWeight: 'bold' }}>
               {t('common.reset')}
@@ -179,20 +195,28 @@ export default function MoneyTab({ gachaId, isDark, getFontSize }: { gachaId: st
         data={moneyEntries}
         keyExtractor={item => item.id}
         renderItem={({ item }) => (
-          <View style={{
-            marginVertical: 8,
-            padding: 8,
-            borderWidth: 1,
-            borderRadius: 8,
-            borderColor: themeColors.border,
-            backgroundColor: themeColors.card,
-          }}>
+          <View
+            accessible={true}
+            accessibilityRole="text"
+            accessibilityLabel={`${item.amount} ${currency} — ${new Date(item.date).toLocaleDateString(lang === 'en' ? 'en-US' : lang === 'jap' ? 'ja-JP' : 'fr-FR')}`}
+            style={{
+             marginVertical: 8,
+             padding: 8,
+             borderWidth: 1,
+             borderRadius: 8,
+             borderColor: themeColors.border,
+             backgroundColor: themeColors.card,
+           }}>
             <Text style={{ color: themeColors.text, fontSize: getFontSize(16) }}>
               {item.amount} {currency} — {new Date(item.date).toLocaleDateString(lang === 'en' ? 'en-US' : lang === 'jap' ? 'ja-JP' : 'fr-FR')}
             </Text>
             <TouchableOpacity
               onPress={() => dispatch(removeMoney(item.id))}
               style={{ marginTop: 4 }}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.delete')}
+              accessibilityHint={`Delete entry ${item.amount} ${currency}`}
             >
               <Text style={{ color: '#FF3B30', fontSize: getFontSize(14) }}>{t('common.delete')}</Text>
             </TouchableOpacity>
@@ -204,107 +228,118 @@ export default function MoneyTab({ gachaId, isDark, getFontSize }: { gachaId: st
           </Text>
         }
       />
-      {/* Bouton pour ouvrir le modal d'ajout */}
+      {/* Bouton pour ouvrir le modal d'ajout */} 
       <TouchableOpacity
         style={{
-          marginTop: 16,
-          backgroundColor: themeColors.primary,
-          padding: 12,
-          borderRadius: 8,
-          alignItems: 'center',
-        }}
-        onPress={() => setShowModal(true)}
-      >
-        <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>{t('money.add')}</Text>
-      </TouchableOpacity>
-      {/* Modal d'ajout d'un montant */}
-      <Modal visible={showModal} transparent animationType="slide">
-        <View style={{
-          flex: 1,
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}>
-          <View style={{
-            backgroundColor: themeColors.card,
-            padding: 24,
-            borderRadius: 16,
-            width: '90%',
-          }}>
-            <Text style={{ color: themeColors.text, fontWeight: 'bold', fontSize: getFontSize(18), marginBottom: 12 }}>
-              {t('money.add')}
-            </Text>
-            {/* Champ montant */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-              <TextInput
-                style={{
-                  borderWidth: 1,
-                  borderColor: themeColors.border,
-                  borderRadius: 8,
-                  padding: 12,
-                  backgroundColor: themeColors.card,
-                  color: themeColors.text,
-                  flex: 1,
-                  fontSize: getFontSize(16),
-                }}
-                placeholder={`${t('money.form.amountPlaceholder')} (${currency})`}
-                keyboardType="numeric"
-                value={amount}
-                onChangeText={setAmount}
-              />
-              <Text style={{ marginLeft: 8, color: themeColors.text, fontWeight: 'bold', fontSize: getFontSize(16) }}>
-                {currency}
-              </Text>
-            </View>
-            {/* Champ date */}
-            <Text style={{ color: themeColors.text, marginBottom: 4, fontSize: getFontSize(16) }}>
-              {t('common.date')}
-            </Text>
-            <TouchableOpacity
-              style={{
-                borderWidth: 1,
-                borderColor: themeColors.border,
-                borderRadius: 8,
-                padding: 12,
-                backgroundColor: themeColors.card,
-                marginBottom: 16,
-                justifyContent: 'center',
-              }}
-              onPress={() => setShowDatePicker(true)}
-              activeOpacity={0.7}
-            >
-              <Text style={{ color: themeColors.text, fontSize: getFontSize(16) }}>
-                {date.toLocaleDateString(lang === 'en' ? 'en-US' : lang === 'jap' ? 'ja-JP' : 'fr-FR')}
-              </Text>
-            </TouchableOpacity>
-            {showDatePicker && (
-              <DateTimePicker
-                value={date}
-                mode="date"
-                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                onChange={(_, selectedDate) => {
-                  setShowDatePicker(false);
-                  if (selectedDate && selectedDate <= new Date()) setDate(selectedDate);
-                }}
-                maximumDate={new Date()}
-              />
-            )}
-            {/* Bouton de validation */}
-            <Button title={t('common.add')} onPress={handleAdd} />
-            {/* Bouton Annuler */}
-            <TouchableOpacity
-              style={{ marginTop: 16 }}
-              onPress={() => {
-                setShowModal(false);
-                setAmount('');
-                setDate(new Date());
-              }}
-            >
-              <Text style={{ color: '#007AFF', textAlign: 'center' }}>{t('common.cancel')}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-    </View>
-  );
-}
+           marginTop: 16,
+           backgroundColor: themeColors.primary,
+           padding: 12,
+           borderRadius: 8,
+           alignItems: 'center',
+         }}
+         onPress={() => setShowModal(true)}
+         accessible={true}
+         accessibilityRole="button"
+         accessibilityLabel={t('money.add')}
+         accessibilityHint={t('money.form.amountPlaceholder')}
+       >
+         <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>{t('money.add')}</Text>
+       </TouchableOpacity>
+       {/* Modal d'ajout d'un montant */}
+       <Modal visible={showModal} transparent animationType="slide">
+         <View style={{
+           flex: 1,
+           backgroundColor: 'rgba(0,0,0,0.5)',
+           justifyContent: 'center',
+           alignItems: 'center'
+         }}>
+           <View style={{
+             backgroundColor: themeColors.card,
+             padding: 24,
+             borderRadius: 16,
+             width: '90%',
+           }}>
+             <Text style={{ color: themeColors.text, fontWeight: 'bold', fontSize: getFontSize(18), marginBottom: 12 }}>
+               {t('money.add')}
+             </Text>
+             {/* Champ montant */}
+             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+               <TextInput
+                 style={{
+                   borderWidth: 1,
+                   borderColor: themeColors.border,
+                   borderRadius: 8,
+                   padding: 12,
+                   backgroundColor: themeColors.card,
+                   color: themeColors.text,
+                   flex: 1,
+                   fontSize: getFontSize(16),
+                 }}
+                 placeholder={`${t('money.form.amountPlaceholder')} (${currency})`}
+                 keyboardType="numeric"
+                 value={amount}
+                 onChangeText={setAmount}
+                 accessible={true}
+                 accessibilityLabel={t('money.form.amountPlaceholder')}
+                 accessibilityHint={`${currency}`}
+               />
+               <Text style={{ marginLeft: 8, color: themeColors.text, fontWeight: 'bold', fontSize: getFontSize(16) }}>
+                 {currency}
+               </Text>
+             </View>
+             {/* Champ date */}
+             <Text style={{ color: themeColors.text, marginBottom: 4, fontSize: getFontSize(16) }}>
+               {t('common.date')}
+             </Text>
+             <TouchableOpacity
+               style={{
+                 borderWidth: 1,
+                 borderColor: themeColors.border,
+                 borderRadius: 8,
+                 padding: 12,
+                 backgroundColor: themeColors.card,
+                 marginBottom: 16,
+                 justifyContent: 'center',
+               }}
+               onPress={() => setShowDatePicker(true)}
+               activeOpacity={0.7}
+               accessible={true}
+               accessibilityRole="button"
+               accessibilityLabel={t('common.date')}
+               accessibilityHint="Open date picker"
+             >
+               <Text style={{ color: themeColors.text, fontSize: getFontSize(16) }}>
+                 {date.toLocaleDateString(lang === 'en' ? 'en-US' : lang === 'jap' ? 'ja-JP' : 'fr-FR')}
+               </Text>
+             </TouchableOpacity>
+             {showDatePicker && (
+               <DateTimePicker
+                 value={date}
+                 mode="date"
+                 display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                 onChange={(_, selectedDate) => {
+                   setShowDatePicker(false);
+                   if (selectedDate && selectedDate <= new Date()) setDate(selectedDate);
+                 }}
+                 maximumDate={new Date()}
+               />
+             )}
+             {/* Bouton de validation */}
+            <Button title={t('common.add')} accessibilityLabel={t('common.add')} onPress={handleAdd} />
+             {/* Bouton Annuler */}
+             <TouchableOpacity
+               style={{ marginTop: 16 }}
+               onPress={() => {
+                 setShowModal(false);
+                 setAmount('');
+                 setDate(new Date());
+               }}
+             >
+               <Text style={{ color: '#007AFF', textAlign: 'center' }}>{t('common.cancel')}</Text>
+             </TouchableOpacity>
+           </View>
+         </View>
+       </Modal>
+     </View>
+   );
+ }

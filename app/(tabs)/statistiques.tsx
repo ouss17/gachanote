@@ -153,16 +153,25 @@ export default function StatistiquesScreen() {
   const total = Object.values(totalByGacha).reduce((a, b) => a + b, 0);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: themeColors.background, padding: 16 }}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: themeColors.background, padding: 16 }}
+      accessible={true}
+      accessibilityLabel={t('statistiques.globalTitle')}
+    >
       <View style={{ height: insets.top, backgroundColor: themeColors.background }} />
       <StatusBar style={isDark ? 'light' : 'dark'} />
-      <Text style={{
-        color: themeColors.text,
-        fontSize: getFontSize(22),
-        fontWeight: 'bold',
-        marginBottom: 16,
-        textAlign: 'center'
-      }}>
+      <Text
+        accessibilityRole="header"
+        accessible={true}
+        accessibilityLabel={t('statistiques.globalTitle')}
+        style={{
+          color: themeColors.text,
+          fontSize: getFontSize(22),
+          fontWeight: 'bold',
+          marginBottom: 16,
+          textAlign: 'center'
+        }}
+      >
         {t('statistiques.globalTitle')}
       </Text>
       {/* Filtres de dates, affichés seulement s'il y a des entrées */}
@@ -172,6 +181,10 @@ export default function StatistiquesScreen() {
             <Text style={{ color: isDark ? '#aaa' : '#888', fontSize: getFontSize(12) }}>{t('statistiques.startDate')}</Text>
             <Text
               onPress={() => setShowStartPicker(true)}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel={startDate ? format(startDate, 'dd/MM/yyyy') : t('statistiques.choose')}
+              accessibilityHint={t('statistiques.startDate')}
               style={{
                 color: isDark ? '#fff' : '#181818',
                 borderWidth: 1,
@@ -204,6 +217,10 @@ export default function StatistiquesScreen() {
             <Text style={{ color: isDark ? '#aaa' : '#888', fontSize: getFontSize(12) }}>{t('statistiques.endDate')}</Text>
             <Text
               onPress={() => setShowEndPicker(true)}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel={endDate ? format(endDate, 'dd/MM/yyyy') : t('statistiques.choose')}
+              accessibilityHint={t('statistiques.endDate')}
               style={{
                 color: isDark ? '#fff' : '#181818',
                 borderWidth: 1,
@@ -238,6 +255,10 @@ export default function StatistiquesScreen() {
               setStartDate(null);
               setEndDate(null);
             }}
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.reset')}
+            accessibilityHint={t('statistiques.choose')}
             style={{
               backgroundColor: isDark ? '#444' : '#eee',
               paddingVertical: 8,
@@ -269,37 +290,42 @@ export default function StatistiquesScreen() {
                 contentContainerStyle={{ minHeight: 260 }}
                 showsVerticalScrollIndicator={true}
               >
-                <LineChart
-                  data={{
-                    labels: filteredMonths.map(month => {
-                      const [m, y] = month.split('/').map(Number);
-                      return format(new Date(y, m - 1, 1), 'MMM yy', { locale: fr });
-                    }),
-                    datasets,
-                    legend: gachas.map(g => g.toUpperCase()),
-                  }}
-                  width={Math.max(Dimensions.get('window').width - 32, filteredMonths.length * 70)}
-                  height={Math.max(260, gachas.length * 40)}
-                  yAxisSuffix={currency}
-                  chartConfig={{
-                    backgroundColor: isDark ? '#181818' : '#fff',
-                    backgroundGradientFrom: isDark ? '#232323' : '#fff',
-                    backgroundGradientTo: isDark ? '#232323' : '#fff',
-                    decimalPlaces: 0,
-                    color: (opacity = 1) => isDark
-                      ? `rgba(108, 71, 255, ${opacity})`
-                      : `rgba(108, 71, 255, ${opacity})`,
-                    labelColor: () => isDark ? '#fff' : '#181818',
-                    style: { borderRadius: 16 },
-                    propsForBackgroundLines: { stroke: isDark ? '#444' : '#ddd' },
-                  }}
-                  bezier
-                  style={{ borderRadius: 16 }}
-                  onDataPointClick={({ value, x, y }) => {
-                    setTooltip({ value, x, y });
-                    setTimeout(() => setTooltip(null), 2000);
-                  }}
-                />
+                <View
+                  accessible={true}
+                  accessibilityLabel={t('statistiques.chart') || 'Spending chart'}
+                >
+                  <LineChart
+                    data={{
+                      labels: filteredMonths.map(month => {
+                        const [m, y] = month.split('/').map(Number);
+                        return format(new Date(y, m - 1, 1), 'MMM yy', { locale: fr });
+                      }),
+                      datasets,
+                      legend: gachas.map(g => g.toUpperCase()),
+                    }}
+                    width={Math.max(Dimensions.get('window').width - 32, filteredMonths.length * 70)}
+                    height={Math.max(260, gachas.length * 40)}
+                    yAxisSuffix={currency}
+                    chartConfig={{
+                      backgroundColor: isDark ? '#181818' : '#fff',
+                      backgroundGradientFrom: isDark ? '#232323' : '#fff',
+                      backgroundGradientTo: isDark ? '#232323' : '#fff',
+                      decimalPlaces: 0,
+                      color: (opacity = 1) => isDark
+                        ? `rgba(108, 71, 255, ${opacity})`
+                        : `rgba(108, 71, 255, ${opacity})`,
+                      labelColor: () => isDark ? '#fff' : '#181818',
+                      style: { borderRadius: 16 },
+                      propsForBackgroundLines: { stroke: isDark ? '#444' : '#ddd' },
+                    }}
+                    bezier
+                    style={{ borderRadius: 16 }}
+                    onDataPointClick={({ value, x, y }) => {
+                      setTooltip({ value, x, y });
+                      setTimeout(() => setTooltip(null), 2000);
+                    }}
+                  />
+                </View>
               </ScrollView>
             </ScrollView>
             <View style={{ alignItems: 'center', marginTop: 4, marginBottom: 8 }}>
@@ -386,7 +412,13 @@ export default function StatistiquesScreen() {
                       const percent = total ? ((value / total) * 100).toFixed(1) : 0;
                       const gacha = GACHAS.find(g => g.id === gachaId);
                       return (
-                        <View key={gachaId} style={{ flexDirection: 'row', alignItems: 'center', marginHorizontal: 8, marginVertical: 2 }}>
+                        <View
+                          key={gachaId}
+                          accessible={true}
+                          accessibilityRole="text"
+                          accessibilityLabel={`${gacha?.name || gachaId} ${percent}%`}
+                          style={{ flexDirection: 'row', alignItems: 'center', marginHorizontal: 8, marginVertical: 2 }}
+                        >
                           <View style={{
                             width: 14, height: 14, borderRadius: 7,
                             backgroundColor: GACHA_COLORS[gachaId] || '#888',
@@ -423,6 +455,8 @@ export default function StatistiquesScreen() {
               elevation: 4,
             }}
             pointerEvents="none"
+            accessible={true}
+            accessibilityLabel={`${tooltip.value.toLocaleString('fr-FR')} ${currency}`}
           >
             <Text style={{ color: isDark ? '#fff' : '#181818', fontWeight: 'bold', fontSize: getFontSize(15) }}>
               {tooltip.value.toLocaleString('fr-FR')} {currency}
