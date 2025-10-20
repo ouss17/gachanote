@@ -10,6 +10,7 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
   const dispatch = useDispatch();
   const banners = useSelector((state: RootState) => state.simulations.banners);
   const fontSize = useSelector((state: RootState) => state.settings.fontSize);
+  const vibrations = useSelector((state: RootState) => state.settings.vibrations);
   const { gachaId } = useLocalSearchParams();
   const theme = useSelector((state: RootState) => state.theme.mode);
   const themeColors = Theme[theme as keyof typeof Theme];
@@ -138,7 +139,9 @@ export default function SimulationsTab({ getFontSize }: { getFontSize: (base: nu
       Alert.alert(t('simulationsTab.validation.tooManyRolls'));
       return;
     }
-    Vibration.vibrate(50);
+    if (vibrations) {
+      Vibration.vibrate(50);
+    }
 
     const results: { [name: string]: number } = {};
 
