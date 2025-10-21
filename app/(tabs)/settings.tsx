@@ -30,7 +30,7 @@ const currencies = [
   { currency: '¥', label: 'Yen', symbol: '¥' },
 ];
 
-// Ajoute le mode "night" (pleine lune) et "dark" (demi-lune)
+
 const themeModes = [
   { key: 'light', icon: 'sun' }, // soleil
   { key: 'dark', icon: 'moon', style: { transform: [{ scaleX: -1 }] } }, // dark = demi-lune (miroir)
@@ -77,7 +77,6 @@ const Settings = () => {
             dispatch(resetRolls());
             dispatch(resetMoney());
             dispatch(resetSimulations());
-            // Ajoute ici d'autres resets si besoin
           },
         },
       ]

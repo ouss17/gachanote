@@ -7,7 +7,7 @@ import * as Crypto from 'expo-crypto';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useMemo, useRef, useState } from 'react';
-import { Button, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Animated, Button, Dimensions, Modal, PanResponder, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import MoneyTab from './MoneyTab';
@@ -203,12 +203,59 @@ export default function GachaRollsScreen() {
   const texts = require('@/data/texts.json');
   const t = (key: string) => texts[key]?.[lang] || texts[key]?.fr || key;
 
-  return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: themeColors.background }}
-      accessible={true}
-      accessibilityLabel="Gacha rolls screen"
-    >
+  // ordre des onglets pour la navigation par swipe
+  const tabsOrder: Array<'list' | 'simulations' | 'stats' | 'money'> = ['list', 'simulations', 'stats', 'money'];
+
+  // animation pour le swipe
+  const screenWidth = Dimensions.get('window').width;
+  const translateX = useRef(new Animated.Value(0)).current;
+
+   // Gestionnaire de swipe horizontal
+   const panResponder = PanResponder.create({
+     onMoveShouldSetPanResponder: (_, gestureState) => {
+       // n'active pas le swipe si la modal est ouverte
+       if (showModal) return false;
+       // déclenche si mouvement horizontal significatif
+       return Math.abs(gestureState.dx) > 20 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
+     },
+     onPanResponderMove: (_, gestureState) => {
+      // met à jour la translation pendant le drag
+      translateX.setValue(gestureState.dx);
+    },
+     onPanResponderRelease: (_, gestureState) => {
+       const dx = gestureState.dx;
+       const threshold = 60; // distance minimale en px pour considérer comme swipe
+       if (Math.abs(dx) < threshold) {
+        // retourne en place si pas assez de distance
+        Animated.spring(translateX, { toValue: 0, useNativeDriver: true }).start();
+        return;
+       }
+ 
+       const idx = tabsOrder.indexOf(tab);
+       if (idx === -1) return;
+ 
+      const goingNext = dx < 0;
+      const targetOff = goingNext ? -screenWidth : screenWidth;
+ 
+      // anime la vue courante hors écran
+      Animated.timing(translateX, { toValue: targetOff, duration: 180, useNativeDriver: true }).start(() => {
+        // change d'onglet quand l'ancienne vue est sortie
+        const nextIdx = goingNext ? (idx + 1) % tabsOrder.length : (idx - 1 + tabsOrder.length) % tabsOrder.length;
+        setTab(tabsOrder[nextIdx]);
+        // positionne la nouvelle vue hors écran de l'autre côté
+        translateX.setValue(goingNext ? screenWidth : -screenWidth);
+        // anime la nouvelle vue vers 0
+        Animated.timing(translateX, { toValue: 0, duration: 200, useNativeDriver: true }).start();
+      });
+     },
+   });
+ 
+   return (
+     <SafeAreaView
+       style={{ flex: 1, backgroundColor: themeColors.background }}
+       accessible={true}
+       accessibilityLabel="Gacha rolls screen"
+     >
        {/* Espace pour la barre de statut */}
        <View style={{ height: insets.top, backgroundColor: themeColors.background }} />
        <StatusBar style={isDark ? 'light' : 'dark'} />
@@ -330,45 +377,48 @@ export default function GachaRollsScreen() {
          </TouchableOpacity>
        </View>
  
-       {/* Affichage du contenu selon l'onglet sélectionné */}
-       {tab === 'list' ? (
-         <RollsTab
-           rolls={rolls}
-           isDark={isDark}
-           search={search}
-           setSearch={setSearch}
-           setEditRoll={setEditRoll}
-           setResourceAmount={setResourceAmount}
-           setNameFeatured={setNameFeatured}
-           setFeaturedCount={setFeaturedCount}
-           setSpookCount={setSpookCount}
-           setSideUnit={setSideUnit}
-           setDate={setDate}
-           setShowModal={setShowModal}
-           dispatch={dispatch}
-           removeRoll={removeRoll}
-           nameFeaturedRef={nameFeaturedRef}
-           featuredCountRef={featuredCountRef}
-           spookCountRef={spookCountRef}
-           sideUnitRef={sideUnitRef}
-           getFontSize={getFontSize} // Passe la fonction si besoin dans RollsTab
-         />
-       ) : tab === 'stats' ? (
-         <StatsTab
-           stats={stats}
-           resourceType={resourceType}
-           showStatsPercent={showStatsPercent}
-           setShowStatsPercent={setShowStatsPercent}
-           isDark={isDark}
-           totalMoney={totalMoney}
-           currency={currency}
-           getFontSize={getFontSize}
-         />
-       ) : tab === 'money' ? (
-         <MoneyTab gachaId={String(gachaId)} isDark={isDark} getFontSize={getFontSize} />
-       ) : tab === 'simulations' ? (
-         <SimulationsTab getFontSize={getFontSize} />
-       ) : null}
+       {/* Contenu des onglets — enveloppé pour capturer les swipes */}
+       <Animated.View style={{ flex: 1, transform: [{ translateX }] }} {...panResponder.panHandlers}>
+         {/* Affichage du contenu selon l'onglet sélectionné */}
+         {tab === 'list' ? (
+           <RollsTab
+             rolls={rolls}
+             isDark={isDark}
+             search={search}
+             setSearch={setSearch}
+             setEditRoll={setEditRoll}
+             setResourceAmount={setResourceAmount}
+             setNameFeatured={setNameFeatured}
+             setFeaturedCount={setFeaturedCount}
+             setSpookCount={setSpookCount}
+             setSideUnit={setSideUnit}
+             setDate={setDate}
+             setShowModal={setShowModal}
+             dispatch={dispatch}
+             removeRoll={removeRoll}
+             nameFeaturedRef={nameFeaturedRef}
+             featuredCountRef={featuredCountRef}
+             spookCountRef={spookCountRef}
+             sideUnitRef={sideUnitRef}
+             getFontSize={getFontSize} // Passe la fonction si besoin dans RollsTab
+           />
+         ) : tab === 'stats' ? (
+           <StatsTab
+             stats={stats}
+             resourceType={resourceType}
+             showStatsPercent={showStatsPercent}
+             setShowStatsPercent={setShowStatsPercent}
+             isDark={isDark}
+             totalMoney={totalMoney}
+             currency={currency}
+             getFontSize={getFontSize}
+           />
+         ) : tab === 'money' ? (
+           <MoneyTab gachaId={String(gachaId)} isDark={isDark} getFontSize={getFontSize} />
+         ) : tab === 'simulations' ? (
+           <SimulationsTab getFontSize={getFontSize} />
+         ) : null}
+       </Animated.View>
  
        {/* Bouton flottant "+" pour ajouter un roll, uniquement dans l'onglet Liste */}
        {tab === 'list' && (
