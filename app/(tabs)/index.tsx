@@ -1,6 +1,8 @@
+import { Theme } from '@/constants/Themes';
 import { GACHAS } from '@/data/gachas';
 import { setOnboardingSeen } from '@/redux/slices/onboardingSlice';
 import { RootState } from '@/redux/store';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
@@ -8,8 +10,6 @@ import { FlatList, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import DemoScreen from '../DemoScreen';
-import { Theme } from '@/constants/Themes';
-import { Ionicons } from '@expo/vector-icons';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -41,13 +41,23 @@ export default function HomeScreen() {
     return base;
   }
 
+  // traduction & accessibilité
+  const lang = useSelector((state: any) => state.nationality?.country) || 'fr';
+  const texts = require('@/data/texts.json');
+  const t = (key: string) => texts[key]?.[lang] || texts[key]?.fr || key;
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
 
       {/* Titre principal */}
-      <Text style={[styles.title, { color: colors.text, fontSize: getFontSize(32) }]}>
-        Gachanote
+      <Text
+        style={[styles.title, { color: colors.text, fontSize: getFontSize(32) }]}
+        accessible={true}
+        accessibilityRole="header"
+        accessibilityLabel={t('navBar.home')}
+      >
+        {t('navBar.home')}
       </Text>
 
       {/* Champ de recherche */}
@@ -57,7 +67,7 @@ export default function HomeScreen() {
       ]}>
         <Ionicons name="search-outline" size={20} color={colors.textSecondary} style={styles.searchIcon} />
         <TextInput
-          placeholder="Rechercher un gacha..."
+          placeholder={t('home.searchPlaceholder')}
           placeholderTextColor={colors.placeholder}
           value={search}
           onChangeText={setSearch}
@@ -69,13 +79,13 @@ export default function HomeScreen() {
             },
           ]}
           accessible={true}
-          accessibilityLabel="Rechercher un gacha..."
-          accessibilityHint="Filtrer la liste des gachas par nom"
+          accessibilityLabel={t('home.searchPlaceholder')}
+          accessibilityHint={t('simulationsTab.searchPlaceholder') /* closest hint available */ }
         />
         {search.length > 0 && (
           <TouchableOpacity
             onPress={() => setSearch('')}
-            accessibilityLabel="Effacer la recherche"
+            accessibilityLabel={t('common.reset')}
             accessibilityRole="button"
             style={styles.clearButton}
           >
@@ -98,6 +108,10 @@ export default function HomeScreen() {
               },
             ]}
             onPress={() => router.push(`/gacha/${item.id}`)}
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel={item.name}
+            accessibilityHint={`${t('demo.selectGacha.title')} — ${item.name}`}
           >
             <Image source={item.logo} style={styles.logo} resizeMode="contain" />
             <Text style={[styles.gachaName, { color: colors.text, fontSize: getFontSize(20) }]}>
