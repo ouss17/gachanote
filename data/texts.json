@@ -109,6 +109,11 @@
         "fr": "Sons",
         "jp": "サウンド"
     },
+    "settings.invertSwipe": {
+        "en": "Invert swipe",
+        "fr": "Inverser le swipe",
+        "jp": "メニューのスワイプを反転"
+    },
     "settings.vibrations": {
         "en": "Vibrations",
         "fr": "Vibrations",

@@ -210,6 +210,9 @@ export default function GachaRollsScreen() {
   const screenWidth = Dimensions.get('window').width;
   const translateX = useRef(new Animated.Value(0)).current;
 
+  // lit l'option d'inversion du swipe depuis le store
+  const invertSwipe = useSelector((state: RootState) => state.settings.invertSwipe);
+
    // Gestionnaire de swipe horizontal
    const panResponder = PanResponder.create({
      onMoveShouldSetPanResponder: (_, gestureState) => {
@@ -234,7 +237,10 @@ export default function GachaRollsScreen() {
        const idx = tabsOrder.indexOf(tab);
        if (idx === -1) return;
  
-      const goingNext = dx < 0;
+      // rawGoingNext : true si swipe droite->gauche (dx négatif)
+      const rawGoingNext = dx < 0;
+      // si invertSwipe est true, on inverse la logique
+      const goingNext = invertSwipe ? !rawGoingNext : rawGoingNext;
       const targetOff = goingNext ? -screenWidth : screenWidth;
  
       // anime la vue courante hors écran

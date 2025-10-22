@@ -45,9 +45,8 @@ export default function StatistiquesScreen() {
 
   // Fonction utilitaire pour la taille de police
   function getFontSize(base: number) {
-    // Use the translated font size labels for comparison
-    if (fontSize === t('settings.fontSize.small')) return base * 0.85;
-    if (fontSize === t('settings.fontSize.large')) return base * 1.25;
+    if (fontSize === 'small') return base * 0.85;
+    if (fontSize === 'large') return base * 1.25;
     return base;
   }
 
@@ -343,21 +342,22 @@ export default function StatistiquesScreen() {
         <View style={{ marginTop: 32, alignItems: 'center' }}>
           {(() => {
             // Préparation des segments pour le camembert
-            const radius = 60;
-            const strokeWidth = 24;
-            const center = radius + strokeWidth / 2;
-            const circumference = 2 * Math.PI * radius;
-            let prevPercent = 0;
-
-            const segments = Object.entries(totalByGacha)
-              .filter(([_, v]) => v > 0)
-              .map(([gachaId, value]) => {
-                const percent = total ? value / total : 0;
-                const dasharray = `${percent * circumference} ${circumference - percent * circumference}`;
-                const rotate = prevPercent * 360;
-                prevPercent += percent;
-                return { gachaId, dasharray, rotate };
-              });
+            // adapter la taille du camembert en fonction de la taille de police
+            const radius = Math.round(getFontSize(60));
+            const strokeWidth = Math.round(getFontSize(24));
+             const center = radius + strokeWidth / 2;
+             const circumference = 2 * Math.PI * radius;
+             let prevPercent = 0;
+ 
+             const segments = Object.entries(totalByGacha)
+               .filter(([_, v]) => v > 0)
+               .map(([gachaId, value]) => {
+                 const percent = total ? value / total : 0;
+                 const dasharray = `${percent * circumference} ${circumference - percent * circumference}`;
+                 const rotate = prevPercent * 360;
+                 prevPercent += percent;
+                 return { gachaId, dasharray, rotate };
+               });
 
             return (
               <>
