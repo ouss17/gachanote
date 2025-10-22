@@ -6,7 +6,7 @@ import { addMoney, resetMoney } from '@/redux/slices/moneySlice';
 import { setNationality } from '@/redux/slices/nationalitySlice';
 import { setOnboardingSeen } from '@/redux/slices/onboardingSlice';
 import { addRoll, resetRolls } from '@/redux/slices/rollsSlice';
-import { setFontSize, setSounds, setVibrations } from '@/redux/slices/settingsSlice';
+import { setFontSize, setInvertSwipe, setVibrations } from '@/redux/slices/settingsSlice';
 import { addBanner, addSimulationRoll, resetSimulations } from '@/redux/slices/simulationsSlice';
 import { setTheme } from '@/redux/slices/themeSlice';
 import { RootState } from '@/redux/store';
@@ -46,6 +46,7 @@ const Settings = () => {
   const fontSize = useSelector((state: RootState) => state.settings.fontSize);
   const sounds = useSelector((state: RootState) => state.settings.sounds);
   const vibrations = useSelector((state: RootState) => state.settings.vibrations);
+  const invertSwipe = useSelector((state: RootState) => state.settings.invertSwipe);
   const devise = useSelector((state: RootState) => state.devise.currency);
   const rolls = useSelector((state: RootState) => state.rolls.rolls);
   const moneyEntries = useSelector((state: RootState) => state.money.entries);
@@ -327,61 +328,61 @@ const Settings = () => {
         <View style={styles.row}>
           <Text style={[styles.label, { color: themeColors.text, fontSize: getFontSize(16) }]}>{t('settings.fontSize')}</Text>
           <View style={{ flexDirection: 'row' }}>
-            {FONT_SIZES_LOCALIZED.map(size => (
-              <TouchableOpacity
-                key={size.key}
-                accessibilityRole="button"
-                accessible={true}
-                accessibilityLabel={`${t('settings.fontSize')} ${size.label}`}
-                accessibilityState={{ selected: fontSize === size.key }}
-                style={[
-                  styles.chip,
-                  {
-                    backgroundColor: fontSize === size.key
-                      ? themeColors.primary
-                      : themeColors.card,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    minWidth: 60,
-                    justifyContent: 'center',
-                  },
-                ]}
-                onPress={() => dispatch(setFontSize(size.key as 'small' | 'normal' | 'large'))}
-              >
-                <Text
-                  style={{
-                    fontSize:
-                      size.key === 'small'
-                        ? getFontSize(13)
-                        : size.key === 'large'
-                        ? getFontSize(22)
-                        : getFontSize(17),
-                    color: fontSize === size.key
-                      ? themeColors.background
-                      : themeColors.text,
-                    fontWeight: 'bold',
-                  }}
+            {FONT_SIZES_LOCALIZED.map(size => {
+              const isCompact = fontSize === 'large';
+              return (
+                <TouchableOpacity
+                  key={size.key}
+                  accessibilityRole="button"
+                  accessible={true}
+                  accessibilityLabel={`${t('settings.fontSize')} ${size.label}`}
+                  accessibilityState={{ selected: fontSize === size.key }}
+                  style={[
+                    styles.chip,
+                    {
+                      backgroundColor: fontSize === size.key ? themeColors.primary : themeColors.card,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      minWidth: isCompact ? 48 : 60,
+                      justifyContent: 'center',
+                      paddingHorizontal: isCompact ? 10 : 14,
+                    },
+                  ]}
+                  onPress={() => dispatch(setFontSize(size.key as 'small' | 'normal' | 'large'))}
                 >
-                  {size.example}
-                </Text>
-                <Text
-                  style={{
-                    color: fontSize === size.key
-                      ? themeColors.background
-                      : themeColors.text,
-                    fontWeight: fontSize === size.key ? 'bold' : 'normal',
-                    fontSize: getFontSize(16),
-                    marginLeft: 6,
-                  }}
-                >
-                  {size.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <Text
+                    style={{
+                      fontSize:
+                        size.key === 'small'
+                          ? getFontSize(13)
+                          : size.key === 'large'
+                          ? getFontSize(22)
+                          : getFontSize(17),
+                      color: fontSize === size.key ? themeColors.background : themeColors.text,
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    {size.example}
+                  </Text>
+                  {!isCompact && (
+                    <Text
+                      style={{
+                        color: fontSize === size.key ? themeColors.background : themeColors.text,
+                        fontWeight: fontSize === size.key ? 'bold' : 'normal',
+                        fontSize: getFontSize(16),
+                        marginLeft: 6,
+                      }}
+                    >
+                      {size.label}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
         {/* Sons & Vibrations */}
-        <View style={styles.row}>
+        {/* <View style={styles.row}>
           <Text style={[styles.label, { color: themeColors.text, fontSize: getFontSize(16) }]}>{t('settings.sounds')}</Text>
           <Switch
             accessibilityLabel={t('settings.sounds')}
@@ -389,6 +390,18 @@ const Settings = () => {
             value={sounds}
             onValueChange={v => { dispatch(setSounds(v)); }}
             thumbColor={sounds ? (themeColors.primary) : (themeColors.card)}
+            trackColor={{ false: themeColors.card, true: themeColors.primary }}
+          />
+        </View> */}
+        {/* Inverser le swipe du menu */}
+        <View style={styles.row}>
+          <Text style={[styles.label, { color: themeColors.text, fontSize: getFontSize(16) }]}>{t('settings.invertSwipe') || 'Invert menu swipe'}</Text>
+          <Switch
+            accessibilityLabel={t('settings.invertSwipe') || 'Invert menu swipe'}
+            accessibilityState={{ checked: invertSwipe }}
+            value={invertSwipe}
+            onValueChange={v => { dispatch(setInvertSwipe(v)); }}
+            thumbColor={invertSwipe ? (themeColors.primary) : (themeColors.card)}
             trackColor={{ false: themeColors.card, true: themeColors.primary }}
           />
         </View>
