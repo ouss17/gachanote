@@ -51,14 +51,22 @@ export default function HomeScreen() {
       <StatusBar style={isDark ? 'light' : 'dark'} />
 
       {/* Titre principal */}
-      <Text
+      {/* <Text
         style={[styles.title, { color: colors.text, fontSize: getFontSize(32) }]}
         accessible={true}
         accessibilityRole="header"
         accessibilityLabel={t('navBar.home')}
       >
         {t('navBar.home')}
-      </Text>
+      </Text> */}
+      {/* Logo (petit) */}
+      <Image
+        source={theme === 'light' ? require('@/assets/images/icon_full.png') : require('@/assets/images/icone.png')}
+        style={{ width: 115, height: 115, alignSelf: 'center', marginBottom: 5, borderRadius: 20 }}
+        accessible={true}
+        accessibilityRole="image"
+        accessibilityLabel={t('navBar.home')}
+      />
 
       {/* Champ de recherche */}
       <View style={[
@@ -113,13 +121,27 @@ export default function HomeScreen() {
             accessibilityLabel={item.name}
             accessibilityHint={`${t('demo.selectGacha.title')} — ${item.name}`}
           >
-            <Image source={item.logo} style={styles.logo} resizeMode="contain" />
-            <Text style={[styles.gachaName, { color: colors.text, fontSize: getFontSize(20) }]}>
-              {item.name}
-            </Text>
-          </TouchableOpacity>
-        )}
-      />
+            {/* zone logo avec fond violet */}
+            <View style={styles.logoContainer}>
+              <Image
+                source={item.logo}
+                style={styles.logo}
+                resizeMode="contain"
+                accessible={true}
+                accessibilityRole="image"
+                accessibilityLabel={`${item.name} logo`}
+              />
+            </View>
+
+            {/* zone titre / infos */}
+            <View style={styles.infoContainer}>
+               <Text style={[styles.gachaName, { color: colors.text, fontSize: getFontSize(20) }]}>
+                 {item.name}
+               </Text>
+             </View>
+           </TouchableOpacity>
+         )}
+       />
     </SafeAreaView>
   );
 }
@@ -151,30 +173,51 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 4,
   },
+  // item container: no internal padding so left logo area can span full height
   gachaItem: {
     flexDirection: 'row',
-    alignItems: 'center',
-    padding: 14,
+    alignItems: 'stretch',
+    height: 88,
     borderWidth: 1,
     borderRadius: 16,
     marginBottom: 12,
+    overflow: 'hidden', // ensure left bg doesn't overflow rounded corners
   },
+  // left "logo" area that fills the item height
+  logoContainer: {
+    width: 88,
+    backgroundColor: '#2d166398',
+    alignItems: 'center',
+    justifyContent: 'center',
+    // round only left corners to match item's radius
+    borderTopLeftRadius: 16,
+    borderBottomLeftRadius: 16,
+    padding: 6, // small padding around the image
+  },
+  // image is centered inside logoContainer and sized with percentages so bg is visible
   logo: {
-    width: 80,
-    height: 60,
-    marginRight: 16,
-    borderRadius: 12,
+    width: '100%',
+    height: '100%',
+    borderRadius: 8,
     backgroundColor: 'transparent',
   },
-  gachaName: {
-    fontWeight: '600',
+  // right area contains title / info and provides padding
+  infoContainer: {
+    flex: 1,
+    paddingVertical: 14,
+    paddingRight: 14,
+    paddingLeft: 12,
+    justifyContent: 'center',
   },
-  clearButton: {
-    marginLeft: 8,
-    padding: 4,
-    borderRadius: 20,
-  },
-  clearIcon: {
-    // optional adjustments
-  },
+   gachaName: {
+     fontWeight: '600',
+   },
+   clearButton: {
+     marginLeft: 8,
+     padding: 4,
+     borderRadius: 20,
+   },
+   clearIcon: {
+     // optional adjustments
+   },
 });

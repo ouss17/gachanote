@@ -63,7 +63,7 @@ export default function DemoScreen({ onFinish }: { onFinish: () => void }) {
         pages={[
           {
             backgroundColor: '#fff',
-            image: <Image accessible={true} accessibilityLabel={t('demo.welcome.title')} source={require('@/assets/images/icon.png')} style={{ width: 120, height: 120 }} />,
+            image: <Image accessible={true} accessibilityLabel={t('demo.welcome.title')} source={require('@/assets/images/icon_full.png')} style={{ width: 120, height: 120 }} />,
             title: t('demo.welcome.title'),
             subtitle: t('demo.welcome.subtitle'),
           },
