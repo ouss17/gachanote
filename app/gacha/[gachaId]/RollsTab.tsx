@@ -48,6 +48,7 @@ export default function RollsTab({
   spookCountRef,
   sideUnitRef,
   getFontSize,
+  onModalVisibilityChange,
 }: any) {
   // Get selected language from settings
   let lang = useSelector((state: any) => state.nationality.country) || 'fr';
@@ -59,6 +60,9 @@ export default function RollsTab({
 
   const theme = useSelector((state: any) => state.theme.mode);
   const themeColors = Theme[theme as keyof typeof Theme];
+
+  // placeholder clair en dark/night, sinon utilise la valeur du thème
+  const placeholderColor = theme === 'dark' || theme === 'night' ? '#E5E7EB' : themeColors.placeholder;
 
   return (
     <>
@@ -76,11 +80,11 @@ export default function RollsTab({
             padding: 12,
             marginBottom: 24,
             fontSize: getFontSize ? getFontSize(16) : 16,
-            backgroundColor: themeColors.card,
-            color: themeColors.text,
+            backgroundColor: 'transparent', // pas de fond, on garde le style du conteneur
+            color: themeColors.text, // texte adapté au thème
           }}
           placeholder={t('gachaRolls.searchPlaceholder')}
-          placeholderTextColor={themeColors.placeholder}
+          placeholderTextColor={placeholderColor}
           value={search}
           onChangeText={setSearch}
         />
@@ -154,6 +158,8 @@ export default function RollsTab({
                 accessibilityLabel={t('common.edit')}
                 accessibilityHint={`Edit roll ${item.nameFeatured ?? ''}`}
                 onPress={() => {
+                  // notify parent that a modal will open to block parent swipe
+                  onModalVisibilityChange?.(true);
                   setEditRoll(item);
                   setResourceAmount(item.resourceAmount.toString());
                   setNameFeatured(item.nameFeatured ?? '');
