@@ -24,6 +24,9 @@ export default function GachaRollsScreen() {
   const { gachaId } = useLocalSearchParams();
   const router = useRouter();
 
+  // bloque le swipe parent quand un modal interne (ex: résultats) est ouvert
+  const [childModalOpen, setChildModalOpen] = useState(false);
+
   // Sélectionne tous les rolls depuis le store Redux
   const allRolls = useSelector((state: RootState) => state.rolls.rolls);
   const theme = useSelector((state: RootState) => state.theme.mode);
@@ -217,7 +220,7 @@ export default function GachaRollsScreen() {
    const panResponder = PanResponder.create({
      onMoveShouldSetPanResponder: (_, gestureState) => {
        // n'active pas le swipe si la modal est ouverte
-       if (showModal) return false;
+       if (showModal || childModalOpen) return false;
        // déclenche si mouvement horizontal significatif
        return Math.abs(gestureState.dx) > 20 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
      },
@@ -407,6 +410,7 @@ export default function GachaRollsScreen() {
              spookCountRef={spookCountRef}
              sideUnitRef={sideUnitRef}
              getFontSize={getFontSize} // Passe la fonction si besoin dans RollsTab
+             onModalVisibilityChange={(v: boolean) => setChildModalOpen(v)}
            />
          ) : tab === 'stats' ? (
            <StatsTab
@@ -420,9 +424,14 @@ export default function GachaRollsScreen() {
              getFontSize={getFontSize}
            />
          ) : tab === 'money' ? (
-           <MoneyTab gachaId={String(gachaId)} isDark={isDark} getFontSize={getFontSize} />
+           <MoneyTab
+             gachaId={String(gachaId)}
+             isDark={isDark}
+             getFontSize={getFontSize}
+             onModalVisibilityChange={(v: boolean) => setChildModalOpen(v)}
+           />
          ) : tab === 'simulations' ? (
-           <SimulationsTab getFontSize={getFontSize} />
+           <SimulationsTab getFontSize={getFontSize} onModalVisibilityChange={(v: boolean) => setChildModalOpen(v)} />
          ) : null}
        </Animated.View>
  

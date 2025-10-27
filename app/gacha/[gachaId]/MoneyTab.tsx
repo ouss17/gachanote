@@ -14,12 +14,24 @@ import { useDispatch, useSelector } from 'react-redux';
  * @param isDark Thème sombre ou non
  * @param getFontSize Fonction pour la taille de police dynamique
  */
-export default function MoneyTab({ gachaId, isDark, getFontSize }: { gachaId: string, isDark: boolean, getFontSize: (base: number) => number }) {
+export default function MoneyTab({
+  gachaId,
+  isDark,
+  getFontSize,
+  onModalVisibilityChange,
+}: {
+  gachaId: string;
+  isDark: boolean;
+  getFontSize: (base: number) => number;
+  onModalVisibilityChange?: (visible: boolean) => void;
+}) {
   const dispatch = useDispatch();
   const currency = useSelector((state: RootState) => state.devise.currency);
   const allMoneyEntries = useSelector((state: RootState) => state.money.entries);
   const theme = useSelector((state: RootState) => state.theme.mode);
   const themeColors = Theme[theme as keyof typeof Theme];
+  // placeholder clair pour dark/night
+  const placeholderColor = theme === 'dark' || theme === 'night' ? '#E5E7EB' : themeColors.placeholder;
 
   // Filtre toutes les entrées d'argent pour ce gacha
   const allEntries = useMemo(
@@ -70,6 +82,7 @@ export default function MoneyTab({ gachaId, isDark, getFontSize }: { gachaId: st
       date: date.toISOString().slice(0, 10),
     }));
     setShowModal(false);
+    onModalVisibilityChange?.(false);
     setAmount('');
     setDate(new Date());
   };
@@ -237,7 +250,7 @@ export default function MoneyTab({ gachaId, isDark, getFontSize }: { gachaId: st
            borderRadius: 8,
            alignItems: 'center',
          }}
-         onPress={() => setShowModal(true)}
+         onPress={() => { setShowModal(true); onModalVisibilityChange?.(true); }}
          accessible={true}
          accessibilityRole="button"
          accessibilityLabel={t('money.add')}
@@ -246,7 +259,7 @@ export default function MoneyTab({ gachaId, isDark, getFontSize }: { gachaId: st
          <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>{t('money.add')}</Text>
        </TouchableOpacity>
        {/* Modal d'ajout d'un montant */}
-       <Modal visible={showModal} transparent animationType="slide">
+       <Modal visible={showModal} transparent animationType="slide" onRequestClose={() => { setShowModal(false); onModalVisibilityChange?.(false); }}>
          <View style={{
            flex: 1,
            backgroundColor: 'rgba(0,0,0,0.5)',
@@ -282,6 +295,7 @@ export default function MoneyTab({ gachaId, isDark, getFontSize }: { gachaId: st
                  accessible={true}
                  accessibilityLabel={t('money.form.amountPlaceholder')}
                  accessibilityHint={`${currency}`}
+                 placeholderTextColor={placeholderColor}
                />
                <Text style={{ marginLeft: 8, color: themeColors.text, fontWeight: 'bold', fontSize: getFontSize(16) }}>
                  {currency}
@@ -331,6 +345,7 @@ export default function MoneyTab({ gachaId, isDark, getFontSize }: { gachaId: st
                style={{ marginTop: 16 }}
                onPress={() => {
                  setShowModal(false);
+                 onModalVisibilityChange?.(false);
                  setAmount('');
                  setDate(new Date());
                }}
