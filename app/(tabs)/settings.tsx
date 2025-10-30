@@ -462,8 +462,9 @@ const Settings = () => {
         </View>
 
         {/* Demo modal (replay onboarding) */}
-        <Modal visible={showDemo} animationType="slide" transparent>
-          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }}>
+        <Modal visible={showDemo} animationType="slide" transparent={true}>
+          {/* Fond blanc pour cacher complètement les éléments en dessous */}
+          <View style={{ flex: 1, backgroundColor: '#fff' }}>
             <View style={{ flex: 1 }}>
               <DemoScreen onFinish={() => {
                 // mark onboarding as seen and close demo
