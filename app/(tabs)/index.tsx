@@ -20,13 +20,13 @@ export default function HomeScreen() {
     theme === 'night'
       ? Theme.night
       : theme === 'dark'
-      ? Theme.dark
-      : Theme.light;
+        ? Theme.dark
+        : Theme.light;
 
   const [search, setSearch] = useState('');
 
   const filteredGachas = GACHAS.filter(g =>
-    g.name.toLowerCase().includes(search.toLowerCase())
+    g.name.toLowerCase().includes(search.toLowerCase()) || g.tags.some(tag => tag.toLowerCase().includes(search.toLowerCase()))
   );
 
   const onboardingSeen = useSelector((state: RootState) => state.onboarding.seen);
@@ -88,7 +88,7 @@ export default function HomeScreen() {
           ]}
           accessible={true}
           accessibilityLabel={t('home.searchPlaceholder')}
-          accessibilityHint={t('simulationsTab.searchPlaceholder') /* closest hint available */ }
+          accessibilityHint={t('simulationsTab.searchPlaceholder') /* closest hint available */}
         />
         {search.length > 0 && (
           <TouchableOpacity
@@ -135,13 +135,13 @@ export default function HomeScreen() {
 
             {/* zone titre / infos */}
             <View style={styles.infoContainer}>
-               <Text style={[styles.gachaName, { color: colors.text, fontSize: getFontSize(20) }]}>
-                 {item.name}
-               </Text>
-             </View>
-           </TouchableOpacity>
-         )}
-       />
+              <Text style={[styles.gachaName, { color: colors.text, fontSize: getFontSize(20) }]}>
+                {item.name}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        )}
+      />
     </SafeAreaView>
   );
 }
@@ -209,15 +209,15 @@ const styles = StyleSheet.create({
     paddingLeft: 12,
     justifyContent: 'center',
   },
-   gachaName: {
-     fontWeight: '600',
-   },
-   clearButton: {
-     marginLeft: 8,
-     padding: 4,
-     borderRadius: 20,
-   },
-   clearIcon: {
-     // optional adjustments
-   },
+  gachaName: {
+    fontWeight: '600',
+  },
+  clearButton: {
+    marginLeft: 8,
+    padding: 4,
+    borderRadius: 20,
+  },
+  clearIcon: {
+    // optional adjustments
+  },
 });

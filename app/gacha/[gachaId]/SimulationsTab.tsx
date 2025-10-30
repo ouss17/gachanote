@@ -465,58 +465,78 @@ export default function SimulationsTab({
         transparent
         onRequestClose={() => { setShowAllResultsModal(false); onModalVisibilityChange?.(false); }}
       >
-        {/* overlay: tap outside content to close */}
-        <TouchableWithoutFeedback onPress={() => { setShowAllResultsModal(false); onModalVisibilityChange?.(false); }}>
-          <View style={{
-            flex: 1,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            justifyContent: 'center',
-            alignItems: 'center'
-          }}>
-            {/*
-              Inner content must capture touch start events so vertical scroll inside
-              the FlatList is not hijacked by the outer overlay.
-            */}
-            <View
-              onStartShouldSetResponder={() => true}
-              onResponderTerminationRequest={() => false}
-              style={{
-                backgroundColor: themeColors.card,
-                padding: 16,
-                borderRadius: 12,
-                width: '92%',
-                maxHeight: '80%',
-              }}
-            >
-              <Text style={{ color: themeColors.text, fontWeight: 'bold', fontSize: getFontSize(18), marginBottom: 8 }}>{t('simulationsTab.viewAllResultsTitle')}</Text>
-              <FlatList
-                data={modalRolls}
-                keyExtractor={(r) => r.id}
-                nestedScrollEnabled={true}
-                keyboardShouldPersistTaps="handled"
-                showsVerticalScrollIndicator={true}
-                // donner une hauteur raisonnable à la liste pour qu'elle soit visible
-                style={{ maxHeight: '100%', width: '100%' }}
-                contentContainerStyle={{ paddingBottom: 8 }}
-                renderItem={({ item: roll }) => (
-                  <View style={{ borderWidth: 1, borderColor: themeColors.border, borderRadius: 10, padding: 10, marginBottom: 8, backgroundColor: themeColors.background }}>
-                    <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(12) }}>{new Date(roll.date).toLocaleString()}</Text>
-                    <Text style={{ color: themeColors.text, fontWeight: 'bold', marginTop: 6 }}>{roll.results.map((r: any) => `${r.name}×${r.count}`).join(', ')}</Text>
-                    <Text style={{ color: themeColors.placeholder, marginTop: 6 }}>{roll.resourceUsed} {multiLabel.replace(/.*?([a-zA-Z]+)$/, '$1')}</Text>
-                  </View>
-                )}
-                ListEmptyComponent={
-                  <Text style={{ color: themeColors.placeholder, textAlign: 'center', marginTop: 8 }}>
-                    {t('simulationsTab.noResults') || 'Aucun résultat'}
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+          {/* overlay cliquable */}
+          <TouchableWithoutFeedback onPress={() => { setShowAllResultsModal(false); onModalVisibilityChange?.(false); }}>
+            <View style={{
+              ...StyleSheet.absoluteFillObject,
+            }} />
+          </TouchableWithoutFeedback>
+
+          {/* contenu du modal */}
+          <View
+            style={{
+              backgroundColor: themeColors.card,
+              padding: 16,
+              borderRadius: 12,
+              width: '92%',
+              maxHeight: '80%',
+            }}
+          >
+            <Text style={{ color: themeColors.text, fontWeight: 'bold', fontSize: getFontSize(18), marginBottom: 8 }}>
+              {t('simulationsTab.viewAllResultsTitle')}
+            </Text>
+
+            <FlatList
+              data={modalRolls}
+              keyExtractor={(r) => r.id}
+              nestedScrollEnabled
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator
+              style={{ maxHeight: '100%', width: '100%' }}
+              contentContainerStyle={{ paddingBottom: 8 }}
+              renderItem={({ item: roll }) => (
+                <View style={{
+                  borderWidth: 1,
+                  borderColor: themeColors.border,
+                  borderRadius: 10,
+                  padding: 10,
+                  marginBottom: 8,
+                  backgroundColor: themeColors.background
+                }}>
+                  <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(12) }}>
+                    {new Date(roll.date).toLocaleString()}
                   </Text>
-                }
-              />
-              <TouchableOpacity onPress={() => { setShowAllResultsModal(false); onModalVisibilityChange?.(false); }} style={{ marginTop: 8, alignSelf: 'center' }}>
-                <Text style={{ color: themeColors.primary, fontSize: getFontSize(16) }}>{t('settings.close')}</Text>
-              </TouchableOpacity>
-            </View>
+                  <Text style={{ color: themeColors.text, fontWeight: 'bold', marginTop: 6 }}>
+                    {roll.results.map((r: any) => `${r.name}×${r.count}`).join(', ')}
+                  </Text>
+                  <Text style={{ color: themeColors.placeholder, marginTop: 6 }}>
+                    {roll.resourceUsed} {multiLabel.replace(/.*?([a-zA-Z]+)$/, '$1')}
+                  </Text>
+                </View>
+              )}
+              ListEmptyComponent={
+                <Text style={{ color: themeColors.placeholder, textAlign: 'center', marginTop: 8 }}>
+                  {t('simulationsTab.noResults') || 'Aucun résultat'}
+                </Text>
+              }
+            />
+
+            <TouchableOpacity
+              onPress={() => { setShowAllResultsModal(false); onModalVisibilityChange?.(false); }}
+              style={{ marginTop: 8, alignSelf: 'center' }}
+            >
+              <Text style={{ color: themeColors.primary, fontSize: getFontSize(16) }}>
+                {t('settings.close')}
+              </Text>
+            </TouchableOpacity>
           </View>
-        </TouchableWithoutFeedback>
+        </View>
       </Modal>
 
       {/* Modal pour ajouter une bannière */}
@@ -613,7 +633,7 @@ export default function SimulationsTab({
               </View>
             ))}
 
-            <TouchableOpacity style={[styles.validateBtn, { backgroundColor: themeColors.success }]} onPress={() => { handleAddBanner(); setShowModal(false); onModalVisibilityChange?.(false); }}>
+            <TouchableOpacity style={[styles.validateBtn, { backgroundColor: themeColors.primary }]} onPress={() => { handleAddBanner(); setShowModal(false); onModalVisibilityChange?.(false); }}>
               <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>{t('simulationsTab.addBannerButton')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={{ marginTop: 16 }} onPress={() => {
