@@ -3,7 +3,7 @@ import { addMoney, removeMoney } from '@/redux/slices/moneySlice';
 import { RootState } from '@/redux/store';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useMemo, useState } from 'react';
-import { Button, FlatList, Modal, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { FlatList, Modal, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 /**
@@ -338,8 +338,25 @@ export default function MoneyTab({
                  maximumDate={new Date()}
                />
              )}
-             {/* Bouton de validation */}
-            <Button title={t('common.add')} accessibilityLabel={t('common.add')} onPress={handleAdd} />
+             {/* Bouton de validation (TouchableOpacity pour style cohérent) */}
+            <TouchableOpacity
+              onPress={handleAdd}
+              accessibilityRole="button"
+              accessible={true}
+              accessibilityLabel={t('common.add')}
+              activeOpacity={0.85}
+              style={{
+                backgroundColor: themeColors.primary,
+                padding: 12,
+                borderRadius: 8,
+                alignItems: 'center',
+                marginTop: 8,
+              }}
+            >
+              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>
+                {t('common.add')}
+              </Text>
+            </TouchableOpacity>
              {/* Bouton Annuler */}
              <TouchableOpacity
                style={{ marginTop: 16 }}
