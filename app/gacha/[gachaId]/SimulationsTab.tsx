@@ -1,7 +1,7 @@
 import { Theme } from '@/constants/Themes';
 import { addBanner, addSimulationRoll, clearBannerRolls, removeBanner, SimulationBanner, SimulationCharacter } from '@/redux/slices/simulationsSlice';
 import { RootState } from '@/redux/store';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, FlatList, Modal, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, Vibration, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
@@ -20,6 +20,8 @@ export default function SimulationsTab({
   const { gachaId } = useLocalSearchParams();
   const theme = useSelector((state: RootState) => state.theme.mode);
   const themeColors = Theme[theme as keyof typeof Theme];
+  const router = useRouter();
+  const [showUnknownCostInfo, setShowUnknownCostInfo] = useState(false);
 
   // translation setup (like MoneyTab)
   let lang = useSelector((state: any) => state.nationality.country) || 'fr';
@@ -195,7 +197,8 @@ export default function SimulationsTab({
     }
 
     const rollResult = Object.entries(results).map(([name, count]) => ({ name, count }));
-    const resourceUsed = Math.round(count * (multiCost / 10));
+    // Si multiCost inconnu (0), on considère que l'on compte en "tickets" => 1 ticket = 1 pull
+    const resourceUsed = multiCost && multiCost > 0 ? Math.round(count * (multiCost / 10)) : count;
     dispatch(addSimulationRoll({
       bannerId: banner.id,
       roll: {
@@ -390,9 +393,33 @@ export default function SimulationsTab({
                   {/* Resources used - enlarged with number below */}
                   <View style={{ marginTop: 12, alignItems: 'center' }}>
                     <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(14) }}>{t('simulationsTab.resourceUsed')}</Text>
-                    <Text style={{ color: themeColors.text, fontWeight: 'bold', fontSize: getFontSize(18), marginTop: 6 }}>
-                      {banner.totalResourceUsed} {multiLabel.replace(/.*?([a-zA-Z]+)$/, '$1')}
-                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
+                      <Text style={{ color: themeColors.text, fontWeight: 'bold', fontSize: getFontSize(18) }}>
+                        {banner.totalResourceUsed}{' '}
+                        { /* si label inconnu, afficher fallback 'tickets' ou clé localisée */ }
+                        {(!multiCost || multiCost === 0 || !multiLabel) ? (t('simulationsTab.unknownUnit') || 'tickets') : multiLabel.replace(/.*?([a-zA-Z]+)$/, '$1')}
+                      </Text>
+                      {(!multiCost || multiCost === 0 || !multiLabel) && (
+                        <TouchableOpacity
+                          onPress={() => setShowUnknownCostInfo(true)}
+                          accessible={true}
+                          accessibilityRole="button"
+                          accessibilityLabel={t('simulationsTab.unknownUnitHelpLabel') || 'Unknown unit help'}
+                          style={{
+                            marginLeft: 8,
+                            marginTop: -Math.round(getFontSize(2)),
+                            width: Math.round(getFontSize(18)),
+                            height: Math.round(getFontSize(18)),
+                            borderRadius: Math.round(getFontSize(9)),
+                            backgroundColor: themeColors.primary,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          <Text style={{ color: '#fff', fontWeight: '700', fontSize: getFontSize(10) }}>?</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
                   </View>
                 </View>
               )}
@@ -673,6 +700,39 @@ export default function SimulationsTab({
       >
         <Text style={{ color: '#fff', fontSize: getFontSize(32), fontWeight: 'bold' }}>+</Text>
       </TouchableOpacity>
+
+      {/* Modal : explication coût inconnu (invitation feedback) */}
+      <Modal
+        visible={showUnknownCostInfo}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowUnknownCostInfo(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setShowUnknownCostInfo(false)}>
+          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', alignItems: 'center' }}>
+            <TouchableWithoutFeedback onPress={() => {}}>
+              <View style={{ width: '90%', backgroundColor: themeColors.card, padding: 16, borderRadius: 12 }}>
+                <Text style={{ color: themeColors.text, fontWeight: 'bold', marginBottom: 8, fontSize: getFontSize(18) }}>
+                  {t('simulationsTab.unknownCostTitle') || "Coût inconnu"}
+                </Text>
+                <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(14), lineHeight: Math.round(getFontSize(20)) }}>
+                  {t('simulationsTab.unknownCostDescription') ||
+                    "Le calcul des ressources utilisées pour ce gacha n'est pas disponible dans l'app. " +
+                    "Par défaut on compte ici en tickets (1 pull = 1 ticket). Si tu connais le coût réel d'une multi pour ce gacha, merci de nous le signaler dans les paramètres."}
+                </Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 12 }}>
+                  <TouchableOpacity onPress={() => { setShowUnknownCostInfo(false); router.push('/settings'); }} style={{ marginRight: 12 }}>
+                    <Text style={{ color: themeColors.primary, fontSize: getFontSize(16) }}>{t('simulationsTab.goToSettings') || 'Aller aux paramètres'}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => setShowUnknownCostInfo(false)}>
+                    <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(16) }}>{t('common.cancel') || 'Annuler'}</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </View>
   );
 }

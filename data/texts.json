@@ -454,6 +454,56 @@
     "fr": "Ajouter la bannière",
     "jp": "バナーを追加"
   },
+    "simulationsTab.unknownUnit": {
+    "en": "tickets",
+    "fr": "tickets",
+    "jp": "チケット"
+  },
+  "simulationsTab.unknownUnitHelpLabel": {
+    "en": "Unknown unit help",
+    "fr": "Aide coût inconnu",
+    "jp": "不明な単位ヘルプ"
+  },
+  "simulationsTab.unknownCostTitle": {
+    "en": "Unknown cost",
+    "fr": "Coût inconnu",
+    "jp": "不明なコスト"
+  },
+  "simulationsTab.unknownCostDescription": {
+    "en": "The multi cost for this gacha is not known to the app. As a fallback we count pulls as tickets (1 pull = 1 ticket). If you know the real multi cost for this gacha, please send it via Settings so we can improve accuracy.",
+    "fr": "Le coût d'une multi pour ce gacha n'est pas renseigné dans l'app. Par défaut on compte les tirages en tickets (1 tirage = 1 ticket). Si tu connais le coût réel d'une multi pour ce gacha, signale‑le via les Paramètres pour améliorer la précision.",
+    "jp": "このガチャの10連（マルチ）のコストはアプリ側で不明です。代替として1回のガチャを1チケットとしてカウントしています（1ガチャ＝1チケット）。実際のコストを知っている場合は、設定からお知らせください。"
+  },
+  "simulationsTab.goToSettings": {
+    "en": "Go to settings",
+    "fr": "Aller aux paramètres",
+    "jp": "設定へ移動"
+  },
+  "simulationsTab.unknownUnit": {
+    "en": "tickets",
+    "fr": "tickets",
+    "jp": "チケット"
+  },
+  "simulationsTab.unknownUnitHelpLabel": {
+    "en": "Unknown unit help",
+    "fr": "Aide coût inconnu",
+    "jp": "不明な単位ヘルプ"
+  },
+  "simulationsTab.unknownCostTitle": {
+    "en": "Unknown cost",
+    "fr": "Coût inconnu",
+    "jp": "不明なコスト"
+  },
+  "simulationsTab.unknownCostDescription": {
+    "en": "The multi cost for this gacha is not known to the app. As a fallback we count pulls as tickets (1 pull = 1 ticket). If you know the real multi cost for this gacha, please send it via Settings so we can improve accuracy.",
+    "fr": "Le coût d'une multi pour ce gacha n'est pas renseigné dans l'app. Par défaut on compte les tirages en tickets (1 tirage = 1 ticket). Si tu connais le coût réel d'une multi pour ce gacha, signale‑le via les Paramètres pour améliorer la précision.",
+    "jp": "このガチャの10連（マルチ）のコストはアプリ側で不明です。代替として1回のガチャを1チケットとしてカウントしています（1ガチャ＝1チケット）。実際のコストを知っている場合は、設定からお知らせください。"
+  },
+  "simulationsTab.goToSettings": {
+    "en": "Go to settings",
+    "fr": "Aller aux paramètres",
+    "jp": "設定へ移動"
+  },
   "gachaRolls.stats.title": {
     "en": "Statistics",
     "fr": "Statistiques",
