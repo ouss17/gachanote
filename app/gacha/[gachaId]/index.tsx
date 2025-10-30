@@ -6,8 +6,8 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Crypto from 'expo-crypto';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useMemo, useRef, useState } from 'react';
-import { Animated, Button, Dimensions, Modal, PanResponder, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Animated, Dimensions, Modal, PanResponder, Platform, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import MoneyTab from './MoneyTab';
@@ -51,6 +51,8 @@ export default function GachaRollsScreen() {
     spook: false,
     sideUnit: false,
   });
+  const [showSpookInfo, setShowSpookInfo] = useState(false);
+  const [showSideUnitInfo, setShowSideUnitInfo] = useState(false);
 
   // Références pour la navigation entre les champs du formulaire
   const nameFeaturedRef = useRef<TextInput>(null);
@@ -213,6 +215,22 @@ export default function GachaRollsScreen() {
   const screenWidth = Dimensions.get('window').width;
   const translateX = useRef(new Animated.Value(0)).current;
 
+  // underline pour les onglets
+  const underlineAnim = useRef(new Animated.Value(0)).current;
+  const [tabsWidth, setTabsWidth] = useState(0);
+  const tabsCount = tabsOrder.length;
+  const underlinePadding = 12; // marge interne pour que la barre soit plus courte que la cellule
+
+  // anime la position de la barre quand tab change
+  useEffect(() => {
+    if (!tabsWidth) return;
+    const idx = tabsOrder.indexOf(tab);
+    if (idx === -1) return;
+    const cellWidth = tabsWidth / tabsCount;
+    const targetX = idx * cellWidth + underlinePadding / 2;
+    Animated.timing(underlineAnim, { toValue: targetX, duration: 220, useNativeDriver: true }).start();
+  }, [tab, tabsWidth]);
+
   // lit l'option d'inversion du swipe depuis le store
   const invertSwipe = useSelector((state: RootState) => state.settings.invertSwipe);
 
@@ -291,7 +309,11 @@ export default function GachaRollsScreen() {
        </View>
  
        {/* Menu d'onglets */}
-       <View style={{ flexDirection: 'row', marginBottom: 16 }}>
+       <View
+         style={{ marginBottom: 16 }}
+         onLayout={(e) => setTabsWidth(e.nativeEvent.layout.width)}
+       >
+         <View style={{ flexDirection: 'row' }}>
          <TouchableOpacity
            style={{
              flex: 1,
@@ -315,7 +337,7 @@ export default function GachaRollsScreen() {
              {t('gachaRolls.tabs.list')}
            </Text>
          </TouchableOpacity>
-         <TouchableOpacity
+         {/* <TouchableOpacity
            style={{
              flex: 1,
              padding: 12,
@@ -337,7 +359,7 @@ export default function GachaRollsScreen() {
            }}>
              {t('gachaRolls.tabs.simulations')}
            </Text>
-         </TouchableOpacity>
+         </TouchableOpacity> */}
          <TouchableOpacity
            style={{
              flex: 1,
@@ -384,6 +406,23 @@ export default function GachaRollsScreen() {
              {t('gachaRolls.tabs.money')}
            </Text>
          </TouchableOpacity>
+         </View>
+         {/* underline animée */}
+         {tabsWidth > 0 && (
+          <Animated.View
+            pointerEvents="none"
+            style={{
+              position: 'absolute',
+              bottom: -2,
+              left: 0,
+              width: tabsWidth / tabsCount - underlinePadding,
+              height: 3,
+              borderRadius: 2,
+              backgroundColor: themeColors.primary,
+              transform: [{ translateX: underlineAnim }],
+            }}
+          />
+         )}
        </View>
  
        {/* Contenu des onglets — enveloppé pour capturer les swipes */}
@@ -581,10 +620,27 @@ export default function GachaRollsScreen() {
                blurOnSubmit={false}
              />
  
-             {/* Champ Nombre de spooks */}
-             <Text style={{ color: isDark ? '#fff' : '#181818', marginBottom: 4, fontSize: getFontSize(16) }}>
-               {t('gachaRolls.form.spookCount')}
-             </Text>
+             {/* Champ "Nombre de spook" */}
+             <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
+               <Text style={{ color: themeColors.text }}>{t('gachaRolls.form.spookCount')}</Text>
+               <TouchableOpacity
+                 onPress={() => setShowSpookInfo(true)}
+                 accessible={true}
+                 accessibilityRole="button"
+                 accessibilityLabel={t('gachaRolls.spookHelpLabel') || 'Spook help'}
+                 style={{
+                   marginLeft: 8,
+                   width: 26,
+                   height: 26,
+                   borderRadius: 13,
+                   backgroundColor: themeColors.primary,
+                   alignItems: 'center',
+                   justifyContent: 'center',
+                 }}
+               >
+                 <Text style={{ color: '#fff', fontWeight: 'bold' }}>?</Text>
+               </TouchableOpacity>
+             </View>
              <TextInput
                accessibilityLabel={t('gachaRolls.form.spookCount')}
                ref={spookCountRef}
@@ -598,10 +654,29 @@ export default function GachaRollsScreen() {
                blurOnSubmit={false}
              />
  
-             {/* Champ Nombre de side units featuré */}
-             <Text style={{ color: isDark ? '#fff' : '#181818', marginBottom: 4, fontSize: getFontSize(16) }}>
-               {t('gachaRolls.form.sideUnitCount')}
-             </Text>
+             {/* Champ Nombre de side units featuré (avec aide) */}
+             <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
+               <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize(16) }}>
+                 {t('gachaRolls.form.sideUnitCount')}
+               </Text>
+               <TouchableOpacity
+                 onPress={() => setShowSideUnitInfo(true)}
+                 accessible={true}
+                 accessibilityRole="button"
+                 accessibilityLabel={t('gachaRolls.sideUnitHelpLabel') || 'Side unit help'}
+                 style={{
+                   marginLeft: 8,
+                   width: 26,
+                   height: 26,
+                   borderRadius: 13,
+                   backgroundColor: themeColors.primary,
+                   alignItems: 'center',
+                   justifyContent: 'center',
+                 }}
+               >
+                 <Text style={{ color: '#fff', fontWeight: 'bold' }}>?</Text>
+               </TouchableOpacity>
+             </View>
              <TextInput
                accessibilityLabel={t('gachaRolls.form.sideUnitCount')}
                style={[styles.input, { fontSize: getFontSize(16) }]}
@@ -649,8 +724,19 @@ export default function GachaRollsScreen() {
                />
              )}
  
-             {/* Bouton de validation */}
-             <Button title={editRoll ? t('common.edit') : t('common.add')} accessibilityLabel={editRoll ? t('common.edit') : t('common.add')} onPress={handleAdd} />
+             {/* Bouton de validation (style similaire à Simulations) */}
+             <TouchableOpacity
+               style={[styles.addBtn, { backgroundColor: themeColors.primary }]}
+               onPress={handleAdd}
+               accessibilityRole="button"
+               accessible={true}
+               accessibilityLabel={editRoll ? t('common.edit') : t('common.add')}
+               activeOpacity={0.85}
+             >
+               <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>
+                 {editRoll ? t('common.edit') : t('common.add')}
+               </Text>
+             </TouchableOpacity>
  
              {/* Bouton Annuler */}
              <TouchableOpacity
@@ -664,6 +750,62 @@ export default function GachaRollsScreen() {
              </TouchableOpacity>
            </View>
          </View>
+       </Modal>
+ 
+       {/* Modal explicative pour "spook" */}
+       <Modal
+         visible={showSpookInfo}
+         transparent
+         animationType="fade"
+         onRequestClose={() => setShowSpookInfo(false)}
+       >
+         <TouchableWithoutFeedback onPress={() => setShowSpookInfo(false)}>
+           <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', alignItems: 'center' }}>
+             <TouchableWithoutFeedback onPress={() => { /* block propagation so pressing inside won't close */ }}>
+               <View style={{ width: '90%', backgroundColor: themeColors.card, padding: 16, borderRadius: 12 }}>
+                 <Text style={{ color: themeColors.text, fontWeight: 'bold', marginBottom: 8 }}>
+                   {t('gachaRolls.spookTitle') || 'Spook — explication'}
+                 </Text>
+                 <Text style={{ color: themeColors.placeholder }}>
+                   {t('gachaRolls.spookDescription') ||
+                     "Un « spook » est un tirage rare obtenu dans un banner mais qui n'est PAS la vedette du banner. " +
+                     "Exemple : dans Fate/Grand Order la vedette est un Saber SSR précis — si vous obtenez un autre Saber SSR qui n'est pas la vedette, c'est un spook."}
+                 </Text>
+                 <TouchableOpacity onPress={() => setShowSpookInfo(false)} style={{ marginTop: 12, alignSelf: 'center' }}>
+                   <Text style={{ color: themeColors.primary }}>{t('common.ok') || 'OK'}</Text>
+                 </TouchableOpacity>
+               </View>
+             </TouchableWithoutFeedback>
+           </View>
+         </TouchableWithoutFeedback>
+       </Modal>
+ 
+       {/* Modal explicative pour "side unit" */}
+       <Modal
+         visible={showSideUnitInfo}
+         transparent
+         animationType="fade"
+         onRequestClose={() => setShowSideUnitInfo(false)}
+       >
+         <TouchableWithoutFeedback onPress={() => setShowSideUnitInfo(false)}>
+           <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', alignItems: 'center' }}>
+             <TouchableWithoutFeedback onPress={() => { /* block propagation so pressing inside won't close */ }}>
+               <View style={{ width: '90%', backgroundColor: themeColors.card, padding: 16, borderRadius: 12 }}>
+                 <Text style={{ color: themeColors.text, fontWeight: 'bold', marginBottom: 8 }}>
+                   {t('gachaRolls.sideUnitTitle') || 'Side Unit — explication'}
+                 </Text>
+                 <Text style={{ color: themeColors.placeholder }}>
+                   {t('gachaRolls.sideUnitDescription') ||
+                     "Une « side unit » est une unité obtenue en plus de la vedette lors d'un tirage. " +
+                     "Ces unités peuvent être utiles pour diverses raisons, comme renforcer une équipe ou être utilisées comme matériau d'amélioration."}
+                 </Text>
+                 <TouchableOpacity onPress={() => setShowSideUnitInfo(false)} style={{ marginTop: 12, alignSelf: 'center' }}>
+                   <Text style={{ color: themeColors.primary }}>{t('common.ok') || 'OK'}</Text>
+                 </TouchableOpacity>
+               </View>
+             </TouchableWithoutFeedback>
+           </View>
+         </TouchableWithoutFeedback>
        </Modal>
      </SafeAreaView>
    );
@@ -702,6 +844,19 @@ export default function GachaRollsScreen() {
      marginBottom: 16,
      fontSize: 16,
      backgroundColor: '#fff'
+   },
+   addBtn: {
+     paddingVertical: 12,
+     paddingHorizontal: 24,
+     borderRadius: 8,
+     alignItems: 'center',
+     justifyContent: 'center',
+     marginTop: 16,
+     elevation: 2,
+     shadowColor: '#000',
+     shadowOpacity: 0.1,
+     shadowRadius: 4,
+     shadowOffset: { width: 0, height: 2 },
    },
  });
  
