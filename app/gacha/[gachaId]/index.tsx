@@ -45,7 +45,7 @@ export default function GachaRollsScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [editRoll, setEditRoll] = useState<Roll | null>(null);
   const [search, setSearch] = useState('');
-  const [tab, setTab] = useState<'list' | 'stats' | 'money' | 'simulations'>('list');
+  const [tab, setTab] = useState<'list' | 'stats' | 'money' >('list'); //add simulation apres
   const [showStatsPercent, setShowStatsPercent] = useState({
     featured: false,
     spook: false,
@@ -209,7 +209,11 @@ export default function GachaRollsScreen() {
   const t = (key: string) => texts[key]?.[lang] || texts[key]?.fr || key;
 
   // ordre des onglets pour la navigation par swipe
-  const tabsOrder: Array<'list' | 'simulations' | 'stats' | 'money'> = ['list', 'simulations', 'stats', 'money'];
+  const tabsOrder: Array<'list' | 'stats' | 'money'> = [
+    'list',
+     'stats',
+    //  'simulations',
+      'money'];
 
   // animation pour le swipe
   const screenWidth = Dimensions.get('window').width;
@@ -620,32 +624,43 @@ export default function GachaRollsScreen() {
                blurOnSubmit={false}
              />
  
-             {/* Champ "Nombre de spook" */}
-             <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
-               <Text style={{ color: themeColors.text }}>{t('gachaRolls.form.spookCount')}</Text>
-               <TouchableOpacity
-                 onPress={() => setShowSpookInfo(true)}
-                 accessible={true}
-                 accessibilityRole="button"
-                 accessibilityLabel={t('gachaRolls.spookHelpLabel') || 'Spook help'}
-                 style={{
-                   marginLeft: 8,
-                   width: 26,
-                   height: 26,
-                   borderRadius: 13,
-                   backgroundColor: themeColors.primary,
-                   alignItems: 'center',
-                   justifyContent: 'center',
-                 }}
-               >
-                 <Text style={{ color: '#fff', fontWeight: 'bold' }}>?</Text>
-               </TouchableOpacity>
+             {/* Champ "Nombre de spook" (label + petit "?" + champ) */}
+             <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginTop: 8 }}>
+              <Text style={{ color: themeColors.text, fontSize: getFontSize(16) }}>
+                {t('gachaRolls.form.spookCount')}
+              </Text>
+              <TouchableOpacity
+                onPress={() => setShowSpookInfo(true)}
+                accessible={true}
+                accessibilityRole="button"
+                accessibilityLabel={t('gachaRolls.spookHelpLabel') || 'Spook help'}
+                style={{
+                  marginLeft: 8,
+                  marginTop: -Math.round(getFontSize(4)),
+                  width: Math.round(getFontSize(20)),
+                  height: Math.round(getFontSize(20)),
+                  borderRadius: Math.round(getFontSize(10)),
+                  backgroundColor: themeColors.primary,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Text style={{ color: '#fff', fontWeight: '700', fontSize: getFontSize(12) }}>?</Text>
+              </TouchableOpacity>
              </View>
              <TextInput
                accessibilityLabel={t('gachaRolls.form.spookCount')}
                ref={spookCountRef}
-               style={[styles.input, { fontSize: getFontSize(16) }]}
+               style={[
+                 styles.input,
+                 {
+                   fontSize: getFontSize(16),
+                   minHeight: Math.max(40, Math.round(getFontSize(40))),
+                   paddingVertical: Math.max(8, Math.round(getFontSize(6))),
+                 },
+               ]}
                placeholder="Ex: 0"
+               placeholderTextColor={themeColors.placeholder}
                keyboardType="numeric"
                value={spookCount}
                onChangeText={setSpookCount}
@@ -654,8 +669,8 @@ export default function GachaRollsScreen() {
                blurOnSubmit={false}
              />
  
-             {/* Champ Nombre de side units featuré (avec aide) */}
-             <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
+             {/* Champ Nombre de side units (label + petit "?" + champ) */}
+             <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginTop: 8 }}>
                <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize(16) }}>
                  {t('gachaRolls.form.sideUnitCount')}
                </Text>
@@ -665,22 +680,31 @@ export default function GachaRollsScreen() {
                  accessibilityRole="button"
                  accessibilityLabel={t('gachaRolls.sideUnitHelpLabel') || 'Side unit help'}
                  style={{
-                   marginLeft: 8,
-                   width: 26,
-                   height: 26,
-                   borderRadius: 13,
-                   backgroundColor: themeColors.primary,
-                   alignItems: 'center',
-                   justifyContent: 'center',
-                 }}
+                  marginLeft: 8,
+                  marginTop: -Math.round(getFontSize(4)),
+                  width: Math.round(getFontSize(20)),
+                  height: Math.round(getFontSize(20)),
+                  borderRadius: Math.round(getFontSize(10)),
+                  backgroundColor: themeColors.primary,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
                >
-                 <Text style={{ color: '#fff', fontWeight: 'bold' }}>?</Text>
+                 <Text style={{ color: '#fff', fontWeight: '700', fontSize: getFontSize(12) }}>?</Text>
                </TouchableOpacity>
              </View>
              <TextInput
                accessibilityLabel={t('gachaRolls.form.sideUnitCount')}
-               style={[styles.input, { fontSize: getFontSize(16) }]}
+               style={[
+                 styles.input,
+                 {
+                   fontSize: getFontSize(16),
+                   minHeight: Math.max(40, Math.round(getFontSize(40))),
+                   paddingVertical: Math.max(8, Math.round(getFontSize(6))),
+                 },
+               ]}
                placeholder="Ex: 0"
+               placeholderTextColor={themeColors.placeholder}
                keyboardType="numeric"
                value={sideUnit}
                onChangeText={setSideUnit}
@@ -763,16 +787,15 @@ export default function GachaRollsScreen() {
            <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', alignItems: 'center' }}>
              <TouchableWithoutFeedback onPress={() => { /* block propagation so pressing inside won't close */ }}>
                <View style={{ width: '90%', backgroundColor: themeColors.card, padding: 16, borderRadius: 12 }}>
-                 <Text style={{ color: themeColors.text, fontWeight: 'bold', marginBottom: 8 }}>
+                 <Text style={{ color: themeColors.text, fontWeight: 'bold', marginBottom: 8, fontSize: getFontSize(18) }}>
                    {t('gachaRolls.spookTitle') || 'Spook — explication'}
                  </Text>
-                 <Text style={{ color: themeColors.placeholder }}>
+                 <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(14), lineHeight: Math.round(getFontSize(20)) }}>
                    {t('gachaRolls.spookDescription') ||
-                     "Un « spook » est un tirage rare obtenu dans un banner mais qui n'est PAS la vedette du banner. " +
-                     "Exemple : dans Fate/Grand Order la vedette est un Saber SSR précis — si vous obtenez un autre Saber SSR qui n'est pas la vedette, c'est un spook."}
+                     "Un « spook » (off‑banner) désigne une obtention de haute rareté qui n'est pas l'une des unités ciblées par la bannière. Utilise ce champ pour noter ces tirages hors‑bannière."}
                  </Text>
                  <TouchableOpacity onPress={() => setShowSpookInfo(false)} style={{ marginTop: 12, alignSelf: 'center' }}>
-                   <Text style={{ color: themeColors.primary }}>{t('common.ok') || 'OK'}</Text>
+                   <Text style={{ color: themeColors.primary, fontSize: getFontSize(16) }}>{t('common.ok') || 'OK'}</Text>
                  </TouchableOpacity>
                </View>
              </TouchableWithoutFeedback>
@@ -791,16 +814,15 @@ export default function GachaRollsScreen() {
            <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', alignItems: 'center' }}>
              <TouchableWithoutFeedback onPress={() => { /* block propagation so pressing inside won't close */ }}>
                <View style={{ width: '90%', backgroundColor: themeColors.card, padding: 16, borderRadius: 12 }}>
-                 <Text style={{ color: themeColors.text, fontWeight: 'bold', marginBottom: 8 }}>
+                 <Text style={{ color: themeColors.text, fontWeight: 'bold', marginBottom: 8, fontSize: getFontSize(18) }}>
                    {t('gachaRolls.sideUnitTitle') || 'Side Unit — explication'}
                  </Text>
-                 <Text style={{ color: themeColors.placeholder }}>
+                 <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(14), lineHeight: Math.round(getFontSize(20)) }}>
                    {t('gachaRolls.sideUnitDescription') ||
-                     "Une « side unit » est une unité obtenue en plus de la vedette lors d'un tirage. " +
-                     "Ces unités peuvent être utiles pour diverses raisons, comme renforcer une équipe ou être utilisées comme matériau d'amélioration."}
+                     "Une « side unit » est une obtention secondaire que tu souhaites suivre séparément des vedettes ou des spooks. Utilise ce champ pour noter ces résultats secondaires."}
                  </Text>
                  <TouchableOpacity onPress={() => setShowSideUnitInfo(false)} style={{ marginTop: 12, alignSelf: 'center' }}>
-                   <Text style={{ color: themeColors.primary }}>{t('common.ok') || 'OK'}</Text>
+                   <Text style={{ color: themeColors.primary, fontSize: getFontSize(16) }}>{t('common.ok') || 'OK'}</Text>
                  </TouchableOpacity>
                </View>
              </TouchableWithoutFeedback>
