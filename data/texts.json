@@ -69,6 +69,11 @@
     "fr": "Side units",
     "jp": "サイドユニット"
   },
+  "common.tickets": {
+    "en": "Tickets",
+    "fr": "Tickets",
+    "jp": "チケット"
+  },
   "settings.general.title": {
     "en": "🔧 General settings",
     "fr": "🔧 Paramètres généraux",
@@ -409,7 +414,7 @@
     "fr": "Crée tes propres bannières, choisis les personnages et leurs taux de drop, et simule ta chance comme si tu étais sur le vrai jeu !",
     "jp": "自分のバナーを作成し、キャラと排出率を設定して、本物のゲームのように運をシミュレーション！"
   },
-   "resources.title": {
+  "resources.title": {
     "en": "Resources",
     "fr": "Ressources",
     "jp": "資源"
@@ -434,7 +439,7 @@
     "fr": "Tickets",
     "jp": "チケット"
   },
-   "gachaRolls.tabs.resources": {
+  "gachaRolls.tabs.resources": {
     "en": "Resources",
     "fr": "Ressources",
     "jp": "資源"
@@ -514,31 +519,6 @@
     "fr": "Ajouter la bannière",
     "jp": "バナーを追加"
   },
-    "simulationsTab.unknownUnit": {
-    "en": "tickets",
-    "fr": "tickets",
-    "jp": "チケット"
-  },
-  "simulationsTab.unknownUnitHelpLabel": {
-    "en": "Unknown unit help",
-    "fr": "Aide coût inconnu",
-    "jp": "不明な単位ヘルプ"
-  },
-  "simulationsTab.unknownCostTitle": {
-    "en": "Unknown cost",
-    "fr": "Coût inconnu",
-    "jp": "不明なコスト"
-  },
-  "simulationsTab.unknownCostDescription": {
-    "en": "The multi cost for this gacha is not known to the app. As a fallback we count pulls as tickets (1 pull = 1 ticket). If you know the real multi cost for this gacha, please send it via Settings so we can improve accuracy.",
-    "fr": "Le coût d'une multi pour ce gacha n'est pas renseigné dans l'app. Par défaut on compte les tirages en tickets (1 tirage = 1 ticket). Si tu connais le coût réel d'une multi pour ce gacha, signale‑le via les Paramètres pour améliorer la précision.",
-    "jp": "このガチャの10連（マルチ）のコストはアプリ側で不明です。代替として1回のガチャを1チケットとしてカウントしています（1ガチャ＝1チケット）。実際のコストを知っている場合は、設定からお知らせください。"
-  },
-  "simulationsTab.goToSettings": {
-    "en": "Go to settings",
-    "fr": "Aller aux paramètres",
-    "jp": "設定へ移動"
-  },
   "simulationsTab.unknownUnit": {
     "en": "tickets",
     "fr": "tickets",
@@ -573,6 +553,16 @@
     "en": "Money spent",
     "fr": "Argent dépensé",
     "jp": "消費した金額"
+  },
+  "gachaRolls.form.ticketAmount": {
+    "en": "Ticket amount",
+    "fr": "Nombre de tickets",
+    "jp": "チケット数"
+  },
+  "gachaRolls.form.resourceOrTicketsNote": {
+    "en": "The * means: fill at least the resource amount or the ticket count (or both).",
+    "fr": "L'astérisque (*) signifie : renseigner au moins le montant de la ressource ou le nombre de tickets (ou les deux).",
+    "jp": "※ は、リソースの量かチケットの数のいずれか（または両方）を入力する必要があることを示します。"
   },
   "onboarding.page1.title": {
     "en": "Welcome to Gachanote",

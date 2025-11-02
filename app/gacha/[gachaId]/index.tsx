@@ -7,7 +7,7 @@ import * as Crypto from 'expo-crypto';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Dimensions, Modal, PanResponder, Platform, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Animated, Dimensions, Keyboard, KeyboardAvoidingView, Modal, PanResponder, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import MoneyTab from './MoneyTab';
@@ -36,8 +36,11 @@ export default function GachaRollsScreen() {
 
   // États pour la gestion du formulaire d'ajout/modification de roll
   const [showModal, setShowModal] = useState(false);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const scrollRef = useRef<ScrollView | null>(null);
   const today = new Date();
   const [resourceAmount, setResourceAmount] = useState('');
+  const [ticketAmount, setTicketAmount] = useState(''); // nouveau : tickets optionnels
   const [nameFeatured, setNameFeatured] = useState('');
   const [featuredCount, setFeaturedCount] = useState('');
   const [spookCount, setSpookCount] = useState('');
@@ -124,6 +127,7 @@ export default function GachaRollsScreen() {
   const resetForm = () => {
     setEditRoll(null);
     setResourceAmount('');
+    setTicketAmount('');
     setNameFeatured('');
     setFeaturedCount('');
     setSpookCount('');
@@ -131,13 +135,22 @@ export default function GachaRollsScreen() {
     setDate(today);
   };
 
+  const hasResourceOrTicket = useMemo(() => {
+    return (resourceAmount || '').toString().trim() !== '' || (ticketAmount || '').toString().trim() !== '';
+  }, [resourceAmount, ticketAmount]);
+
   /**
    * Ajoute ou modifie un roll selon le contexte du formulaire.
    * Vide les champs à la confirmation.
    */
   const handleAdd = async () => {
-    if (!resourceAmount || !featuredCount || !date) {
-      alert('Merci de remplir tous les champs obligatoires.');
+    // require featuredCount/date and at least one of resourceAmount or ticketAmount (filled)
+    if (!featuredCount || !date) {
+      alert('Merci de remplir le nombre de vedettes et la date.');
+      return;
+    }
+    if (!hasResourceOrTicket) {
+      alert('Merci de renseigner le montant de la ressource ou le nombre de tickets (au moins un).');
       return;
     }
 
@@ -145,7 +158,8 @@ export default function GachaRollsScreen() {
       // Modification d'un roll existant
       const updated: Roll = {
         ...editRoll,
-        resourceAmount: Number(resourceAmount),
+        resourceAmount: resourceAmount ? Number(resourceAmount) : 0,
+        ticketAmount: ticketAmount ? Number(ticketAmount) : undefined,
         featuredCount: Number(featuredCount),
         spookCount: Number(spookCount),
         date: date.toISOString().slice(0, 10),
@@ -168,7 +182,8 @@ export default function GachaRollsScreen() {
       const roll: Roll = {
         id,
         gachaId: String(gachaId),
-        resourceAmount: Number(resourceAmount),
+        resourceAmount: resourceAmount ? Number(resourceAmount) : 0,
+        ticketAmount: ticketAmount ? Number(ticketAmount) : undefined,
         featuredCount: Number(featuredCount),
         spookCount: Number(spookCount),
         date: date.toISOString().slice(0, 10),
@@ -182,8 +197,8 @@ export default function GachaRollsScreen() {
     resetForm(); // Vide les champs après confirmation
   };
 
-  // Type de ressource pour le gacha courant
-  const [resourceType, setResourceType] = useState(getResourceType(String(gachaId)));
+  // Type de ressource déterminé automatiquement pour le gacha courant (non modifiable)
+  const resourceType = getResourceType(String(gachaId));
   const insets = useSafeAreaInsets();
   const { cost: multiCost, label: multiLabel } = getMultiCost(String(gachaId));
   const multiCount = multiCost > 0 ? stats.resource / multiCost : 0;
@@ -202,7 +217,7 @@ export default function GachaRollsScreen() {
   const fontSize = useSelector((state: RootState) => state.settings.fontSize);
   function getFontSize(base: number) {
     if (fontSize === 'small') return base * 0.85;
-    if (fontSize === 'large') return base * 1.25;
+    if (fontSize === 'large' ) return base * 1.25;
     return base;
   }
 
@@ -484,6 +499,7 @@ export default function GachaRollsScreen() {
              spookCountRef={spookCountRef}
              sideUnitRef={sideUnitRef}
              getFontSize={getFontSize} // Passe la fonction si besoin dans RollsTab
+            setTicketAmount={setTicketAmount} // passe le setter pour préremplissage à l'édition
              onModalVisibilityChange={(v: boolean) => setChildModalOpen(v)}
            />
          ) : tab === 'stats' ? (
@@ -547,266 +563,281 @@ export default function GachaRollsScreen() {
          transparent={true}
          onRequestClose={() => setShowModal(false)}
        >
-         <View
-           accessible={true}
-           accessibilityLabel={editRoll ? t('gachaRolls.modal.editTitle') : t('gachaRolls.modal.addTitle')}
-           style={{
-             flex: 1,
-             backgroundColor: 'rgba(0,0,0,0.5)',
-             justifyContent: 'center',
-             alignItems: 'center'
-           }}
-         >
-           <View style={{
-             backgroundColor: themeColors.card,
-             padding: 24,
-             borderRadius: 16,
-             width: '90%',
-           }}>
-             <Text accessibilityRole="header" style={[styles.title, { color: isDark ? '#fff' : '#181818', fontSize: getFontSize(24) }]}>
-               {editRoll ? t('gachaRolls.modal.editTitle') : t('gachaRolls.modal.addTitle')}
-             </Text>
+         {/* Tap outside to dismiss keyboard */}
+        <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}
+          >
+            {/* KeyboardAvoidingView + ScrollView allow scrolling when keyboard is open */}
+            <KeyboardAvoidingView
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              keyboardVerticalOffset={insets.top + 80}
+              style={{ width: '100%', alignItems: 'center' }}
+            >
+              <ScrollView
+                ref={scrollRef}
+                contentContainerStyle={{
+                  width: '90%',
+                  padding: 0,
+                  paddingBottom: keyboardVisible ? Math.max(24, insets.bottom + 20) : Math.max(24, insets.bottom),
+                }}
+                 keyboardShouldPersistTaps="handled"
+                 showsVerticalScrollIndicator={false}
+               >
+                 <View
+                  accessible={true}
+                  accessibilityLabel={editRoll ? t('gachaRolls.modal.editTitle') : t('gachaRolls.modal.addTitle')}
+                  style={{
+                    backgroundColor: themeColors.card,
+                    padding: 24,
+                    borderRadius: 16,
+                    width: '100%',
+                  }}
+                >
+                  <Text accessibilityRole="header" style={[styles.title, { color: isDark ? '#fff' : '#181818', fontSize: getFontSize(24) }]}>
+                    {editRoll ? t('gachaRolls.modal.editTitle') : t('gachaRolls.modal.addTitle')}
+                  </Text>
  
-             {/* Sélecteur du type de ressource - déplacé en haut */}
-             <Text style={{ color: isDark ? '#fff' : '#181818', marginBottom: 4, fontSize: getFontSize(16) }}>
-               Type de ressource <Text style={{ color: '#FF3B30' }}>*</Text>
-             </Text>
-             <View style={{ flexDirection: 'row', marginBottom: 16 }}>
-               {[
-                 getResourceType(String(gachaId)), // type principal du gacha
-                 'ticket', // on ajoute toujours "ticket"
-               ].map(type => (
+                  {/* Champ Nom de la vedette (maintenant premier) */}
+                  <Text style={{ color: isDark ? '#fff' : '#181818', marginBottom: 4, fontSize: getFontSize(16) }}>
+                    {t('gachaRolls.form.nameFeatured')}
+                  </Text>
+                  <TextInput
+                    accessibilityLabel={t('gachaRolls.form.nameFeatured')}
+                    ref={nameFeaturedRef}
+                    style={[styles.input, { fontSize: getFontSize(16) }]}
+                    placeholder="Ex: Goku, Luffy, etc."
+                    value={nameFeatured}
+                    onChangeText={setNameFeatured}
+                    returnKeyType="next"
+                    onSubmitEditing={() => featuredCountRef.current?.focus()}
+                    blurOnSubmit={false}
+                  />
+
+                  {/* Champ Montant de la ressource (sous le nom) */}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
+                    <Text style={{ color: isDark ? '#fff' : '#181818', marginRight: 4, fontSize: getFontSize(16) }}>
+                      {t('gachaRolls.form.resourceAmount')} <Text style={{ color: '#FF3B30' }}>*</Text>
+                    </Text>
+                  </View>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                    <TextInput
+                      style={[styles.input, { flex: 1, marginBottom: 0, fontSize: getFontSize(16) }]}
+                      placeholder="Ex: 3000"
+                      keyboardType="numeric"
+                      value={resourceAmount}
+                      onChangeText={setResourceAmount}
+                      returnKeyType="next"
+                    />
+                    <Text style={{ marginLeft: 8, color: isDark ? '#fff' : '#181818', fontWeight: 'bold', fontSize: getFontSize(16) }}>
+                      {String(resourceType).toUpperCase()}
+                    </Text>
+                  </View>
+
+                  {/* Champ Tickets (sous la ressource) */}
+                  <View style={{ marginBottom: 4 }}>
+                    <Text style={{ color: isDark ? '#fff' : '#181818', marginBottom: 4, fontSize: getFontSize(14) }}>
+                      {t('gachaRolls.form.ticketAmount') || 'Tickets'} <Text style={{ color: '#FF3B30' }}>*</Text>
+                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <TextInput
+                        style={[styles.input, { flex: 1, marginBottom: 0, fontSize: getFontSize(16) }]}
+                        placeholder="Ex: 10"
+                        keyboardType="numeric"
+                        value={ticketAmount}
+                        onChangeText={setTicketAmount}
+                        returnKeyType="next"
+                      />
+                      <Text style={{ marginLeft: 8, color: isDark ? '#fff' : '#181818', fontWeight: 'bold', fontSize: getFontSize(16) }}>
+                        {t('common.tickets') || 'Tickets'}
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* Note explicative : * signifie "au moins un des deux champs (ressource ou tickets) doit être rempli" */}
+                  <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(12), marginBottom: 12 }}>
+                    <Text style={{ color: '#FF3B30' }}>*</Text> {t('gachaRolls.form.resourceOrTicketsNote') || 'Remplir au moins le montant de la ressource ou le nombre de tickets (ou les deux).'}
+                  </Text>
+ 
+                  {/* Champ Nombre de vedettes */}
+                  <Text style={{ color: isDark ? '#fff' : '#181818', marginBottom: 4, fontSize: getFontSize(16) }}>
+                    {t('gachaRolls.form.featuredCount')} <Text style={{ color: '#FF3B30' }}>*</Text>
+                  </Text>
+                  <TextInput
+                    accessibilityLabel={t('gachaRolls.form.featuredCount')}
+                    ref={featuredCountRef}
+                    style={[styles.input, { fontSize: getFontSize(16) }]}
+                    placeholder="Ex: 1"
+                    keyboardType="numeric"
+                    value={featuredCount}
+                    onChangeText={setFeaturedCount}
+                    returnKeyType="next"
+                    onSubmitEditing={() => spookCountRef.current?.focus()}
+                    blurOnSubmit={false}
+                  />
+ 
+                  {/* Champ "Nombre de spook" (label + petit "?" + champ) */}
+                  <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginTop: 8 }}>
+                  <Text style={{ color: themeColors.text, fontSize: getFontSize(16) }}>
+                    {t('gachaRolls.form.spookCount')}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => setShowSpookInfo(true)}
+                    accessible={true}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('gachaRolls.spookHelpLabel') || 'Spook help'}
+                    style={{
+                      marginLeft: 8,
+                      marginTop: -Math.round(getFontSize(4)),
+                      width: Math.round(getFontSize(20)),
+                      height: Math.round(getFontSize(20)),
+                      borderRadius: Math.round(getFontSize(10)),
+                      backgroundColor: themeColors.primary,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Text style={{ color: '#fff', fontWeight: '700', fontSize: getFontSize(12) }}>?</Text>
+                  </TouchableOpacity>
+                 </View>
+                 <TextInput
+                   accessibilityLabel={t('gachaRolls.form.spookCount')}
+                   ref={spookCountRef}
+                   style={[
+                     styles.input,
+                     {
+                       fontSize: getFontSize(16),
+                       minHeight: Math.max(40, Math.round(getFontSize(40))),
+                       paddingVertical: Math.max(8, Math.round(getFontSize(6))),
+                     },
+                   ]}
+                   placeholder="Ex: 0"
+                   placeholderTextColor={themeColors.placeholder}
+                   keyboardType="numeric"
+                   value={spookCount}
+                   onChangeText={setSpookCount}
+                   returnKeyType="next"
+                   onSubmitEditing={() => sideUnitRef.current?.focus()}
+                   blurOnSubmit={false}
+                 />
+ 
+                 {/* Champ Nombre de side units (label + petit "?" + champ) */}
+                 <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginTop: 8 }}>
+                   <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize(16) }}>
+                     {t('gachaRolls.form.sideUnitCount')}
+                   </Text>
+                   <TouchableOpacity
+                     onPress={() => setShowSideUnitInfo(true)}
+                     accessible={true}
+                     accessibilityRole="button"
+                     accessibilityLabel={t('gachaRolls.sideUnitHelpLabel') || 'Side unit help'}
+                     style={{
+                      marginLeft: 8,
+                      marginTop: -Math.round(getFontSize(4)),
+                      width: Math.round(getFontSize(20)),
+                      height: Math.round(getFontSize(20)),
+                      borderRadius: Math.round(getFontSize(10)),
+                      backgroundColor: themeColors.primary,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                   >
+                     <Text style={{ color: '#fff', fontWeight: '700', fontSize: getFontSize(12) }}>?</Text>
+                   </TouchableOpacity>
+                 </View>
+                 <TextInput
+                   accessibilityLabel={t('gachaRolls.form.sideUnitCount')}
+                   style={[
+                     styles.input,
+                     {
+                       fontSize: getFontSize(16),
+                       minHeight: Math.max(40, Math.round(getFontSize(40))),
+                       paddingVertical: Math.max(8, Math.round(getFontSize(6))),
+                     },
+                   ]}
+                   placeholder="Ex: 0"
+                   placeholderTextColor={themeColors.placeholder}
+                   keyboardType="numeric"
+                   value={sideUnit}
+                   onChangeText={setSideUnit}
+                   returnKeyType="done"
+                 />
+ 
+                 {/* Champ Date */}
+                 <Text style={{ color: isDark ? '#fff' : '#181818', marginBottom: 4, fontSize: getFontSize(16) }}>
+                   {t('common.date')} <Text style={{ color: '#FF3B30' }}>*</Text>
+                 </Text>
                  <TouchableOpacity
-                   key={type}
-                   style={{
-                     backgroundColor: resourceType === type ? '#007AFF' : (isDark ? '#232323' : '#eee'),
-                     borderRadius: 8,
-                     paddingVertical: 8,
-                     paddingHorizontal: 16,
-                     marginRight: 8,
-                   }}
-                   onPress={() => setResourceType(type)}
+                   style={[styles.input, { justifyContent: 'center' }]}
+                   onPress={() => setShowDatePicker(true)}
+                   activeOpacity={0.7}
+                   accessibilityRole="button"
+                   accessible={true}
+                   accessibilityLabel={t('common.date')}
+                   accessibilityHint="Open date picker"
                  >
-                   <Text style={{
-                     color: resourceType === type ? '#fff' : (isDark ? '#fff' : '#181818'),
-                     fontWeight: resourceType === type ? 'bold' : 'normal',
-                     fontSize: getFontSize(15),
-                   }}>
-                     {type === 'ticket' ? 'Ticket' : type.toUpperCase()}
+                   <Text
+                     style={{
+                       color: theme === 'dark' || theme === 'night' ? '#181818' : '#181818',
+                       fontSize: getFontSize(16),
+                     }}
+                   >
+                     {date.toLocaleDateString(
+                       lang === 'en' ? 'en-US' : lang === 'jap' ? 'ja-JP' : 'fr-FR'
+                     )}
                    </Text>
                  </TouchableOpacity>
-               ))}
-             </View>
- 
-             {/* Champ Montant de la ressource */}
-             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-               <Text style={{ color: isDark ? '#fff' : '#181818', marginRight: 4, fontSize: getFontSize(16) }}>
-                 {t('gachaRolls.form.resourceAmount')} <Text style={{ color: '#FF3B30' }}>*</Text>
-               </Text>
-             </View>
-             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-               <TextInput
-                 style={[styles.input, { flex: 1, marginBottom: 0, fontSize: getFontSize(16) }]}
-                 placeholder="Ex: 3000"
-                 keyboardType="numeric"
-                 value={resourceAmount}
-                 onChangeText={setResourceAmount}
-                 returnKeyType="next"
-                 onSubmitEditing={() => nameFeaturedRef.current?.focus()}
-                 blurOnSubmit={false}
-               />
-               <Text style={{ marginLeft: 8, color: isDark ? '#fff' : '#181818', fontWeight: 'bold', fontSize: getFontSize(16) }}>
-                 {resourceType === 'ticket'
-                   ? Number(resourceAmount) > 1
-                     ? 'Tickets'
-                     : 'Ticket'
-                   : resourceType.toUpperCase()}
-               </Text>
-             </View>
- 
-             {/* Champ Nom de la vedette */}
-             <Text style={{ color: isDark ? '#fff' : '#181818', marginBottom: 4, fontSize: getFontSize(16) }}>
-               {t('gachaRolls.form.nameFeatured')}
-             </Text>
-             <TextInput
-               accessibilityLabel={t('gachaRolls.form.nameFeatured')}
-               ref={nameFeaturedRef}
-               style={[styles.input, { fontSize: getFontSize(16) }]}
-               placeholder="Ex: Goku, Luffy, etc."
-               value={nameFeatured}
-               onChangeText={setNameFeatured}
-               returnKeyType="next"
-               onSubmitEditing={() => featuredCountRef.current?.focus()}
-               blurOnSubmit={false}
-             />
- 
-             {/* Champ Nombre de vedettes */}
-             <Text style={{ color: isDark ? '#fff' : '#181818', marginBottom: 4, fontSize: getFontSize(16) }}>
-               {t('gachaRolls.form.featuredCount')} <Text style={{ color: '#FF3B30' }}>*</Text>
-             </Text>
-             <TextInput
-               accessibilityLabel={t('gachaRolls.form.featuredCount')}
-               ref={featuredCountRef}
-               style={[styles.input, { fontSize: getFontSize(16) }]}
-               placeholder="Ex: 1"
-               keyboardType="numeric"
-               value={featuredCount}
-               onChangeText={setFeaturedCount}
-               returnKeyType="next"
-               onSubmitEditing={() => spookCountRef.current?.focus()}
-               blurOnSubmit={false}
-             />
- 
-             {/* Champ "Nombre de spook" (label + petit "?" + champ) */}
-             <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginTop: 8 }}>
-              <Text style={{ color: themeColors.text, fontSize: getFontSize(16) }}>
-                {t('gachaRolls.form.spookCount')}
-              </Text>
-              <TouchableOpacity
-                onPress={() => setShowSpookInfo(true)}
-                accessible={true}
-                accessibilityRole="button"
-                accessibilityLabel={t('gachaRolls.spookHelpLabel') || 'Spook help'}
-                style={{
-                  marginLeft: 8,
-                  marginTop: -Math.round(getFontSize(4)),
-                  width: Math.round(getFontSize(20)),
-                  height: Math.round(getFontSize(20)),
-                  borderRadius: Math.round(getFontSize(10)),
-                  backgroundColor: themeColors.primary,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Text style={{ color: '#fff', fontWeight: '700', fontSize: getFontSize(12) }}>?</Text>
-              </TouchableOpacity>
-             </View>
-             <TextInput
-               accessibilityLabel={t('gachaRolls.form.spookCount')}
-               ref={spookCountRef}
-               style={[
-                 styles.input,
-                 {
-                   fontSize: getFontSize(16),
-                   minHeight: Math.max(40, Math.round(getFontSize(40))),
-                   paddingVertical: Math.max(8, Math.round(getFontSize(6))),
-                 },
-               ]}
-               placeholder="Ex: 0"
-               placeholderTextColor={themeColors.placeholder}
-               keyboardType="numeric"
-               value={spookCount}
-               onChangeText={setSpookCount}
-               returnKeyType="next"
-               onSubmitEditing={() => sideUnitRef.current?.focus()}
-               blurOnSubmit={false}
-             />
- 
-             {/* Champ Nombre de side units (label + petit "?" + champ) */}
-             <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginTop: 8 }}>
-               <Text style={{ color: isDark ? '#fff' : '#181818', fontSize: getFontSize(16) }}>
-                 {t('gachaRolls.form.sideUnitCount')}
-               </Text>
-               <TouchableOpacity
-                 onPress={() => setShowSideUnitInfo(true)}
-                 accessible={true}
-                 accessibilityRole="button"
-                 accessibilityLabel={t('gachaRolls.sideUnitHelpLabel') || 'Side unit help'}
-                 style={{
-                  marginLeft: 8,
-                  marginTop: -Math.round(getFontSize(4)),
-                  width: Math.round(getFontSize(20)),
-                  height: Math.round(getFontSize(20)),
-                  borderRadius: Math.round(getFontSize(10)),
-                  backgroundColor: themeColors.primary,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-               >
-                 <Text style={{ color: '#fff', fontWeight: '700', fontSize: getFontSize(12) }}>?</Text>
-               </TouchableOpacity>
-             </View>
-             <TextInput
-               accessibilityLabel={t('gachaRolls.form.sideUnitCount')}
-               style={[
-                 styles.input,
-                 {
-                   fontSize: getFontSize(16),
-                   minHeight: Math.max(40, Math.round(getFontSize(40))),
-                   paddingVertical: Math.max(8, Math.round(getFontSize(6))),
-                 },
-               ]}
-               placeholder="Ex: 0"
-               placeholderTextColor={themeColors.placeholder}
-               keyboardType="numeric"
-               value={sideUnit}
-               onChangeText={setSideUnit}
-               returnKeyType="done"
-             />
- 
-             {/* Champ Date */}
-             <Text style={{ color: isDark ? '#fff' : '#181818', marginBottom: 4, fontSize: getFontSize(16) }}>
-               {t('common.date')} <Text style={{ color: '#FF3B30' }}>*</Text>
-             </Text>
-             <TouchableOpacity
-               style={[styles.input, { justifyContent: 'center' }]}
-               onPress={() => setShowDatePicker(true)}
-               activeOpacity={0.7}
-               accessibilityRole="button"
-               accessible={true}
-               accessibilityLabel={t('common.date')}
-               accessibilityHint="Open date picker"
-             >
-               <Text
-                 style={{
-                   color: theme === 'dark' || theme === 'night' ? '#181818' : '#181818',
-                   fontSize: getFontSize(16),
-                 }}
-               >
-                 {date.toLocaleDateString(
-                   lang === 'en' ? 'en-US' : lang === 'jap' ? 'ja-JP' : 'fr-FR'
+                 {showDatePicker && (
+                   <DateTimePicker
+                     value={date}
+                     mode="date"
+                     display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                     onChange={(_, selectedDate) => {
+                       setShowDatePicker(false);
+                       if (selectedDate && selectedDate <= today) setDate(selectedDate);
+                     }}
+                     maximumDate={today}
+                   />
                  )}
-               </Text>
-             </TouchableOpacity>
-             {showDatePicker && (
-               <DateTimePicker
-                 value={date}
-                 mode="date"
-                 display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                 onChange={(_, selectedDate) => {
-                   setShowDatePicker(false);
-                   if (selectedDate && selectedDate <= today) setDate(selectedDate);
-                 }}
-                 maximumDate={today}
-               />
-             )}
  
-             {/* Bouton de validation (style similaire à Simulations) */}
-             <TouchableOpacity
-               style={[styles.addBtn, { backgroundColor: themeColors.primary }]}
-               onPress={handleAdd}
-               accessibilityRole="button"
-               accessible={true}
-               accessibilityLabel={editRoll ? t('common.edit') : t('common.add')}
-               activeOpacity={0.85}
-             >
-               <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>
-                 {editRoll ? t('common.edit') : t('common.add')}
-               </Text>
-             </TouchableOpacity>
+                 {/* Bouton de validation (style similaire à Simulations) */}
+                 <TouchableOpacity
+                   style={[
+                     styles.addBtn,
+                     { backgroundColor: themeColors.primary, opacity: (!featuredCount || !hasResourceOrTicket) ? 0.6 : 1 }
+                   ]}
+                   onPress={handleAdd}
+                   accessibilityRole="button"
+                   accessible={true}
+                   accessibilityLabel={editRoll ? t('common.edit') : t('common.add')}
+                   activeOpacity={0.85}
+                   disabled={!featuredCount || !hasResourceOrTicket}
+                 >
+                   <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>
+                     {editRoll ? t('common.edit') : t('common.add')}
+                   </Text>
+                 </TouchableOpacity>
  
-             {/* Bouton Annuler */}
-             <TouchableOpacity
-               style={{ marginTop: 16 }}
-               onPress={() => {
-                 setShowModal(false);
-                 resetForm();
-               }}
-             >
-               <Text style={{ color: '#007AFF', textAlign: 'center', fontSize: getFontSize(16) }}>{t('common.cancel')}</Text>
-             </TouchableOpacity>
-           </View>
-         </View>
+                 {/* Bouton Annuler */}
+                 <TouchableOpacity
+                   style={{ marginTop: 16 }}
+                   onPress={() => {
+                     setShowModal(false);
+                     resetForm();
+                   }}
+                 >
+                   <Text style={{ color: '#007AFF', textAlign: 'center', fontSize: getFontSize(16) }}>{t('common.cancel')}</Text>
+                 </TouchableOpacity>
+               </View>
+             </ScrollView>
+            </KeyboardAvoidingView>
+          </View>
+        </TouchableWithoutFeedback>
        </Modal>
  
        {/* Modal explicative pour "spook" */}
