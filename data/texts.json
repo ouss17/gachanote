@@ -409,6 +409,66 @@
     "fr": "Crée tes propres bannières, choisis les personnages et leurs taux de drop, et simule ta chance comme si tu étais sur le vrai jeu !",
     "jp": "自分のバナーを作成し、キャラと排出率を設定して、本物のゲームのように運をシミュレーション！"
   },
+   "resources.title": {
+    "en": "Resources",
+    "fr": "Ressources",
+    "jp": "資源"
+  },
+  "resources.from": {
+    "en": "From",
+    "fr": "De",
+    "jp": "開始日"
+  },
+  "resources.to": {
+    "en": "To",
+    "fr": "À",
+    "jp": "終了日"
+  },
+  "resources.gems": {
+    "en": "Gems",
+    "fr": "Gemmes",
+    "jp": "ジェム"
+  },
+  "resources.tickets": {
+    "en": "Tickets",
+    "fr": "Tickets",
+    "jp": "チケット"
+  },
+   "gachaRolls.tabs.resources": {
+    "en": "Resources",
+    "fr": "Ressources",
+    "jp": "資源"
+  },
+  "resources.or": {
+    "en": "Gold",
+    "fr": "Or",
+    "jp": "ゴールド"
+  },
+  "resources.netLabel": {
+    "en": "Net between dates",
+    "fr": "Total entre les dates",
+    "jp": "期間内合計"
+  },
+  "resources.addEvent": {
+    "en": "Add resource event",
+    "fr": "Ajouter un événement",
+    "jp": "イベントを追加"
+  },
+  "resources.amount": {
+    "en": "Amount (+gain / -spend)",
+    "fr": "Montant (+gain / -dépense)",
+    "jp": "量（+獲得 / -消費）"
+  },
+  "resources.note": {
+    "en": "Note (optional)",
+    "fr": "Note (optionnel)",
+    "jp": "メモ（任意）"
+  },
+  "resources.noEvents": {
+    "en": "No events in range",
+    "fr": "Aucun événement dans la période",
+    "jp": "該当するイベントがありません"
+  },
   "simulationsTab.searchPlaceholder": {
     "en": "Search a banner",
     "fr": "Rechercher une bannière",

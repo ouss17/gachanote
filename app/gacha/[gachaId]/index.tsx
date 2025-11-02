@@ -11,6 +11,7 @@ import { Animated, Dimensions, Modal, PanResponder, Platform, StyleSheet, Text, 
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import MoneyTab from './MoneyTab';
+import ResourcesTab from './ResourcesTab'; // ajouté
 import RollsTab from './RollsTab';
 import SimulationsTab from './SimulationsTab';
 import StatsTab from './StatsTab';
@@ -45,7 +46,8 @@ export default function GachaRollsScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [editRoll, setEditRoll] = useState<Roll | null>(null);
   const [search, setSearch] = useState('');
-  const [tab, setTab] = useState<'list' | 'stats' | 'money' >('list'); //add simulation apres
+  // const [tab, setTab] = useState<'list' | 'simulations' | 'stats' | 'money' | 'resources'>('list');
+  const [tab, setTab] = useState<'list' | 'stats' | 'money'>('list');
   const [showStatsPercent, setShowStatsPercent] = useState({
     featured: false,
     spook: false,
@@ -208,12 +210,14 @@ export default function GachaRollsScreen() {
   const texts = require('@/data/texts.json');
   const t = (key: string) => texts[key]?.[lang] || texts[key]?.fr || key;
 
-  // ordre des onglets pour la navigation par swipe
-  const tabsOrder: Array<'list' | 'stats' | 'money'> = [
+  // ordre des onglets pour la navigation par swipe (resources ajouté)
+  const tabsOrder: Array<'list'| 'stats' | 'money' > = [
     'list',
-     'stats',
-    //  'simulations',
-      'money'];
+    // 'simulations',
+    'stats',
+    'money',
+    // 'resources',
+  ];
 
   // animation pour le swipe
   const screenWidth = Dimensions.get('window').width;
@@ -318,98 +322,125 @@ export default function GachaRollsScreen() {
          onLayout={(e) => setTabsWidth(e.nativeEvent.layout.width)}
        >
          <View style={{ flexDirection: 'row' }}>
-         <TouchableOpacity
-           style={{
-             flex: 1,
-             padding: 12,
-             backgroundColor: tab === 'list' ? themeColors.card : 'transparent',
-             borderRadius: 8,
-             marginRight: 4,
-           }}
-           onPress={() => setTab('list')}
-           accessibilityRole="button"
-           accessible={true}
-           accessibilityLabel={t('gachaRolls.tabs.list')}
-           accessibilityState={{ selected: tab === 'list' }}
-         >
-           <Text style={{
-             color: themeColors.text,
-             textAlign: 'center',
-             fontWeight: tab === 'list' ? 'bold' : 'normal',
-             fontSize: getFontSize(16)
-           }}>
-             {t('gachaRolls.tabs.list')}
-           </Text>
-         </TouchableOpacity>
-         {/* <TouchableOpacity
-           style={{
-             flex: 1,
-             padding: 12,
-             backgroundColor: tab === 'simulations' ? themeColors.card : 'transparent',
-             borderRadius: 8,
-             marginLeft: 4,
-           }}
-           onPress={() => setTab('simulations')}
-           accessibilityRole="button"
-           accessible={true}
-           accessibilityLabel={t('gachaRolls.tabs.simulations')}
-           accessibilityState={{ selected: tab === 'simulations' }}
-         >
-           <Text style={{
-             color: themeColors.text,
-             textAlign: 'center',
-             fontWeight: tab === 'simulations' ? 'bold' : 'normal',
-             fontSize: getFontSize(16)
-           }}>
-             {t('gachaRolls.tabs.simulations')}
-           </Text>
-         </TouchableOpacity> */}
-         <TouchableOpacity
-           style={{
-             flex: 1,
-             padding: 12,
-             backgroundColor: tab === 'stats' ? themeColors.card : 'transparent',
-             borderRadius: 8,
-             marginHorizontal: 4,
-           }}
-           onPress={() => setTab('stats')}
-           accessibilityRole="button"
-           accessible={true}
-           accessibilityLabel={t('gachaRolls.tabs.stats')}
-           accessibilityState={{ selected: tab === 'stats' }}
-         >
-           <Text style={{
-             color: themeColors.text,
-             textAlign: 'center',
-             fontWeight: tab === 'stats' ? 'bold' : 'normal',
-             fontSize: getFontSize(16)
-           }}>
-             {t('gachaRolls.tabs.stats')}
-           </Text>
-         </TouchableOpacity>
-         <TouchableOpacity
-           style={{
-             flex: 1,
-             padding: 12,
-             backgroundColor: tab === 'money' ? themeColors.card : 'transparent',
-             borderRadius: 8,
-             marginLeft: 4,
-           }}
-           onPress={() => setTab('money')}
-           accessibilityRole="button"
-           accessible={true}
-           accessibilityLabel={t('gachaRolls.tabs.money')}
-           accessibilityState={{ selected: tab === 'money' }}
-         >
-           <Text style={{
-             color: themeColors.text,
-             textAlign: 'center',
-             fontWeight: tab === 'money' ? 'bold' : 'normal',
-             fontSize: getFontSize(16)
-           }}>
-             {t('gachaRolls.tabs.money')}
-           </Text>
-         </TouchableOpacity>
+          <TouchableOpacity
+            style={{
+              flex: 1,
+              padding: 12,
+              backgroundColor: tab === 'list' ? themeColors.card : 'transparent',
+              borderRadius: 8,
+              marginRight: 4,
+            }}
+            onPress={() => setTab('list')}
+            accessibilityRole="button"
+            accessible={true}
+            accessibilityLabel={t('gachaRolls.tabs.list')}
+            accessibilityState={{ selected: tab === 'list' }}
+          >
+            <Text style={{
+              color: themeColors.text,
+              textAlign: 'center',
+              fontWeight: tab === 'list' ? 'bold' : 'normal',
+              fontSize: getFontSize(16)
+            }}>
+              {t('gachaRolls.tabs.list')}
+            </Text>
+          </TouchableOpacity>
+ 
+          {/* <TouchableOpacity
+            style={{
+              flex: 1,
+              padding: 12,
+              backgroundColor: tab === 'simulations' ? themeColors.card : 'transparent',
+              borderRadius: 8,
+              marginLeft: 4,
+            }}
+            onPress={() => setTab('simulations')}
+            accessibilityRole="button"
+            accessible={true}
+            accessibilityLabel={t('gachaRolls.tabs.simulations')}
+            accessibilityState={{ selected: tab === 'simulations' }}
+          >
+            <Text style={{
+              color: themeColors.text,
+              textAlign: 'center',
+              fontWeight: tab === 'simulations' ? 'bold' : 'normal',
+              fontSize: getFontSize(16)
+            }}>
+              {t('gachaRolls.tabs.simulations')}
+            </Text>
+          </TouchableOpacity> */}
+ 
+          <TouchableOpacity
+            style={{
+              flex: 1,
+              padding: 12,
+              backgroundColor: tab === 'stats' ? themeColors.card : 'transparent',
+              borderRadius: 8,
+              marginHorizontal: 4,
+            }}
+            onPress={() => setTab('stats')}
+            accessibilityRole="button"
+            accessible={true}
+            accessibilityLabel={t('gachaRolls.tabs.stats')}
+            accessibilityState={{ selected: tab === 'stats' }}
+          >
+            <Text style={{
+              color: themeColors.text,
+              textAlign: 'center',
+              fontWeight: tab === 'stats' ? 'bold' : 'normal',
+              fontSize: getFontSize(16)
+            }}>
+              {t('gachaRolls.tabs.stats')}
+            </Text>
+          </TouchableOpacity>
+ 
+          <TouchableOpacity
+            style={{
+              flex: 1,
+              padding: 12,
+              backgroundColor: tab === 'money' ? themeColors.card : 'transparent',
+              borderRadius: 8,
+              marginLeft: 4,
+            }}
+            onPress={() => setTab('money')}
+            accessibilityRole="button"
+            accessible={true}
+            accessibilityLabel={t('gachaRolls.tabs.money')}
+            accessibilityState={{ selected: tab === 'money' }}
+          >
+            <Text style={{
+              color: themeColors.text,
+              textAlign: 'center',
+              fontWeight: tab === 'money' ? 'bold' : 'normal',
+              fontSize: getFontSize(16)
+            }}>
+              {t('gachaRolls.tabs.money')}
+            </Text>
+          </TouchableOpacity>
+ 
+          {/* <TouchableOpacity
+            style={{
+              flex: 1,
+              padding: 12,
+              backgroundColor: tab === 'resources' ? themeColors.card : 'transparent',
+              borderRadius: 8,
+              marginLeft: 4,
+            }}
+            onPress={() => setTab('resources')}
+            accessibilityRole="button"
+            accessible={true}
+            accessibilityLabel={t('gachaRolls.tabs.resources') || 'Resources'}
+            accessibilityState={{ selected: tab === 'resources' }}
+          >
+            <Text style={{
+              color: themeColors.text,
+              textAlign: 'center',
+              fontWeight: tab === 'resources' ? 'bold' : 'normal',
+              fontSize: getFontSize(16)
+            }}>
+              {t('gachaRolls.tabs.resources') || 'Resources'}
+            </Text>
+          </TouchableOpacity> */}
          </View>
          {/* underline animée */}
          {tabsWidth > 0 && (
@@ -475,6 +506,8 @@ export default function GachaRollsScreen() {
            />
          ) : tab === 'simulations' ? (
            <SimulationsTab getFontSize={getFontSize} onModalVisibilityChange={(v: boolean) => setChildModalOpen(v)} />
+         ) : tab === 'resources' ? (
+           <ResourcesTab getFontSize={getFontSize} gachaId={String(gachaId)} onModalVisibilityChange={(v: boolean) => setChildModalOpen(v)} />
          ) : null}
        </Animated.View>
  
