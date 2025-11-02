@@ -166,13 +166,51 @@ const Settings = () => {
     }
   };
 
-  // Envoyer le feedback
-  const handleSendFeedback = () => {
-    // Logique pour envoyer le feedback (e.g., appel API)
-    console.log('Feedback envoyé :', feedbackText);
-    setFeedbackText('');
-    setShowFeedbackModal(false);
-    Alert.alert('Merci !', 'Votre feedback a été envoyé. Merci de contribuer à l\'amélioration de l\'app.');
+  // Endpoint Vercel (replace par ton URL déployée)
+  const FEEDBACK_ENDPOINT = 'https://back-mail-three.vercel.app/api/sendFeedback';
+  const [sendingFeedback, setSendingFeedback] = useState(false);
+
+  // fetch avec timeout typé correctement (retourne Promise<Response>)
+  const fetchWithTimeout = async (url: string, opts: RequestInit | undefined, timeout = 8000): Promise<Response> => {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+    try {
+      const response = await fetch(url, { ...opts, signal: controller.signal });
+      return response;
+    } finally {
+      clearTimeout(id);
+    }
+  };
+
+  const handleSendFeedback = async () => {
+    if (!feedbackText || feedbackText.trim().length === 0) {
+      Alert.alert('Vide', 'Merci de saisir un message avant l\'envoi.');
+      return;
+    }
+
+    setSendingFeedback(true);
+    try {
+      const res = await fetchWithTimeout(FEEDBACK_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        // n'envoyer QUE le texte du feedback pour garder l'anonymat côté client
+        body: JSON.stringify({ feedback: feedbackText }),
+      }, 10000);
+
+      if (!res.ok) {
+        const errText = await res.text().catch(() => res.statusText);
+        throw new Error(errText || 'Erreur lors de l\'envoi');
+      }
+
+      setFeedbackText('');
+      setShowFeedbackModal(false);
+      Alert.alert('Merci', 'Ton feedback a bien été envoyé (anonyme).');
+    } catch (e) {
+      console.error('Send feedback error', e);
+      Alert.alert('Erreur', 'Impossible d\'envoyer le feedback. Vérifie ta connexion ou réessaie plus tard.');
+    } finally {
+      setSendingFeedback(false);
+    }
   };
 
   let lang = nationality || 'fr';
@@ -558,10 +596,19 @@ const Settings = () => {
               <TextInput
                 accessibilityLabel={t('settings.feedback.placeholder')}
                 accessible={true}
-                style={[styles.input, { fontSize: getFontSize(16) }]}
+                style={[
+                  styles.input,
+                  {
+                    fontSize: getFontSize(16),
+                    minHeight: getFontSize(120), // hauteur de base du "textarea"
+                    paddingTop: 12,
+                  },
+                ]}
                 placeholder={t('settings.feedback.placeholder')}
-                placeholderTextColor="#888"
-                multiline
+                placeholderTextColor={themeColors.placeholder || '#888'}
+                multiline={true}
+                numberOfLines={6}
+                textAlignVertical="top" // important pour Android
                 value={feedbackText}
                 onChangeText={setFeedbackText}
               />

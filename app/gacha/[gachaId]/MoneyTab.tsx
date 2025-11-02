@@ -75,11 +75,16 @@ export default function MoneyTab({
    */
   const handleAdd = () => {
     if (!amount || !date) return;
+    // store full ISO datetime to keep uniqueness for same-day entries,
+    // but UI still displays only the date part.
+    const now = new Date();
+    const storedDate = new Date(date);
+    storedDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
     dispatch(addMoney({
       id: Date.now().toString(),
       gachaId,
       amount: Number(amount),
-      date: date.toISOString().slice(0, 10),
+      date: storedDate.toISOString(),
     }));
     setShowModal(false);
     onModalVisibilityChange?.(false);

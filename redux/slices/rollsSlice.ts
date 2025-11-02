@@ -6,8 +6,9 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 export type Roll = {
   id: string;               // Identifiant unique du roll
   gachaId: string;          // Identifiant du gacha concerné
-  resourceAmount: number;   // Quantité de ressource utilisée pour ce roll
-  resourceType?: string;    // Type de ressource (ex: "cc", "ds", etc.)
+  resourceAmount: number;   // Quantité de ressource utilisée pour ce roll (ex: gemmes)
+  resourceType?: string;    // Type de ressource (ex: "cc", "ds", "gems", ...)
+  ticketAmount?: number;    // Quantité de tickets utilisée (optionnel)
   featuredCount: number;    // Nombre de vedettes obtenues
   spookCount: number;       // Nombre de spooks obtenus
   sideUnit: number;         // Nombre de side units obtenus

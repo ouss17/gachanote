@@ -1,7 +1,11 @@
+import RollForm from '@/components/RollForm';
+import RollsList from '@/components/RollsList';
 import { Theme } from '@/constants/Themes';
-import { AntDesign } from '@expo/vector-icons';
-import { FlatList, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { useSelector } from 'react-redux';
+import type { Roll } from '@/redux/slices/rollsSlice';
+import { addRoll, removeRoll, updateRoll } from '@/redux/slices/rollsSlice';
+import React, { useState } from 'react';
+import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
 
 /**
  * Onglet "Liste" d'un gacha.
@@ -9,47 +13,20 @@ import { useSelector } from 'react-redux';
  * et propose l'édition ou la suppression d'un roll.
  *
  * @param rolls Liste des rolls à afficher
- * @param isDark Thème sombre ou non
  * @param search Valeur du champ de recherche
- * @param setSearch Fonction pour modifier la recherche
- * @param setEditRoll Fonction pour sélectionner un roll à éditer
- * @param setResourceAmount Fonction pour modifier le champ ressource
- * @param setNameFeatured Fonction pour modifier le champ vedette
- * @param setFeaturedCount Fonction pour modifier le champ nombre de vedettes
- * @param setSpookCount Fonction pour modifier le champ nombre de spooks
- * @param setSideUnit Fonction pour modifier le champ side unit
- * @param setDate Fonction pour modifier la date
- * @param setShowModal Fonction pour afficher/masquer le modal d'édition
- * @param dispatch Fonction Redux pour les actions
  * @param removeRoll Action Redux pour supprimer un roll
- * @param nameFeaturedRef Référence pour le champ vedette
- * @param featuredCountRef Référence pour le champ nombre de vedettes
- * @param spookCountRef Référence pour le champ spook
- * @param sideUnitRef Référence pour le champ side unit
  * @param getFontSize Fonction pour la taille de police dynamique
+ * @param onModalVisibilityChange Callback pour la visibilité du modal de formulaire
  */
 export default function RollsTab({
   rolls,
-  isDark,
   search,
-  setSearch,
-  setEditRoll,
-  setResourceAmount,
-  setNameFeatured,
-  setFeaturedCount,
-  setSpookCount,
-  setSideUnit,
-  setDate,
-  setShowModal,
-  dispatch,
-  removeRoll,
-  nameFeaturedRef,
-  featuredCountRef,
-  spookCountRef,
-  sideUnitRef,
   getFontSize,
   onModalVisibilityChange,
+  gachaId, // must be passed from parent index.tsx
+  resourceType: propResourceType, // optional, prefer parent-provided resourceType
 }: any) {
+  const dispatch = useDispatch();
   // Get selected language from settings
   let lang = useSelector((state: any) => state.nationality.country) || 'fr';
   // Import texts.json
@@ -64,15 +41,60 @@ export default function RollsTab({
   // placeholder clair en dark/night, sinon utilise la valeur du thème
   const placeholderColor = theme === 'dark' || theme === 'night' ? '#E5E7EB' : themeColors.placeholder;
 
+  const [query, setQuery] = useState(search || '');
+  const [editing, setEditing] = useState<null | any>(null);
+  const [showForm, setShowForm] = useState(false);
+
+  const filtered = rolls.filter((r: Roll) => !query || (r.nameFeatured ?? '').toLowerCase().includes(query.trim().toLowerCase()));
+
+  const handleSubmit = (roll: any) => {
+    if (editing && editing.id) {
+      dispatch(updateRoll(roll));
+    } else {
+      dispatch(addRoll(roll));
+    }
+  };
+
+  const handleEdit = (r: Roll) => {
+    setEditing(r);
+    setShowForm(true);
+    onModalVisibilityChange?.(true);
+  };
+
+  const handleAddPress = () => {
+    setEditing(null);
+    setShowForm(true);
+    onModalVisibilityChange?.(true);
+  };
+
+  const handleCloseForm = () => {
+    setShowForm(false);
+    setEditing(null);
+    onModalVisibilityChange?.(false);
+  };
+
+  // derive resourceType fallback if parent didn't pass it
+  function getResourceTypeFromGacha(id: string) {
+    switch (id) {
+      case 'dbl': return 'cc';
+      case 'dokkan': return 'ds';
+      case 'fgo': return 'sq';
+      case 'sevenDS': return 'gemmes';
+      case 'opbr': return 'diamants';
+      default: return 'gemmes';
+    }
+  }
+  const resourceType = propResourceType ?? (gachaId ? getResourceTypeFromGacha(String(gachaId)) : 'gemmes');
+
   return (
-    <>
-      {/* Champ de recherche, affiché seulement s'il y a au moins un roll */}
+    <View style={{ flex: 1 }}>
+      {/* Search */}
       {rolls.length > 0 && (
         <TextInput
-          accessible={true}
-          accessibilityRole="search"
-          accessibilityLabel={t('gachaRolls.searchPlaceholder')}
-          accessibilityHint={t('gachaRolls.searchPlaceholder')}
+          value={query}
+          onChangeText={setQuery}
+          placeholder={t('gachaRolls.searchPlaceholder')}
+          placeholderTextColor={placeholderColor}
           style={{
             borderWidth: 1,
             borderColor: themeColors.border,
@@ -80,118 +102,54 @@ export default function RollsTab({
             padding: 12,
             marginBottom: 24,
             fontSize: getFontSize ? getFontSize(16) : 16,
-            backgroundColor: 'transparent', // pas de fond, on garde le style du conteneur
-            color: themeColors.text, // texte adapté au thème
+            backgroundColor: 'transparent',
+            color: themeColors.text,
           }}
-          placeholder={t('gachaRolls.searchPlaceholder')}
-          placeholderTextColor={placeholderColor}
-          value={search}
-          onChangeText={setSearch}
         />
       )}
-      {/* Liste des rolls */}
-      <FlatList
-        data={rolls}
-        keyExtractor={item => item.id}
-        renderItem={({ item }) => (
-          <View
-            accessible={true}
-            accessibilityRole="text"
-            accessibilityLabel={`${item.nameFeatured ? item.nameFeatured + ', ' : ''}${t('common.date')}: ${new Date(item.date).toLocaleDateString(lang === 'en' ? 'en-US' : lang === 'jap' ? 'ja-JP' : 'fr-FR')}, ${t('common.resource')}: ${item.resourceAmount}`}
-            style={{
-              marginVertical: 8,
-              padding: 8,
-              borderWidth: 1,
-              borderRadius: 8,
-              borderColor: themeColors.border,
-              backgroundColor: themeColors.card,
-            }}
-          >
-            {/* Nom de la vedette si présent */}
-            {item.nameFeatured ? (
-              <Text
-                accessibilityRole="header"
-                accessible={true}
-                accessibilityLabel={item.nameFeatured}
-                style={{
-                  fontWeight: 'bold',
-                  fontSize: getFontSize ? getFontSize(18) : 18,
-                  textAlign: 'center',
-                  color: themeColors.text,
-                  marginBottom: 8,
-                }}>
-                {item.nameFeatured}
-              </Text>
-            ) : null}
-            <Text style={{ color: themeColors.text, fontSize: getFontSize ? getFontSize(15) : 15 }}>
-              {t('common.date')} : <Text style={{ fontWeight: 'bold' }}>
-                {new Date(item.date).toLocaleDateString(
-                  lang === 'en' ? 'en-US' : lang === 'jap' ? 'ja-JP' : 'fr-FR'
-                )}
-              </Text>
-            </Text>
-            <Text style={{ color: themeColors.text, fontSize: getFontSize ? getFontSize(15) : 15 }}>
-              {t('common.resource')} : <Text style={{ fontWeight: 'bold' }}>
-                {item.resourceAmount} {item.resourceType === 'ticket'
-                  ? Number(item.resourceAmount) > 1
-                    ? 'Tickets'
-                    : 'Ticket'
-                  : item.resourceType?.toUpperCase() ?? ''}
-              </Text>
-            </Text>
-            <Text style={{ color: themeColors.text, fontSize: getFontSize ? getFontSize(15) : 15 }}>
-              {t('common.featured')} : <Text style={{ fontWeight: 'bold' }}>{item.featuredCount}</Text>
-            </Text>
-            {item.spookCount > 0 && (
-              <Text style={{ color: themeColors.text, fontSize: getFontSize ? getFontSize(15) : 15 }}>
-                {t('common.spook')} : <Text style={{ fontWeight: 'bold' }}>{item.spookCount}</Text>
-              </Text>
-            )}
-            <Text style={{ color: themeColors.text, fontSize: getFontSize ? getFontSize(15) : 15 }}>
-              {t('common.sideUnits')} : <Text style={{ fontWeight: 'bold' }}>{item.sideUnit > 0 ? item.sideUnit : 0}</Text>
-            </Text>
-            {/* Actions d'édition et suppression */}
-            <View style={{ flexDirection: 'row', marginTop: 8 }}>
-              <TouchableOpacity
-                accessibilityRole="button"
-                accessible={true}
-                accessibilityLabel={t('common.edit')}
-                accessibilityHint={`Edit roll ${item.nameFeatured ?? ''}`}
-                onPress={() => {
-                  // notify parent that a modal will open to block parent swipe
-                  onModalVisibilityChange?.(true);
-                  setEditRoll(item);
-                  setResourceAmount(item.resourceAmount.toString());
-                  setNameFeatured(item.nameFeatured ?? '');
-                  setFeaturedCount(item.featuredCount.toString());
-                  setSpookCount(item.spookCount.toString());
-                  setSideUnit(item.sideUnit?.toString() ?? '');
-                  setDate(new Date(item.date));
-                  setShowModal(true);
-                }}
-                style={{ marginRight: 16 }}
-              >
-                <AntDesign name="edit" size={getFontSize ? getFontSize(20) : 20} color={themeColors.primary} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                accessibilityRole="button"
-                accessible={true}
-                accessibilityLabel={t('common.delete')}
-                accessibilityHint={`Delete roll ${item.nameFeatured ?? ''}`}
-                onPress={() => dispatch(removeRoll(item.id))}
-              >
-                <AntDesign name="delete" size={getFontSize ? getFontSize(20) : 20} color="#FF3B30" />
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-        ListEmptyComponent={
-          <Text style={{ color: themeColors.text, fontSize: getFontSize ? getFontSize(15) : 15 }}>
-            {t('gachaRolls.list.empty')}
-          </Text>
-        }
-        contentContainerStyle={{ paddingBottom: 80 }}
+
+      <RollsList
+        rolls={filtered}
+        getFontSize={getFontSize}
+        onEdit={handleEdit}
+        onDelete={(id: string) => dispatch(removeRoll(id))}
+        t={t}
+        themeMode={useSelector((s:any)=>s.theme.mode)}
       />
-    </>
+
+      {/* FAB to add roll */}
+      <TouchableOpacity
+        onPress={handleAddPress}
+        style={{
+          position: 'absolute',
+          right: 24,
+          bottom: 50,
+          borderRadius: 32,
+          width: 56,
+          height: 56,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: themeColors.primary,
+        }}
+        accessibilityRole="button"
+        accessible
+        accessibilityLabel={t('common.add') || 'Add'}
+      >
+        <Text style={{ color: '#fff', fontSize: getFontSize(28), fontWeight: '700' }}>+</Text>
+      </TouchableOpacity>
+
+      <RollForm
+        visible={showForm}
+        onClose={handleCloseForm}
+        onSubmit={handleSubmit}
+        initial={editing}
+        gachaId={gachaId ?? String(useSelector((s:any)=>s.rolls?.rolls?.[0]?.gachaId ?? ''))}
+        resourceType={resourceType}
+        getFontSize={getFontSize}
+        themeColors={themeColors} // assure-toi que RollsTab calcule Theme[themeMode]
+        t={t}
+        onModalVisibilityChange={(v) => onModalVisibilityChange?.(v)}
+      />
+    </View>
   );
 }

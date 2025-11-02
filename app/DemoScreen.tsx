@@ -100,24 +100,24 @@ export default function DemoScreen({ onFinish }: { onFinish: () => void }) {
           },
 
           // Simulation pages
-          {
-            backgroundColor: '#fff',
-            image: <Image accessible={true} accessibilityLabel={t('demo.simulations.title')} source={require('@/assets/demo/simulationsv2.jpg')} style={imageStyleLarge} />,
-            title: t('demo.simulations.title'),
-            subtitle: t('demo.simulations.subtitle'),
-          },
-          {
-            backgroundColor: '#fff',
-            image: <Image accessible={true} accessibilityLabel={t('demo.simulationForm.title')} source={require('@/assets/demo/simulation_form.jpg')} style={imageStyleLarge} />,
-            title: t('demo.simulationForm.title'),
-            subtitle: t('demo.simulationForm.subtitle'),
-          },
-          {
-            backgroundColor: '#fff',
-            image: <Image accessible={true} accessibilityLabel={t('demo.simulationResult.title')} source={require('@/assets/demo/simulation_result.jpg')} style={imageStyleLarge} />,
-            title: t('demo.simulationResult.title'),
-            subtitle: t('demo.simulationResult.subtitle'),
-          },
+          // {
+          //   backgroundColor: '#fff',
+          //   image: <Image accessible={true} accessibilityLabel={t('demo.simulations.title')} source={require('@/assets/demo/simulationsv2.jpg')} style={imageStyleLarge} />,
+          //   title: t('demo.simulations.title'),
+          //   subtitle: t('demo.simulations.subtitle'),
+          // },
+          // {
+          //   backgroundColor: '#fff',
+          //   image: <Image accessible={true} accessibilityLabel={t('demo.simulationForm.title')} source={require('@/assets/demo/simulation_form.jpg')} style={imageStyleLarge} />,
+          //   title: t('demo.simulationForm.title'),
+          //   subtitle: t('demo.simulationForm.subtitle'),
+          // },
+          // {
+          //   backgroundColor: '#fff',
+          //   image: <Image accessible={true} accessibilityLabel={t('demo.simulationResult.title')} source={require('@/assets/demo/simulation_result.jpg')} style={imageStyleLarge} />,
+          //   title: t('demo.simulationResult.title'),
+          //   subtitle: t('demo.simulationResult.subtitle'),
+          // },
 
           {
             backgroundColor: '#fff',
