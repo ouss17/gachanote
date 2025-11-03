@@ -6,17 +6,15 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Crypto from 'expo-crypto';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
-    Keyboard,
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View,
+  Keyboard,
+  Modal,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
@@ -97,7 +95,6 @@ export default function RollForm({
   const [date, setDate] = useState<Date>(initial ? new Date(initial.date) : today);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  const [keyboardVisible, setKeyboardVisible] = useState(false);
   const [showSpookInfo, setShowSpookInfo] = useState(false);
   const [showSideUnitInfo, setShowSideUnitInfo] = useState(false);
 
@@ -112,14 +109,8 @@ export default function RollForm({
   }, [initial, visible]);
 
   useEffect(() => {
-    const s = Keyboard.addListener('keyboardDidShow', () => {
-      setKeyboardVisible(true);
-      onModalVisibilityChange?.(true);
-    });
-    const h = Keyboard.addListener('keyboardDidHide', () => {
-      setKeyboardVisible(false);
-      onModalVisibilityChange?.(false);
-    });
+    const s = Keyboard.addListener('keyboardDidShow', () => onModalVisibilityChange?.(true));
+    const h = Keyboard.addListener('keyboardDidHide', () => onModalVisibilityChange?.(false));
     return () => {
       s.remove();
       h.remove();
@@ -199,19 +190,13 @@ export default function RollForm({
       <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
         <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
           <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' }}>
-            <KeyboardAvoidingView
-              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-              keyboardVerticalOffset={insets.top + 80}
-              style={{ width: '100%', alignItems: 'center' }}
-            >
-              <ScrollView
-                contentContainerStyle={{
+              <View
+                style={{
                   width: '90%',
                   padding: 0,
-                  paddingBottom: keyboardVisible ? Math.max(24, insets.bottom + 20) : Math.max(24, insets.bottom),
+                  paddingBottom: Math.max(24, insets.bottom), // constant -> pas de shift au close du clavier
+                  alignItems: 'center',
                 }}
-                keyboardShouldPersistTaps="handled"
-                showsVerticalScrollIndicator={false}
               >
                 <View
                   accessible={true}
@@ -447,10 +432,9 @@ export default function RollForm({
                     <Text style={{ color: themeColors.primary, textAlign: 'center', fontSize: getFontSize(16) }}>{t('common.cancel')}</Text>
                   </TouchableOpacity>
                 </View>
-              </ScrollView>
-            </KeyboardAvoidingView>
+              </View>
           </View>
-        </TouchableWithoutFeedback>
+            </TouchableWithoutFeedback>
       </Modal>
 
       {/* Spook info modal */}
