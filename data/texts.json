@@ -848,5 +848,15 @@
     "en": "Manage options and adapt the app to your preferences.",
     "fr": "Gérez les options et adaptez l’application selon vos préférences.",
     "jp": "オプションを管理してアプリをカスタマイズできます。"
+  },
+  "gachaRolls.confirmDeleteTitle": {
+    "en": "Delete roll",
+    "fr": "Supprimer le tirage",
+    "jp": "ガチャ結果を削除"
+  },
+  "gachaRolls.confirmDeleteMessage": {
+    "en": "Delete this roll?",
+    "fr": "Supprimer ce tirage ?",
+    "jp": "このガチャ結果を削除しますか？"
   }
 }
