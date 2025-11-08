@@ -130,6 +130,9 @@ export default function StatsTab({
       case 'optc': return { cost: 50, label: '50 Gems', unit: 'multi' };
       case 'uma': return { cost: 1500, label: '1500 carats', unit: 'multi' };
       case 'ww': return { cost: 10, label: '10 convenes', unit: 'multi' };
+      case 'zenlesszone': return { cost: 1600, label: '1600 polychromes', unit: 'multi' };
+      case 'haikyufh': return { cost: 1500, label: '1500 diamonds', unit: 'multi' };
+      case 'jjkpp': return { cost: 3000, label: '3000 cubes', unit: 'multi' };
       default: return { cost: 0, label: '', unit: '' };
     }
   }
