@@ -754,24 +754,28 @@ function getBannerStats(banner: SimulationBanner) {
   return { totalRolls, rates };
 }
 
-function getMultiCost(gachaId: string) {
-  switch (gachaId) {
-    case 'dbl':
-      return { cost: 1000, label: '1000cc', unit: 'multi' };
-    case 'fgo':
-      return { cost: 30, label: '30 SQ', unit: 'multi' };
-    case 'dokkan':
-      return { cost: 50, label: '50 DS', unit: 'multi' };
-    case 'sevenDS':
-      return { cost: 30, label: '30 gemmes', unit: 'multi' };
-    case 'opbr':
-      return { cost: 50, label: '50 diamants', unit: 'multi' };
-    case 'nikke':
-      return { cost: 3000, label: '3000 gemmes', unit: 'multi' };
-    default:
-      return { cost: 0, label: '', unit: '' };
+
+  function getMultiCost(gachaId: string) {
+    switch (gachaId) {
+      case 'dbl': return { cost: 1000, label: '1000cc', unit: 'multi' };
+      case 'fgo': return { cost: 30, label: '30 SQ', unit: 'multi' };
+      case 'dokkan': return { cost: 50, label: '50 DS', unit: 'multi' };
+      case 'sevenDS': return { cost: 30, label: '30 gemmes', unit: 'multi' };
+      case 'opbr': return { cost: 50, label: '50 diamants', unit: 'multi' };
+      case 'nikke': return { cost: 3000, label: '3000 gemmes', unit: 'multi' };
+      case 'bbs': return { cost: 250, label: '250 BBS', unit: 'multi' };
+      case 'bsr': return { cost: 10, label: '10 Primalgem', unit: 'multi' };
+      case 'genshin': return { cost: 10, label: '10 Primogems', unit: 'multi' };
+      case 'hsr': return { cost: 10, label: '10 Hyperspace', unit: 'multi' };
+      case 'optc': return { cost: 50, label: '50 Gems', unit: 'multi' };
+      case 'uma': return { cost: 1500, label: '1500 carats', unit: 'multi' };
+      case 'ww': return { cost: 10, label: '10 convenes', unit: 'multi' };
+      case 'zenlesszone': return { cost: 1600, label: '1600 polychromes', unit: 'multi' };
+      case 'haikyufh': return { cost: 1500, label: '1500 diamonds', unit: 'multi' };
+      case 'jjkpp': return { cost: 3000, label: '3000 cubes', unit: 'multi' };
+      default: return { cost: 0, label: '', unit: '' };
+    }
   }
-}
 
 const styles = StyleSheet.create({
   title: { fontSize: 18, fontWeight: 'bold', marginBottom: 12 },

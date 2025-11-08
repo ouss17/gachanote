@@ -91,4 +91,25 @@ export const GACHAS: Gacha[] = [
     resourceType: "convenes",
     tags: ["wutheringwaves", "ww", "wuwa"]
   },
+  {
+    id: "zenlesszone",
+    name: "Zenless Zone Zero",
+    logo: require("@/assets/logos/zzz.png"),
+    resourceType: "polychromes",
+    tags: ["zenlesszone", "zz"]
+  },
+  {
+    id: "haikyufh",
+    name: "Haikyu!! Fly High!!",
+    logo: require("@/assets/logos/haikyufh.png"),
+    resourceType: "diamonds",
+    tags: ["haikyufh", "haikyuu", "flyhigh"]
+  },
+  {
+    id: "jjkpp",
+    name: "Jujutsu Kaisen Phantom Parade",
+    logo: require("@/assets/logos/jjkpp.png"),
+    resourceType: "cubes",
+    tags: ["jjkpp", "jujutsukaisen", "phantomparade"]
+  }
 ];
