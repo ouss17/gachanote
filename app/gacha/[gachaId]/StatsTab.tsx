@@ -1,4 +1,5 @@
 import { Theme } from '@/constants/Themes';
+import { computeAllRates } from '@/lib/StatsUtils';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { useSelector } from 'react-redux';
 
@@ -15,9 +16,9 @@ export default function StatsTab({
   totalMoney,
   currency,
   getFontSize,
-  gachaId, // identifiant du gacha pour filtrer les rolls persistés si nécessaire
+  gachaId,
 }: {
-  rolls?: any[]; // liste de rolls filtrés par le parent (index) si disponible
+  rolls?: any[];
   resourceType: string;
   showStatsPercent: { featured: boolean; spook: boolean; sideUnit: boolean; tickets?: boolean };
   setShowStatsPercent: React.Dispatch<React.SetStateAction<any>>;
@@ -34,7 +35,6 @@ export default function StatsTab({
   let lang = useSelector((state: any) => state.nationality.country) || 'fr';
   const t = (key: string) => texts[key]?.[lang] || texts[key]?.fr || key;
 
-  // StatCircle (same as before)
   const StatCircle = ({
     label,
     value,
@@ -85,64 +85,55 @@ export default function StatsTab({
     );
   };
 
-  // obtain persisted rolls from store only if parent didn't provide rolls
   const persistedRolls = useSelector((state: any) => state.rolls?.rolls ?? []);
   const sourceRolls = Array.isArray(rolls) && rolls.length >= 0 ? rolls : persistedRolls.filter((r: any) => String(r.gachaId) === String(gachaId));
 
-  // aggregate stats from sourceRolls
+  // raw aggregation kept for absolute counts (resource, tickets, freePulls, featured/spook/sideUnit)
   const aggregated = sourceRolls.reduce(
     (acc: any, r: any) => {
       acc.resource += Number(r.resourceAmount ?? 0);
       acc.featured += Number(r.featuredCount ?? 0);
       acc.spook += Number(r.spookCount ?? 0);
       acc.sideUnit += Number(r.sideUnit ?? 0);
-      // tickets can be explicit (ticketAmount) or encoded as resource when resourceType === 'ticket'
       acc.tickets += Number(r.ticketAmount ?? 0) + (r.resourceType === 'ticket' ? Number(r.resourceAmount ?? 0) : 0);
-      // free pulls (compte comme des tickets/pulls mais affiché séparément)
       acc.freePulls += Number(r.freePulls ?? 0);
       return acc;
     },
     { resource: 0, featured: 0, spook: 0, sideUnit: 0, tickets: 0, freePulls: 0 }
   );
 
-  const ticketsCount = aggregated.tickets; // only explicit tickets (and resourceType==='ticket' converted)
+  const ticketsCount = aggregated.tickets;
   const freePullsCount = aggregated.freePulls;
   const resourceCount = aggregated.resource;
-  const totalSpend = resourceCount + ticketsCount + freePullsCount;
 
-  // Convert resources to number of pulls using multiCost (multi = 10 pulls)
-  const { cost: multiCost } = getMultiCost(String(gachaId));
-  const singleCost = multiCost > 0 ? multiCost / 10 : 0;
-  const pullsFromResources = singleCost > 0 ? Math.floor(resourceCount / singleCost) : 0;
-  // 1 ticket = 1 pull
-  const totalPulls = pullsFromResources + ticketsCount + freePullsCount;
+  // compute pulls & aggregated rates using StatsUtils (more precise: per-roll conversion + sum)
+  const statsResult = computeAllRates(sourceRolls, String(gachaId));
+  const totalPulls = statsResult.aggregated?.pulls ?? 0;
+  const aggRates = statsResult.aggregated;
 
-  // getMultiCost moved here so multiCount is computed from aggregated stats
   function getMultiCost(gachaId: string) {
     switch (gachaId) {
-      case 'dbl': return { cost: 1000, label: '1000cc', unit: 'multi' };
-      case 'fgo': return { cost: 30, label: '30 SQ', unit: 'multi' };
-      case 'dokkan': return { cost: 50, label: '50 DS', unit: 'multi' };
-      case 'sevenDS': return { cost: 30, label: '30 gemmes', unit: 'multi' };
-      case 'opbr': return { cost: 50, label: '50 diamants', unit: 'multi' };
-      case 'nikke': return { cost: 3000, label: '3000 gemmes', unit: 'multi' };
-      case 'bbs': return { cost: 250, label: '250 BBS', unit: 'multi' };
-      case 'bsr': return { cost: 10, label: '10 Primalgem', unit: 'multi' };
-      case 'genshin': return { cost: 10, label: '10 Primogems', unit: 'multi' };
-      case 'hsr': return { cost: 10, label: '10 Hyperspace', unit: 'multi' };
-      case 'optc': return { cost: 50, label: '50 Gems', unit: 'multi' };
-      case 'uma': return { cost: 1500, label: '1500 carats', unit: 'multi' };
-      case 'ww': return { cost: 10, label: '10 convenes', unit: 'multi' };
-      case 'zenlesszone': return { cost: 1600, label: '1600 polychromes', unit: 'multi' };
-      case 'haikyufh': return { cost: 1500, label: '1500 diamonds', unit: 'multi' };
-      case 'jjkpp': return { cost: 3000, label: '3000 cubes', unit: 'multi' };
-      case 'sdgundamgge': return { cost: 3000, label: '3000 diamonds', unit: 'multi' };
-      default: return { cost: 0, label: '', unit: '' };
+      case 'dbl': return { cost: 1000 };
+      case 'fgo': return { cost: 30 };
+      case 'dokkan': return { cost: 50 };
+      case 'sevenDS': return { cost: 30 };
+      case 'opbr': return { cost: 50 };
+      case 'nikke': return { cost: 3000 };
+      case 'bbs': return { cost: 250 };
+      case 'bsr': return { cost: 10 };
+      case 'genshin': return { cost: 10 };
+      case 'hsr': return { cost: 10 };
+      case 'optc': return { cost: 50 };
+      case 'uma': return { cost: 1500 };
+      case 'ww': return { cost: 10 };
+      case 'zenlesszone': return { cost: 1600 };
+      case 'haikyufh': return { cost: 1500 };
+      case 'jjkpp': return { cost: 3000 };
+      case 'sdgundamgge': return { cost: 3000 };
+      default: return { cost: 0 };
     }
   }
 
-  const multiCount = multiCost > 0 ? Math.floor(resourceCount / multiCost) : 0;
-  // multiCount peut être utilisé ici pour affichage dans StatsTab si besoin
 
   return (
     <View
@@ -180,8 +171,6 @@ export default function StatsTab({
           selected={false}
         />
 
-        {/* Tickets stat: non cliquable.
-            Percentage computed relative to total pulls (resources converted to pulls + tickets). */}
         <StatCircle
           label={t('common.tickets') || 'Tickets'}
           value={
@@ -196,7 +185,6 @@ export default function StatsTab({
           labelFontSize={getFontSize(13)}
         />
 
-        {/* Free pulls (affiché à côté des tickets). Comptés comme 1 pull chacun. */}
         <StatCircle
           label={t('gachaRolls.form.freePullsShort') || 'Tirages gratuits'}
           value={
@@ -215,7 +203,7 @@ export default function StatsTab({
           label={t('common.featured')}
           value={
             showStatsPercent.featured && totalPulls > 0
-              ? `${((aggregated.featured / totalPulls) * 100).toFixed(2)}%`
+              ? `${((aggRates?.featuredRate ?? 0) * 100).toFixed(2)}%`
               : aggregated.featured.toString()
           }
           color={themeColors.card}
@@ -231,7 +219,7 @@ export default function StatsTab({
           label={t('common.spook')}
           value={
             showStatsPercent.spook && totalPulls > 0
-              ? `${((aggregated.spook / totalPulls) * 100).toFixed(2)}%`
+              ? `${((aggRates?.spookRate ?? 0) * 100).toFixed(2)}%`
               : aggregated.spook.toString()
           }
           color={themeColors.card}
@@ -247,8 +235,8 @@ export default function StatsTab({
           label={t('common.sideUnits')}
           value={
             showStatsPercent.sideUnit && totalPulls > 0
-              ? `${((aggregated.sideUnit / totalPulls) * 100).toFixed(2)}%`
-              : aggregated.sideUnit?.toString()
+              ? `${((aggRates?.sideUnitRate ?? 0) * 100).toFixed(2)}%`
+              : String(aggregated.sideUnit ?? 0)
           }
           color={themeColors.card}
           borderColor="#6C47FF"

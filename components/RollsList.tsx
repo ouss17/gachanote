@@ -1,4 +1,5 @@
 import { Theme } from '@/constants/Themes';
+import { computeRatesForRoll } from '@/lib/StatsUtils';
 import type { Roll } from '@/redux/slices/rollsSlice';
 import { removeRoll } from '@/redux/slices/rollsSlice';
 import { AntDesign } from '@expo/vector-icons';
@@ -27,6 +28,10 @@ export default function RollsList({ rolls, getFontSize, onEdit, onDelete, t, the
       data={rolls}
       keyExtractor={(r) => r.id}
       renderItem={({ item }) => {
+        const rates = computeRatesForRoll(item as any, String(item.gachaId ?? '')) || null;
+        const featuredPct = rates ? (rates.featuredRate * 100).toFixed(2) : null;
+        const spookPct = rates ? (rates.spookRate * 100).toFixed(2) : null;
+        const sideUnitPct = rates ? (rates.sideUnitRate * 100).toFixed(2) : null;
         const resAmt = Number(item.resourceAmount ?? 0);
         const resType = item.resourceType ?? '';
         const freePullsAmt = Number(item.freePulls ?? 0);
@@ -119,15 +124,15 @@ export default function RollsList({ rolls, getFontSize, onEdit, onDelete, t, the
                </View>
 
               <Text style={{ color: themeColors.text, fontSize: getFontSize(15) }}>
-                {t('common.featured')} : <Text style={{ fontWeight: 'bold' }}>{item.featuredCount}</Text>
+                {t('common.featured')} : <Text style={{ fontWeight: 'bold' }}>{String(item.featuredCount ?? 0)}</Text>{featuredPct ? ` (${featuredPct}%)` : ''}
               </Text>
               {(item.spookCount ?? 0) > 0 && (
                 <Text style={{ color: themeColors.text, fontSize: getFontSize(15) }}>
-                  {t('common.spook')} : <Text style={{ fontWeight: 'bold' }}>{String(item.spookCount ?? 0)}</Text>
+                  {t('common.spook')} : <Text style={{ fontWeight: 'bold' }}>{String(item.spookCount ?? 0)}</Text>{spookPct ? ` (${spookPct}%)` : ''}
                 </Text>
               )}
               <Text style={{ color: themeColors.text, fontSize: getFontSize(15) }}>
-                {t('common.sideUnits')} : <Text style={{ fontWeight: 'bold' }}>{String(item.sideUnit ?? 0)}</Text>
+                {t('common.sideUnits')} : <Text style={{ fontWeight: 'bold' }}>{String(item.sideUnit ?? 0)}</Text>{sideUnitPct ? ` (${sideUnitPct}%)` : ''}
               </Text>
 
               {item.notes ? (

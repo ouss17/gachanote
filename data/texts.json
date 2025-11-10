@@ -580,9 +580,9 @@
     "jp": "チケット数"
   },
   "gachaRolls.form.resourceOrTicketsNote": {
-    "en": "The * means: fill at least the resource amount or the ticket count (or both).",
-    "fr": "L'astérisque (*) signifie : renseigner au moins le montant de la ressource ou le nombre de tickets (ou les deux).",
-    "jp": "※ は、リソースの量かチケットの数のいずれか（または両方）を入力する必要があることを示します。"
+    "en": "The * means: fill at least the resource amount or the ticket count or the free pulls (or all three).",
+    "fr": "L'astérisque (*) signifie : renseigner au moins le montant de la ressource ou le nombre de tickets ou les tirages gratuits (ou les trois).",
+    "jp": "※ は、リソースの量かチケットの数か無料の引き（またはすべて）を入力する必要があることを示します。"
   },
   "onboarding.page1.title": {
     "en": "Welcome to Gachanote",

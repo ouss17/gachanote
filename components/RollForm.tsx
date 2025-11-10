@@ -287,7 +287,7 @@ export default function RollForm({
               {/* Free pulls (gratuits) */}
               <View style={{ marginTop: 8, marginBottom: 4 }}>
                 <Text style={{ color: themeColors.text, marginBottom: 4, fontSize: getFontSize(14) }}>
-                  {t('gachaRolls.form.freePulls') || 'Free pulls'}
+                  {t('gachaRolls.form.freePulls') || 'Free pulls'} <Text style={{ color: '#FF3B30' }}>*</Text>
                 </Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                   <TextInput
