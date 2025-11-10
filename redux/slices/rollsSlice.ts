@@ -9,6 +9,8 @@ export type Roll = {
   resourceAmount: number;
   ticketAmount?: number;
   freePulls?: number;
+  featuredItemsCount?: number; 
+  srItemsCount?: number; 
   featuredCount: number;
   spookCount?: number;
   sideUnit?: number;

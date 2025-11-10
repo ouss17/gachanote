@@ -94,12 +94,15 @@ export default function RollForm({
   const [notes, setNotes] = useState(initial ? String(initial.notes ?? '') : '');
   const [featuredCount, setFeaturedCount] = useState(initial ? String(initial.featuredCount ?? '') : '');
   const [spookCount, setSpookCount] = useState(initial ? String(initial.spookCount ?? '') : '');
+  const [featuredItemsCount, setFeaturedItemsCount] = useState(initial ? String(initial.featuredItemsCount ?? '') : '');
+  const [srItemsCount, setSrItemsCount] = useState(initial ? String(initial.srItemsCount ?? '') : '');
   const [sideUnit, setSideUnit] = useState(initial ? String(initial.sideUnit ?? '') : '');
   const [date, setDate] = useState<Date>(initial ? new Date(initial.date) : today);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   const [showSpookInfo, setShowSpookInfo] = useState(false);
   const [showSideUnitInfo, setShowSideUnitInfo] = useState(false);
+  const [showItemsInfo, setShowItemsInfo] = useState(false);
 
   useEffect(() => {
     setNameFeatured(initial?.nameFeatured ?? '');
@@ -109,6 +112,8 @@ export default function RollForm({
     setNotes(initial ? String(initial.notes ?? '') : '');
     setFeaturedCount(initial ? String(initial.featuredCount ?? '') : '');
     setSpookCount(initial ? String(initial.spookCount ?? '') : '');
+    setFeaturedItemsCount(initial ? String(initial.featuredItemsCount ?? '') : '');
+    setSrItemsCount(initial ? String(initial.srItemsCount ?? '') : '');
     setSideUnit(initial ? String(initial.sideUnit ?? '') : '');
     setDate(initial ? new Date(initial.date) : today);
   }, [initial, visible]);
@@ -136,6 +141,8 @@ export default function RollForm({
     setNotes('');
     setFeaturedCount('');
     setSpookCount('');
+    setFeaturedItemsCount('');
+    setSrItemsCount('');
     setSideUnit('');
     setDate(today);
   };
@@ -175,6 +182,8 @@ export default function RollForm({
       resourceAmount: resourceAmount ? Number(resourceAmount) : 0,
       ticketAmount: ticketAmount ? Number(ticketAmount) : undefined,
       freePulls: freePulls ? Number(freePulls) : undefined,
+      featuredItemsCount: featuredItemsCount ? Number(featuredItemsCount) : undefined,
+      srItemsCount: srItemsCount ? Number(srItemsCount) : undefined,
       featuredCount: Number(featuredCount),
       spookCount: Number(spookCount || 0),
       sideUnit: Number(sideUnit || 0),
@@ -416,6 +425,71 @@ export default function RollForm({
                 returnKeyType="done"
               />
 
+              {/* Items (objets) with help */}
+              <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginTop: 8 }}>
+                <Text style={{ color: themeColors.text, marginBottom: 4, fontSize: getFontSize(16) }}>
+                  {t('gachaRolls.form.featuredItems') || 'Objets vedette'}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setShowItemsInfo(true)}
+                  accessible
+                  accessibilityRole="button"
+                  accessibilityLabel={t('gachaRolls.itemsHelpLabel') || 'Items help'}
+                  style={{
+                    marginLeft: 8,
+                    marginTop: -Math.round(getFontSize(4)),
+                    width: Math.round(getFontSize(20)),
+                    height: Math.round(getFontSize(20)),
+                    borderRadius: Math.round(getFontSize(10)),
+                    backgroundColor: themeColors.primary,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Text style={{ color: '#fff', fontWeight: '700', fontSize: getFontSize(12) }}>?</Text>
+                </TouchableOpacity>
+              </View>
+              <TextInput
+                value={featuredItemsCount}
+                onChangeText={(v) => setFeaturedItemsCount(v.replace(/[^0-9]/g, ''))}
+                placeholder={t('gachaRolls.form.featuredItemsPlaceholder') || 'Ex: 1'}
+                placeholderTextColor={placeholderColor}
+                keyboardType="numeric"
+                style={[styles.input, { fontSize: getFontSize(16), backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }]}
+              />
+
+              <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginTop: 8 }}>
+                <Text style={{ color: themeColors.text, marginBottom: 4, fontSize: getFontSize(16) }}>
+                  {t('gachaRolls.form.srItems') || 'Objets SR'}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setShowItemsInfo(true)}
+                  accessible
+                  accessibilityRole="button"
+                  accessibilityLabel={t('gachaRolls.itemsHelpLabel') || 'Items help'}
+                  style={{
+                    marginLeft: 8,
+                    marginTop: -Math.round(getFontSize(4)),
+                    width: Math.round(getFontSize(20)),
+                    height: Math.round(getFontSize(20)),
+                    borderRadius: Math.round(getFontSize(10)),
+                    backgroundColor: themeColors.primary,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Text style={{ color: '#fff', fontWeight: '700', fontSize: getFontSize(12) }}>?</Text>
+                </TouchableOpacity>
+              </View>
+              <TextInput
+                value={srItemsCount}
+                onChangeText={(v) => setSrItemsCount(v.replace(/[^0-9]/g, ''))}
+                placeholder={t('gachaRolls.form.srItemsPlaceholder') || 'Ex: 2'}
+                placeholderTextColor={placeholderColor}
+                keyboardType="numeric"
+                style={[styles.input, { fontSize: getFontSize(16), backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }]}
+              />
+
               {/* Notes (multiline, optional, max 200 chars) */}
               <Text style={{ color: themeColors.text, marginTop: 8, marginBottom: 4, fontSize: getFontSize(16) }}>{t('gachaRolls.form.notes') || 'Notes'}</Text>
               <TextInput
@@ -524,6 +598,28 @@ export default function RollForm({
                     "Une « side unit » est une obtention secondaire que tu souhaites suivre séparément des vedettes ou des spooks. Utilise ce champ pour noter ces résultats secondaires."}
                 </Text>
                 <TouchableOpacity onPress={() => setShowSideUnitInfo(false)} style={{ marginTop: 12, alignSelf: 'center' }}>
+                  <Text style={{ color: themeColors.primary, fontSize: getFontSize(16) }}>{t('common.ok') || 'OK'}</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+
+      {/* Items info modal */}
+      <Modal visible={showItemsInfo} transparent animationType="fade" onRequestClose={() => setShowItemsInfo(false)}>
+        <TouchableWithoutFeedback onPress={() => setShowItemsInfo(false)}>
+          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', alignItems: 'center' }}>
+            <TouchableWithoutFeedback onPress={() => {}}>
+              <View style={{ width: '90%', backgroundColor: themeColors.card, padding: 16, borderRadius: 12 }}>
+                <Text style={{ color: themeColors.text, fontWeight: 'bold', marginBottom: 8, fontSize: getFontSize(18) }}>
+                  {t('gachaRolls.itemsTitle') || 'What are items?'}
+                </Text>
+                <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(14), lineHeight: Math.round(getFontSize(20)) }}>
+                  {t('gachaRolls.itemsDescription') ||
+                    "In this app 'items' refer to non-character featured obtainables (e.g. Craft Essences in FGO or weapons in some hoYo gachas). Use these fields to track how many featured / SR items you got during the roll."}
+                </Text>
+                <TouchableOpacity onPress={() => setShowItemsInfo(false)} style={{ marginTop: 12, alignSelf: 'center' }}>
                   <Text style={{ color: themeColors.primary, fontSize: getFontSize(16) }}>{t('common.ok') || 'OK'}</Text>
                 </TouchableOpacity>
               </View>

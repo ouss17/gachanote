@@ -32,6 +32,8 @@ export default function RollsList({ rolls, getFontSize, onEdit, onDelete, t, the
         const featuredPct = rates ? (rates.featuredRate * 100).toFixed(2) : null;
         const spookPct = rates ? (rates.spookRate * 100).toFixed(2) : null;
         const sideUnitPct = rates ? (rates.sideUnitRate * 100).toFixed(2) : null;
+        const featuredItemsPct = rates ? (rates.featuredItemsRate * 100).toFixed(2) : null;
+        const srItemsPct = rates ? (rates.srItemsRate * 100).toFixed(2) : null;
         const resAmt = Number(item.resourceAmount ?? 0);
         const resType = item.resourceType ?? '';
         const freePullsAmt = Number(item.freePulls ?? 0);
@@ -134,6 +136,18 @@ export default function RollsList({ rolls, getFontSize, onEdit, onDelete, t, the
               <Text style={{ color: themeColors.text, fontSize: getFontSize(15) }}>
                 {t('common.sideUnits')} : <Text style={{ fontWeight: 'bold' }}>{String(item.sideUnit ?? 0)}</Text>{sideUnitPct ? ` (${sideUnitPct}%)` : ''}
               </Text>
+
+              {/* Items (objects) */}
+              {(item.featuredItemsCount ?? 0) > 0 && (
+                <Text style={{ color: themeColors.text, fontSize: getFontSize(15), marginTop: 4 }}>
+                  {t('gachaRolls.form.featuredItems') || 'Objets vedette'} : <Text style={{ fontWeight: 'bold' }}>{String(item.featuredItemsCount)}</Text>{featuredItemsPct ? ` (${featuredItemsPct}%)` : ''}
+                </Text>
+              )}
+              {(item.srItemsCount ?? 0) > 0 && (
+                <Text style={{ color: themeColors.text, fontSize: getFontSize(15), marginTop: 4 }}>
+                  {t('gachaRolls.form.srItems') || 'Objets SR'} : <Text style={{ fontWeight: 'bold' }}>{String(item.srItemsCount)}</Text>{srItemsPct ? ` (${srItemsPct}%)` : ''}
+                </Text>
+              )}
 
               {item.notes ? (
                 <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(13), marginTop: 8 }}>

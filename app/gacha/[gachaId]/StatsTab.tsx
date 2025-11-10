@@ -20,7 +20,15 @@ export default function StatsTab({
 }: {
   rolls?: any[];
   resourceType: string;
-  showStatsPercent: { featured: boolean; spook: boolean; sideUnit: boolean; tickets?: boolean };
+  // extended with featuredItems / srItems toggles
+  showStatsPercent: {
+    featured: boolean;
+    spook: boolean;
+    sideUnit: boolean;
+    tickets?: boolean;
+    featuredItems?: boolean;
+    srItems?: boolean;
+  };
   setShowStatsPercent: React.Dispatch<React.SetStateAction<any>>;
   isDark: boolean;
   totalMoney: number;
@@ -110,6 +118,12 @@ export default function StatsTab({
   const statsResult = computeAllRates(sourceRolls, String(gachaId));
   const totalPulls = statsResult.aggregated?.pulls ?? 0;
   const aggRates = statsResult.aggregated;
+
+  // items counts / rates (from StatsUtils aggregated)
+  const featuredItemsCount = Number(aggRates?.featuredItemsCount ?? 0);
+  const srItemsCount = Number(aggRates?.srItemsCount ?? 0);
+  const featuredItemsRate = Number(aggRates?.featuredItemsRate ?? 0);
+  const srItemsRate = Number(aggRates?.srItemsRate ?? 0);
 
   function getMultiCost(gachaId: string) {
     switch (gachaId) {
@@ -255,6 +269,37 @@ export default function StatsTab({
               setShowStatsPercent((s: any) => ({ ...s, sideUnit: !s.sideUnit }))
             }
             selected={!!showStatsPercent.sideUnit}
+            fontSize={getFontSize(20)}
+            labelFontSize={getFontSize(13)}
+          />
+
+          {/* Items (objets) : global count + toggle percent */}
+          <StatCircle
+            label={t('gachaRolls.form.featuredItems') || 'Objets vedette'}
+            value={
+              showStatsPercent.featuredItems && totalPulls > 0
+                ? `${(featuredItemsRate * 100).toFixed(2)}%`
+                : featuredItemsCount.toString()
+            }
+            color={themeColors.card}
+            borderColor="#FF5E3A"
+            onPress={() => setShowStatsPercent((s: any) => ({ ...s, featuredItems: !s.featuredItems }))}
+            selected={!!showStatsPercent.featuredItems}
+            fontSize={getFontSize(20)}
+            labelFontSize={getFontSize(13)}
+          />
+
+          <StatCircle
+            label={t('gachaRolls.form.srItems') || 'Objets SR'}
+            value={
+              showStatsPercent.srItems && totalPulls > 0
+                ? `${(srItemsRate * 100).toFixed(2)}%`
+                : srItemsCount.toString()
+            }
+            color={themeColors.card}
+            borderColor="#8E44FF"
+            onPress={() => setShowStatsPercent((s: any) => ({ ...s, srItems: !s.srItems }))}
+            selected={!!showStatsPercent.srItems}
             fontSize={getFontSize(20)}
             labelFontSize={getFontSize(13)}
           />

@@ -3,14 +3,16 @@ type Roll = {
   gachaId: string;
   resourceAmount: number;
   ticketAmount?: number;
-  freePulls?: number; 
+  freePulls?: number;
+  featuredItemsCount?: number;
+  srItemsCount?: number;
   featuredCount: number;
   spookCount?: number;
   sideUnit?: number;
   date: string;
   resourceType?: string;
   nameFeatured?: string;
-  notes?: string; 
+  notes?: string;
 };
 
 function getMultiCost(gachaId: string) {
@@ -51,10 +53,9 @@ export function computePullsForRoll(roll: Roll, gachaId: string) {
 
   let resourcePulls = 0;
   if ((roll.resourceType ?? '') === 'ticket') {
-    // resourceAmount here représente des tickets
     resourcePulls = Number(roll.resourceAmount ?? 0);
   } else if (singleCost > 0) {
-    resourcePulls = Number(roll.resourceAmount ?? 0) / singleCost; // float ok
+    resourcePulls = Number(roll.resourceAmount ?? 0) / singleCost; // float
   }
 
   const totalPulls = tickets + freePulls + resourcePulls;
@@ -72,21 +73,27 @@ export function computeRatesForRoll(roll: Roll, gachaId: string) {
   const featured = Number(roll.featuredCount ?? 0);
   const spook = Number(roll.spookCount ?? 0);
   const sideUnit = Number(roll.sideUnit ?? 0);
+  const featuredItems = Number(roll.featuredItemsCount ?? 0);
+  const srItems = Number(roll.srItemsCount ?? 0);
 
   return {
     pulls: totalPulls,
     featuredRate: featured / totalPulls,
     spookRate: spook / totalPulls,
     sideUnitRate: sideUnit / totalPulls,
-    // utiles : counts bruts aussi
+    featuredItemsRate: featuredItems / totalPulls,
+    srItemsRate: srItems / totalPulls,
+    // counts bruts
     featuredCount: featured,
     spookCount: spook,
     sideUnitCount: sideUnit,
+    featuredItemsCount: featuredItems,
+    srItemsCount: srItems,
   };
 }
 
 /**
- * Exemple: calculer par-roll + agrégé pour un tableau de rolls
+ * Calculs par-roll et agrégés pour un tableau de rolls
  */
 export function computeAllRates(rolls: Roll[], gachaId: string) {
   const perRoll = rolls.map(r => ({ id: r.id, rates: computeRatesForRoll(r, gachaId) }));
@@ -96,8 +103,10 @@ export function computeAllRates(rolls: Roll[], gachaId: string) {
     acc.featured += Number(r.featuredCount ?? 0);
     acc.spook += Number(r.spookCount ?? 0);
     acc.sideUnit += Number(r.sideUnit ?? 0);
+    acc.featuredItems += Number(r.featuredItemsCount ?? 0);
+    acc.srItems += Number(r.srItemsCount ?? 0);
     return acc;
-  }, { pulls: 0, featured: 0, spook: 0, sideUnit: 0 });
+  }, { pulls: 0, featured: 0, spook: 0, sideUnit: 0, featuredItems: 0, srItems: 0 });
 
   return {
     perRoll,
@@ -106,6 +115,14 @@ export function computeAllRates(rolls: Roll[], gachaId: string) {
       featuredRate: totals.featured / totals.pulls,
       spookRate: totals.spook / totals.pulls,
       sideUnitRate: totals.sideUnit / totals.pulls,
+      featuredItemsRate: totals.featuredItems / totals.pulls,
+      srItemsRate: totals.srItems / totals.pulls,
+      // counts bruts disponibles si besoin
+      featuredCount: totals.featured,
+      spookCount: totals.spook,
+      sideUnitCount: totals.sideUnit,
+      featuredItemsCount: totals.featuredItems,
+      srItemsCount: totals.srItems,
     } : null
   };
 }
