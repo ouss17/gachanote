@@ -106,9 +106,11 @@ export default function GachaRollsScreen() {
   const underlineAnim = useRef(new Animated.Value(0)).current;
   const [tabsWidth, setTabsWidth] = useState(0);
   const tabsCount = tabsOrder.length;
-  const underlinePadding = 12; // marge interne pour que la barre soit plus courte que la cellule
+  const underlinePadding = 12;
 
-  // anime la position de la barre quand tab change
+  // reduce tab label size on narrow screens to avoid wrapping
+  const tabLabelBase = tabsWidth && tabsWidth < 396 ? 14 : 16;
+ 
   useEffect(() => {
     if (!tabsWidth) return;
     const idx = tabsOrder.indexOf(tab);
@@ -215,12 +217,17 @@ export default function GachaRollsScreen() {
             accessibilityLabel={t('gachaRolls.tabs.list')}
             accessibilityState={{ selected: tab === 'list' }}
           >
-            <Text style={{
-              color: themeColors.text,
-              textAlign: 'center',
-              fontWeight: tab === 'list' ? 'bold' : 'normal',
-              fontSize: getFontSize(16)
-            }}>
+            <Text
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              adjustsFontSizeToFit
+              style={{
+                color: themeColors.text,
+                textAlign: 'center',
+                fontWeight: tab === 'list' ? 'bold' : 'normal',
+                fontSize: getFontSize(tabLabelBase)
+              }}
+            >
               {t('gachaRolls.tabs.list')}
             </Text>
           </TouchableOpacity>
@@ -263,12 +270,17 @@ export default function GachaRollsScreen() {
             accessibilityLabel={t('gachaRolls.tabs.stats')}
             accessibilityState={{ selected: tab === 'stats' }}
           >
-            <Text style={{
-              color: themeColors.text,
-              textAlign: 'center',
-              fontWeight: tab === 'stats' ? 'bold' : 'normal',
-              fontSize: getFontSize(16)
-            }}>
+            <Text
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              adjustsFontSizeToFit
+              style={{
+                color: themeColors.text,
+                textAlign: 'center',
+                fontWeight: tab === 'stats' ? 'bold' : 'normal',
+                fontSize: getFontSize(tabLabelBase)
+              }}
+            >
               {t('gachaRolls.tabs.stats')}
             </Text>
           </TouchableOpacity>
@@ -287,12 +299,17 @@ export default function GachaRollsScreen() {
             accessibilityLabel={t('gachaRolls.tabs.money')}
             accessibilityState={{ selected: tab === 'money' }}
           >
-            <Text style={{
-              color: themeColors.text,
-              textAlign: 'center',
-              fontWeight: tab === 'money' ? 'bold' : 'normal',
-              fontSize: getFontSize(16)
-            }}>
+            <Text
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              adjustsFontSizeToFit
+              style={{
+                color: themeColors.text,
+                textAlign: 'center',
+                fontWeight: tab === 'money' ? 'bold' : 'normal',
+                fontSize: getFontSize(tabLabelBase)
+              }}
+            >
               {t('gachaRolls.tabs.money')}
             </Text>
           </TouchableOpacity>

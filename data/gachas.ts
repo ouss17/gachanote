@@ -111,5 +111,12 @@ export const GACHAS: Gacha[] = [
     logo: require("@/assets/logos/jjkpp.png"),
     resourceType: "cubes",
     tags: ["jjkpp", "jujutsukaisen", "phantomparade"]
+  },
+  {
+    id: "sdgundamgge",
+    name: "SD Gundam G Generation Eternal",
+    logo: require("@/assets/logos/gundamgg.png"),
+    resourceType: "diamonds",
+    tags: ["sdgundam", "ggeneration", "eternal"]
   }
 ];

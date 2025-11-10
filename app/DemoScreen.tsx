@@ -92,12 +92,12 @@ export default function DemoScreen({ onFinish }: { onFinish: () => void }) {
             title: t('demo.addRoll.title'),
             subtitle: t('demo.addRoll.subtitle'),
           },
-          {
-            backgroundColor: '#fff',
-            image: <Image accessible={true} accessibilityLabel={t('demo.savedResults.title')} source={require('@/assets/demo/rolls_result.jpg')} style={imageStyleLarge} />,
-            title: t('demo.savedResults.title'),
-            subtitle: t('demo.savedResults.subtitle'),
-          },
+          // {
+          //   backgroundColor: '#fff',
+          //   image: <Image accessible={true} accessibilityLabel={t('demo.savedResults.title')} source={require('@/assets/demo/rolls_result.jpg')} style={imageStyleLarge} />,
+          //   title: t('demo.savedResults.title'),
+          //   subtitle: t('demo.savedResults.subtitle'),
+          // },
 
           // Simulation pages
           // {
@@ -136,15 +136,14 @@ export default function DemoScreen({ onFinish }: { onFinish: () => void }) {
             image: <Image accessible={true} accessibilityLabel={t('demo.globalStats.title')} source={require('@/assets/demo/statsv2.jpg')} style={imageStyleLarge} />,
             title: t('demo.globalStats.title'),
             subtitle: t('demo.globalStats.subtitle'),
-          },
+          }
 
-          // Settings page
-          {
-            backgroundColor: '#fff',
-            image: <Image accessible={true} accessibilityLabel={t('demo.settings.title')} source={require('@/assets/demo/settingsv2.jpg')} style={imageStyleTall} />,
-            title: t('demo.settings.title'),
-            subtitle: t('demo.settings.subtitle'),
-          },
+          // {
+          //   backgroundColor: '#fff',
+          //   image: <Image accessible={true} accessibilityLabel={t('demo.settings.title')} source={require('@/assets/demo/settingsv2.jpg')} style={imageStyleTall} />,
+          //   title: t('demo.settings.title'),
+          //   subtitle: t('demo.settings.subtitle'),
+          // },
         ]}
       />
     </View>

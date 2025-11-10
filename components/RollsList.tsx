@@ -1,4 +1,5 @@
 import { Theme } from '@/constants/Themes';
+import { computeRatesForRoll } from '@/lib/StatsUtils';
 import type { Roll } from '@/redux/slices/rollsSlice';
 import { removeRoll } from '@/redux/slices/rollsSlice';
 import { AntDesign } from '@expo/vector-icons';
@@ -27,9 +28,17 @@ export default function RollsList({ rolls, getFontSize, onEdit, onDelete, t, the
       data={rolls}
       keyExtractor={(r) => r.id}
       renderItem={({ item }) => {
+        const rates = computeRatesForRoll(item as any, String(item.gachaId ?? '')) || null;
+        const featuredPct = rates ? (rates.featuredRate * 100).toFixed(2) : null;
+        const spookPct = rates ? (rates.spookRate * 100).toFixed(2) : null;
+        const sideUnitPct = rates ? (rates.sideUnitRate * 100).toFixed(2) : null;
+        const featuredItemsPct = rates ? (rates.featuredItemsRate * 100).toFixed(2) : null;
+        const srItemsPct = rates ? (rates.srItemsRate * 100).toFixed(2) : null;
         const resAmt = Number(item.resourceAmount ?? 0);
         const resType = item.resourceType ?? '';
-        const ticketAmt = (item.ticketAmount != null) ? Number(item.ticketAmount) : (resType === 'ticket' ? Number(item.resourceAmount ?? 0) : 0);
+        const freePullsAmt = Number(item.freePulls ?? 0);
+        const baseTicketAmt = (item.ticketAmount != null) ? Number(item.ticketAmount) : (resType === 'ticket' ? Number(item.resourceAmount ?? 0) : 0);
+        const ticketAmt = baseTicketAmt + freePullsAmt;
 
         const hasResourceNonTicket = !!resType && resType !== 'ticket' && resAmt > 0;
         const hasTicketsOnly = ticketAmt > 0 && !hasResourceNonTicket;
@@ -64,37 +73,89 @@ export default function RollsList({ rolls, getFontSize, onEdit, onDelete, t, the
               </Text>
 
               <View style={{ marginTop: 6 }}>
-                {hasBoth ? (
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Text style={{ color: themeColors.text, fontSize: getFontSize(15) }}>
-                      {t('common.resource')} : <Text style={{ fontWeight: 'bold' }}>{resAmt} {String(resType).toUpperCase()}</Text>
-                    </Text>
-                    <Text style={{ color: themeColors.text, fontSize: getFontSize(15), marginLeft: 12 }}>
-                      {t('common.tickets') || 'Tickets'} : <Text style={{ fontWeight: 'bold' }}>{ticketAmt}</Text>
-                    </Text>
-                  </View>
-                ) : hasTicketsOnly ? (
-                  <Text style={{ color: themeColors.text, fontSize: getFontSize(15) }}>
-                    {t('common.resource')} : <Text style={{ fontWeight: 'bold' }}>{ticketAmt} {t('common.tickets') || 'Tickets'}</Text>
-                  </Text>
-                ) : hasResourceNonTicket ? (
-                  <Text style={{ color: themeColors.text, fontSize: getFontSize(15) }}>
-                    {t('common.resource')} : <Text style={{ fontWeight: 'bold' }}>{resAmt} {String(resType).toUpperCase()}</Text>
-                  </Text>
-                ) : null}
-              </View>
+                {(() => {
+                  const resourceProvided = !!resType && resType !== 'ticket' && resAmt > 0;
+                  const ticketProvided = baseTicketAmt > 0;
+                  const freeProvided = freePullsAmt > 0;
+
+                  if (resourceProvided && !ticketProvided && !freeProvided) {
+                    return (
+                      <Text style={{ color: themeColors.text, fontSize: getFontSize(15) }}>
+                        {t('common.resource')} : <Text style={{ fontWeight: 'bold' }}>{resAmt} {String(resType).toUpperCase()}</Text>
+                      </Text>
+                    );
+                  }
+
+                  if (ticketProvided && !resourceProvided && !freeProvided) {
+                    return (
+                      <Text style={{ color: themeColors.text, fontSize: getFontSize(15) }}>
+                        {t('common.tickets') || 'Tickets'} : <Text style={{ fontWeight: 'bold' }}>{String(baseTicketAmt)}</Text>
+                      </Text>
+                    );
+                  }
+
+                  if (freeProvided && !resourceProvided && !ticketProvided) {
+                    return (
+                      <Text style={{ color: themeColors.text, fontSize: getFontSize(15) }}>
+                        {t('gachaRolls.form.freePullsShort') || 'Tirages gratuits'} : <Text style={{ fontWeight: 'bold' }}>{String(freePullsAmt)}</Text>
+                      </Text>
+                    );
+                  }
+
+                  // multiple types present => show each present (resource / tickets / free pulls)
+                  return (
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      {resourceProvided && (
+                        <Text style={{ color: themeColors.text, fontSize: getFontSize(15) }}>
+                          {t('common.resource')} : <Text style={{ fontWeight: 'bold' }}>{resAmt} {String(resType).toUpperCase()}</Text>
+                        </Text>
+                      )}
+                      {ticketProvided && (
+                        <Text style={{ color: themeColors.text, fontSize: getFontSize(15), marginLeft: resourceProvided ? 12 : 0 }}>
+                          {t('common.tickets') || 'Tickets'} : <Text style={{ fontWeight: 'bold' }}>{String(baseTicketAmt)}</Text>
+                        </Text>
+                      )}
+                      {freeProvided && (
+                        <Text style={{ color: themeColors.text, fontSize: getFontSize(15), marginLeft: (resourceProvided || ticketProvided) ? 12 : 0 }}>
+                          {t('gachaRolls.form.freePullsShort') || 'Tirages gratuits'} : <Text style={{ fontWeight: 'bold' }}>{String(freePullsAmt)}</Text>
+                        </Text>
+                      )}
+                    </View>
+                  );
+                })()}
+               </View>
 
               <Text style={{ color: themeColors.text, fontSize: getFontSize(15) }}>
-                {t('common.featured')} : <Text style={{ fontWeight: 'bold' }}>{item.featuredCount}</Text>
+                {t('common.featured')} : <Text style={{ fontWeight: 'bold' }}>{String(item.featuredCount ?? 0)}</Text>{featuredPct ? ` (${featuredPct}%)` : ''}
               </Text>
-              {item.spookCount > 0 && (
+              {(item.spookCount ?? 0) > 0 && (
                 <Text style={{ color: themeColors.text, fontSize: getFontSize(15) }}>
-                  {t('common.spook')} : <Text style={{ fontWeight: 'bold' }}>{item.spookCount}</Text>
+                  {t('common.spook')} : <Text style={{ fontWeight: 'bold' }}>{String(item.spookCount ?? 0)}</Text>{spookPct ? ` (${spookPct}%)` : ''}
                 </Text>
               )}
               <Text style={{ color: themeColors.text, fontSize: getFontSize(15) }}>
-                {t('common.sideUnits')} : <Text style={{ fontWeight: 'bold' }}>{item.sideUnit > 0 ? item.sideUnit : 0}</Text>
+                {t('common.sideUnits')} : <Text style={{ fontWeight: 'bold' }}>{String(item.sideUnit ?? 0)}</Text>{sideUnitPct ? ` (${sideUnitPct}%)` : ''}
               </Text>
+
+              {/* Items (objects) */}
+              {(item.featuredItemsCount ?? 0) > 0 && (
+                <Text style={{ color: themeColors.text, fontSize: getFontSize(15), marginTop: 4 }}>
+                  {t('gachaRolls.form.featuredItems') || 'Objets vedette'} : <Text style={{ fontWeight: 'bold' }}>{String(item.featuredItemsCount)}</Text>{featuredItemsPct ? ` (${featuredItemsPct}%)` : ''}
+                </Text>
+              )}
+              {(item.srItemsCount ?? 0) > 0 && (
+                <Text style={{ color: themeColors.text, fontSize: getFontSize(15), marginTop: 4 }}>
+                  {t('gachaRolls.form.srItems') || 'Objets SR'} : <Text style={{ fontWeight: 'bold' }}>{String(item.srItemsCount)}</Text>{srItemsPct ? ` (${srItemsPct}%)` : ''}
+                </Text>
+              )}
+
+              {item.notes ? (
+                <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(13), marginTop: 8 }}>
+                  {item.notes}
+                </Text>
+              ) : null}
+
+              {/* free pulls now shown next to tickets above; no duplicated line here */}
 
               <View style={{ flexDirection: 'row', marginTop: 8, justifyContent: 'flex-end', gap: 8 }}>
                 <TouchableOpacity

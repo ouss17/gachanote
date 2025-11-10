@@ -4,7 +4,7 @@ import { Theme } from '@/constants/Themes';
 import type { Roll } from '@/redux/slices/rollsSlice';
 import { addRoll, removeRoll, updateRoll } from '@/redux/slices/rollsSlice';
 import React, { useState } from 'react';
-import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Modal, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 /**
@@ -44,6 +44,10 @@ export default function RollsTab({
   const [query, setQuery] = useState(search || '');
   const [editing, setEditing] = useState<null | any>(null);
   const [showForm, setShowForm] = useState(false);
+  // when adding a roll user can choose "simple" (only required fields) or "full" form
+  const [formCompact, setFormCompact] = useState(false);
+  // modal for choosing add mode
+  const [showAddModeModal, setShowAddModeModal] = useState(false);
 
   const filtered = rolls.filter((r: Roll) => !query || (r.nameFeatured ?? '').toLowerCase().includes(query.trim().toLowerCase()));
 
@@ -57,14 +61,13 @@ export default function RollsTab({
 
   const handleEdit = (r: Roll) => {
     setEditing(r);
+    setFormCompact(false); // edit = full form by default
     setShowForm(true);
     onModalVisibilityChange?.(true);
   };
 
   const handleAddPress = () => {
-    setEditing(null);
-    setShowForm(true);
-    onModalVisibilityChange?.(true);
+    setShowAddModeModal(true);
   };
 
   const handleCloseForm = () => {
@@ -138,6 +141,78 @@ export default function RollsTab({
         <Text style={{ color: '#fff', fontSize: getFontSize(28), fontWeight: '700' }}>+</Text>
       </TouchableOpacity>
 
+      {/* Add mode selection modal */}
+      <Modal
+        visible={showAddModeModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowAddModeModal(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setShowAddModeModal(false)}>
+          <View style={styles.modalOverlay} />
+        </TouchableWithoutFeedback>
+        <View style={styles.modalWrapper}>
+          <View style={[styles.modalCard, { backgroundColor: themeColors.card }]}>
+            <Text style={{ color: themeColors.text, fontSize: getFontSize(18), fontWeight: 'bold', marginBottom: 8 }}>
+              {t('gachaRolls.addModeTitle') || 'Ajouter un tirage'}
+            </Text>
+            <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(14), marginBottom: 16 }}>
+              {t('gachaRolls.addModeMessage') || "Choisir le mode d'ajout"}
+            </Text>
+
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <TouchableOpacity
+                onPress={() => {
+                  setEditing(null);
+                  setFormCompact(true);
+                  setShowForm(true);
+                  setShowAddModeModal(false);
+                  onModalVisibilityChange?.(true);
+                }}
+                style={[styles.modeCard, { borderColor: themeColors.border }]}
+                accessibilityRole="button"
+                accessible
+                accessibilityLabel={t('gachaRolls.addMode.simple') || 'Simple'}
+              >
+                <Text style={{ fontWeight: '700', fontSize: getFontSize(16), color: themeColors.text, marginBottom: 6 }}>
+                  {t('gachaRolls.addMode.simple') || 'Simple'}
+                </Text>
+                <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(13) }}>
+                  {t('gachaRolls.addMode.simpleDesc') || 'Champs obligatoires seulement'}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  setEditing(null);
+                  setFormCompact(false);
+                  setShowForm(true);
+                  setShowAddModeModal(false);
+                  onModalVisibilityChange?.(true);
+                }}
+                style={[styles.modeCard, { borderColor: themeColors.primary }]}
+                accessibilityRole="button"
+                accessible
+                accessibilityLabel={t('gachaRolls.addMode.full') || 'Complet'}
+              >
+                <Text style={{ fontWeight: '700', fontSize: getFontSize(16), color: themeColors.text, marginBottom: 6 }}>
+                  {t('gachaRolls.addMode.full') || 'Complet'}
+                </Text>
+                <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(13) }}>
+                  {t('gachaRolls.addMode.fullDesc') || 'Tous les champs du formulaire'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={{ marginTop: 16, alignItems: 'flex-end' }}>
+              <TouchableOpacity onPress={() => setShowAddModeModal(false)} accessibilityRole="button">
+                <Text style={{ color: themeColors.primary, fontSize: getFontSize(14) }}>{t('common.cancel') || 'Annuler'}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       <RollForm
         visible={showForm}
         onClose={handleCloseForm}
@@ -148,8 +223,41 @@ export default function RollsTab({
         getFontSize={getFontSize}
         themeColors={themeColors} // assure-toi que RollsTab calcule Theme[themeMode]
         t={t}
+        compact={formCompact}
         onModalVisibilityChange={(v) => onModalVisibilityChange?.(v)}
       />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  modalOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalWrapper: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 480,
+    borderRadius: 12,
+    padding: 16,
+    elevation: 6,
+  },
+  modeCard: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+  },
+});

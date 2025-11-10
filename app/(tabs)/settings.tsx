@@ -14,7 +14,7 @@ import { Feather } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import React, { useState } from 'react';
-import { Alert, Image, Modal, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, Modal, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import DemoScreen from '../DemoScreen';
 
@@ -40,6 +40,8 @@ const themeModes = [
 const Settings = () => {
   const dispatch = useDispatch();
   const [showDemo, setShowDemo] = useState(false);
+  const { height: windowHeight } = useWindowDimensions();
+  const narrowHeight = windowHeight <= 459; // <=459px : placer le label au-dessus des chips
   const theme = useSelector((state: RootState) => state.theme.mode);
   const themeColors = Theme[theme as keyof typeof Theme];
   const nationality = useSelector((state: RootState) => state.nationality.country);
@@ -368,6 +370,7 @@ const Settings = () => {
           <View style={{ flexDirection: 'row' }}>
             {FONT_SIZES_LOCALIZED.map(size => {
               const isCompact = fontSize === 'large';
+              const chipColumn = narrowHeight;
               return (
                 <TouchableOpacity
                   key={size.key}
@@ -375,44 +378,67 @@ const Settings = () => {
                   accessible={true}
                   accessibilityLabel={`${t('settings.fontSize')} ${size.label}`}
                   accessibilityState={{ selected: fontSize === size.key }}
-                  style={[
-                    styles.chip,
-                    {
-                      backgroundColor: fontSize === size.key ? themeColors.primary : themeColors.card,
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      minWidth: isCompact ? 48 : 60,
-                      justifyContent: 'center',
-                      paddingHorizontal: isCompact ? 10 : 14,
-                    },
-                  ]}
+                  style={[styles.chip, {
+                    backgroundColor: fontSize === size.key ? themeColors.primary : themeColors.card,
+                    flexDirection: chipColumn ? 'column' : 'row',
+                    alignItems: 'center',
+                    minWidth: isCompact ? 48 : 60,
+                    justifyContent: 'center',
+                    paddingHorizontal: isCompact ? 10 : 14,
+                    paddingVertical: chipColumn ? 8 : 7,
+                  }]}
                   onPress={() => dispatch(setFontSize(size.key as 'small' | 'normal' | 'large'))}
                 >
-                  <Text
-                    style={{
-                      fontSize:
-                        size.key === 'small'
-                          ? getFontSize(13)
-                          : size.key === 'large'
-                          ? getFontSize(22)
-                          : getFontSize(17),
-                      color: fontSize === size.key ? themeColors.background : themeColors.text,
-                      fontWeight: 'bold',
-                    }}
-                  >
-                    {size.example}
-                  </Text>
-                  {!isCompact && (
-                    <Text
-                      style={{
-                        color: fontSize === size.key ? themeColors.background : themeColors.text,
-                        fontWeight: fontSize === size.key ? 'bold' : 'normal',
-                        fontSize: getFontSize(16),
-                        marginLeft: 6,
-                      }}
-                    >
-                      {size.label}
-                    </Text>
+                  {/* Sur petits écrans, afficher le label au-dessus de l'exemple pour éviter le wrapping */}
+                  {chipColumn ? (
+                    <>
+                      <Text style={{ color: fontSize === size.key ? themeColors.background : themeColors.text, fontSize: getFontSize(12), marginBottom: 6 }}>
+                        {size.label}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize:
+                            size.key === 'small'
+                              ? getFontSize(13)
+                              : size.key === 'large'
+                              ? getFontSize(22)
+                              : getFontSize(17),
+                          color: fontSize === size.key ? themeColors.background : themeColors.text,
+                          fontWeight: 'bold',
+                        }}
+                      >
+                        {size.example}
+                      </Text>
+                    </>
+                  ) : (
+                    <>
+                      <Text
+                        style={{
+                          fontSize:
+                            size.key === 'small'
+                              ? getFontSize(13)
+                              : size.key === 'large'
+                              ? getFontSize(22)
+                              : getFontSize(17),
+                          color: fontSize === size.key ? themeColors.background : themeColors.text,
+                          fontWeight: 'bold',
+                        }}
+                      >
+                        {size.example}
+                      </Text>
+                      {!isCompact && (
+                        <Text
+                          style={{
+                            color: fontSize === size.key ? themeColors.background : themeColors.text,
+                            fontWeight: fontSize === size.key ? 'bold' : 'normal',
+                            fontSize: getFontSize(16),
+                            marginLeft: 6,
+                          }}
+                        >
+                          {size.label}
+                        </Text>
+                      )}
+                    </>
                   )}
                 </TouchableOpacity>
               );

@@ -3,9 +3,10 @@ import { GACHAS } from '@/data/gachas';
 import { setOnboardingSeen } from '@/redux/slices/onboardingSlice';
 import { RootState } from '@/redux/store';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FlatList, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
@@ -24,10 +25,40 @@ export default function HomeScreen() {
         : Theme.light;
 
   const [search, setSearch] = useState('');
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
+  const STORAGE_KEY = '@gachanote:favorites';
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const raw = await AsyncStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const arr: string[] = JSON.parse(raw);
+          setFavorites(new Set(arr));
+        }
+      } catch (e) {
+      }
+    })();
+  }, []);
+
+  const toggleFavorite = async (id: string) => {
+    const next = new Set(favorites);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setFavorites(next);
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(next)));
+    } catch (e) {
+    }
+  };
 
   const filteredGachas = GACHAS.filter(g =>
     g.name.toLowerCase().includes(search.toLowerCase()) || g.tags.some(tag => tag.toLowerCase().includes(search.toLowerCase()))
   );
+
+  // If user wants only favorites, filter accordingly
+  const displayedGachas = showOnlyFavorites ? filteredGachas.filter(g => favorites.has(g.id)) : filteredGachas;
 
   const onboardingSeen = useSelector((state: RootState) => state.onboarding.seen);
   if (!onboardingSeen) {
@@ -68,7 +99,7 @@ export default function HomeScreen() {
         accessibilityLabel={t('navBar.home')}
       />
 
-      {/* Champ de recherche */}
+      {/* Champ de recherche + filtre favoris */}
       <View style={[
         styles.searchContainer,
         { backgroundColor: colors.surface, borderColor: colors.border }
@@ -100,11 +131,19 @@ export default function HomeScreen() {
             <Ionicons name="close-circle" size={20} color={colors.textSecondary} style={styles.clearIcon} />
           </TouchableOpacity>
         )}
+        {/* favorites filter toggle */}
+        <TouchableOpacity
+          onPress={() => setShowOnlyFavorites(s => !s)}
+          accessibilityRole="button"
+          accessibilityLabel={showOnlyFavorites ? t('home.showAll') || 'Show all' : t('home.showFavorites') || 'Show favorites'}
+          style={{ marginLeft: 8, padding: 6 }}
+        >
+          <Ionicons name={showOnlyFavorites ? 'star' : 'star-outline'} size={22} color={showOnlyFavorites ? colors.primary : colors.textSecondary} />
+        </TouchableOpacity>
       </View>
 
-      {/* Liste des gachas filtrés */}
       <FlatList
-        data={filteredGachas}
+        data={displayedGachas}
         keyExtractor={item => item.id}
         renderItem={({ item }) => (
           <TouchableOpacity
@@ -139,6 +178,15 @@ export default function HomeScreen() {
                 {item.name}
               </Text>
             </View>
+
+            <TouchableOpacity
+              onPress={() => toggleFavorite(item.id)}
+              accessibilityRole="button"
+              accessibilityLabel={favorites.has(item.id) ? t('home.unfavorite') || 'Remove favorite' : t('home.favorite') || 'Add favorite'}
+              style={styles.starButton}
+            >
+              <Ionicons name={favorites.has(item.id) ? 'star' : 'star-outline'} size={22} color={favorites.has(item.id) ? colors.primary : colors.textSecondary} />
+            </TouchableOpacity>
           </TouchableOpacity>
         )}
       />
@@ -219,5 +267,12 @@ const styles = StyleSheet.create({
   },
   clearIcon: {
     // optional adjustments
+  },
+  starButton: {
+    position: 'absolute',
+    top: 8,
+    right: 12,
+    padding: 6,
+    borderRadius: 20,
   },
 });

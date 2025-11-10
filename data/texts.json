@@ -384,6 +384,26 @@
     "fr": "Merci de remplir tous les champs obligatoires.",
     "jp": "必須項目をすべて入力してください。"
   },
+  "gachaRolls.form.fillRequired": {
+    "en": "Please fill in all required fields.",
+    "fr": "Merci de remplir tous les champs obligatoires.",
+    "jp": "必須項目をすべて入力してください。"
+  },
+  "gachaRolls.form.fillResourceOrTicket": {
+    "en": "Please provide a resource amount or ticket count (or both).",
+    "fr": "Renseigner le montant de ressource ou le nombre de tickets (ou les deux).",
+    "jp": "リソースの量かチケットの数のいずれか（または両方）を入力してください。"
+  },
+  "gachaRolls.form.notes": {
+    "en": "Notes",
+    "fr": "Notes",
+    "jp": "備考"
+  },
+  "gachaRolls.form.notesPlaceholder": {
+    "en": "Add details (max 200 characters)",
+    "fr": "Ajouter des précisions (max 200 caractères)",
+    "jp": "詳細を追加（最大200文字）"
+  },
   "money.noEntries": {
     "en": "No amount recorded.",
     "fr": "Aucun montant enregistré.",
@@ -560,9 +580,9 @@
     "jp": "チケット数"
   },
   "gachaRolls.form.resourceOrTicketsNote": {
-    "en": "The * means: fill at least the resource amount or the ticket count (or both).",
-    "fr": "L'astérisque (*) signifie : renseigner au moins le montant de la ressource ou le nombre de tickets (ou les deux).",
-    "jp": "※ は、リソースの量かチケットの数のいずれか（または両方）を入力する必要があることを示します。"
+    "en": "The * means: fill at least the resource amount or the ticket count or the free pulls (or all three).",
+    "fr": "L'astérisque (*) signifie : renseigner au moins le montant de la ressource ou le nombre de tickets ou les tirages gratuits (ou les trois).",
+    "jp": "※ は、リソースの量かチケットの数か無料の引き（またはすべて）を入力する必要があることを示します。"
   },
   "onboarding.page1.title": {
     "en": "Welcome to Gachanote",
@@ -858,5 +878,85 @@
     "en": "Delete this roll?",
     "fr": "Supprimer ce tirage ?",
     "jp": "このガチャ結果を削除しますか？"
+  },
+  "gachaRolls.form.freePulls": {
+    "en": "Free pulls (in‑game free attempts)",
+    "fr": "Tirages gratuits",
+    "jp": "無料ガチャ回数"
+  },
+  "gachaRolls.form.freePullsHint": {
+    "en": "Free pulls",
+    "fr": "Tirages gratuits",
+    "jp": "無料ガチャ"
+  },
+  "gachaRolls.form.freePullsShort": {
+    "en": "Free pulls",
+    "fr": "Tirages gratuits",
+    "jp": "無料回数"
+  },
+  "gachaRolls.form.featuredItems": {
+    "en": "Featured items",
+    "fr": "Objets vedette",
+    "jp": "ピックアップ装備"
+  },
+  "gachaRolls.form.featuredItemsPlaceholder": {
+    "en": "Number of featured items (e.g. craft essences)",
+    "fr": "Nombre d'objets vedette (ex : Craft Essences)",
+    "jp": "ピックアップ装備の数（例：概念礼装）"
+  },
+  "gachaRolls.form.srItems": {
+    "en": "SR items",
+    "fr": "Objets SR",
+    "jp": "SR装備"
+  },
+  "gachaRolls.form.srItemsPlaceholder": {
+    "en": "Number of SR items",
+    "fr": "Nombre d'objets SR",
+    "jp": "SR装備の数"
+  },
+  "gachaRolls.itemsTitle": {
+    "en": "What are items?",
+    "fr": "Qu'est‑ce qu'un objet ?",
+    "jp": "アイテムとは？"
+  },
+  "gachaRolls.itemsDescription": {
+    "en": "In this app \"items\" refer to non‑character featured obtainables (for example Craft Essences in FGO or weapons/gear in some hoYo games). Use these fields to track how many featured / SR items you obtained during the roll.",
+    "fr": "Dans l'application, les « objets » désignent des éléments non‑personnages mis en avant (par exemple les Craft Essences dans FGO ou les armes/équipements dans certains jeux hoYo). Utilise ces champs pour suivre le nombre d'objets vedette / SR obtenus lors du tirage.",
+    "jp": "このアプリでは「アイテム」はキャラクター以外のピックアップ対象（例：FGOの概念礼装や一部hoYoゲームの武器）を指します。これらのフィールドでピックアップ／SRアイテムの獲得数を記録してください。"
+  },
+  "gachaRolls.itemsHelpLabel": {
+    "en": "Items help",
+    "fr": "Aide Objets",
+    "jp": "アイテムヘルプ"
+  },
+  "gachaRolls.addModeTitle": {
+    "en": "Add roll (mode)",
+    "fr": "Ajouter un tirage (mode)",
+    "jp": "ガチャ追加モード"
+  },
+  "gachaRolls.addModeMessage": {
+    "en": "Choose how you want to add the roll",
+    "fr": "Choisir le mode d'ajout",
+    "jp": "追加方法を選択してください"
+  },
+  "gachaRolls.addMode.simple": {
+    "en": "Simple",
+    "fr": "Simple",
+    "jp": "シンプル"
+  },
+  "gachaRolls.addMode.full": {
+    "en": "Full",
+    "fr": "Complet",
+    "jp": "詳細"
+  },
+  "gachaRolls.addMode.simpleDesc":{
+    "en": "Only the essential fields (resource, featured, date).",
+    "fr": "Seulement les champs essentiels (ressource, vedette, date).",
+    "jp": "必須項目のみ（リソース、ピックアップ、日付）。"
+  },
+  "gachaRolls.addMode.fullDesc":{
+    "en": "All fields available (including spooks, side units, items, notes).",
+    "fr": "Tous les champs disponibles (y compris spooks, side units, objets, notes).",
+    "jp": "すべてのフィールド（すり抜け、サイドユニット、アイテム、メモなど）。"
   }
 }
