@@ -384,6 +384,26 @@
     "fr": "Merci de remplir tous les champs obligatoires.",
     "jp": "必須項目をすべて入力してください。"
   },
+  "gachaRolls.form.fillRequired": {
+    "en": "Please fill in all required fields.",
+    "fr": "Merci de remplir tous les champs obligatoires.",
+    "jp": "必須項目をすべて入力してください。"
+  },
+  "gachaRolls.form.fillResourceOrTicket": {
+    "en": "Please provide a resource amount or ticket count (or both).",
+    "fr": "Renseigner le montant de ressource ou le nombre de tickets (ou les deux).",
+    "jp": "リソースの量かチケットの数のいずれか（または両方）を入力してください。"
+  },
+  "gachaRolls.form.notes": {
+    "en": "Notes",
+    "fr": "Notes",
+    "jp": "備考"
+  },
+  "gachaRolls.form.notesPlaceholder": {
+    "en": "Add details (max 200 characters)",
+    "fr": "Ajouter des précisions (max 200 caractères)",
+    "jp": "詳細を追加（最大200文字）"
+  },
   "money.noEntries": {
     "en": "No amount recorded.",
     "fr": "Aucun montant enregistré.",

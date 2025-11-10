@@ -87,14 +87,20 @@ export default function RollsList({ rolls, getFontSize, onEdit, onDelete, t, the
               <Text style={{ color: themeColors.text, fontSize: getFontSize(15) }}>
                 {t('common.featured')} : <Text style={{ fontWeight: 'bold' }}>{item.featuredCount}</Text>
               </Text>
-              {item.spookCount > 0 && (
+              {(item.spookCount ?? 0) > 0 && (
                 <Text style={{ color: themeColors.text, fontSize: getFontSize(15) }}>
-                  {t('common.spook')} : <Text style={{ fontWeight: 'bold' }}>{item.spookCount}</Text>
+                  {t('common.spook')} : <Text style={{ fontWeight: 'bold' }}>{String(item.spookCount ?? 0)}</Text>
                 </Text>
               )}
               <Text style={{ color: themeColors.text, fontSize: getFontSize(15) }}>
-                {t('common.sideUnits')} : <Text style={{ fontWeight: 'bold' }}>{item.sideUnit > 0 ? item.sideUnit : 0}</Text>
+                {t('common.sideUnits')} : <Text style={{ fontWeight: 'bold' }}>{String(item.sideUnit ?? 0)}</Text>
               </Text>
+
+              {item.notes ? (
+                <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(13), marginTop: 8 }}>
+                  {item.notes}
+                </Text>
+              ) : null}
 
               <View style={{ flexDirection: 'row', marginTop: 8, justifyContent: 'flex-end', gap: 8 }}>
                 <TouchableOpacity

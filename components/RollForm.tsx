@@ -89,6 +89,7 @@ export default function RollForm({
   const [nameFeatured, setNameFeatured] = useState(initial?.nameFeatured ?? '');
   const [resourceAmount, setResourceAmount] = useState(initial ? String(initial.resourceAmount ?? '') : '');
   const [ticketAmount, setTicketAmount] = useState(initial ? String(initial.ticketAmount ?? '') : '');
+  const [notes, setNotes] = useState(initial ? String(initial.notes ?? '') : '');
   const [featuredCount, setFeaturedCount] = useState(initial ? String(initial.featuredCount ?? '') : '');
   const [spookCount, setSpookCount] = useState(initial ? String(initial.spookCount ?? '') : '');
   const [sideUnit, setSideUnit] = useState(initial ? String(initial.sideUnit ?? '') : '');
@@ -102,6 +103,7 @@ export default function RollForm({
     setNameFeatured(initial?.nameFeatured ?? '');
     setResourceAmount(initial ? String(initial.resourceAmount ?? '') : '');
     setTicketAmount(initial ? String(initial.ticketAmount ?? '') : '');
+    setNotes(initial ? String(initial.notes ?? '') : '');
     setFeaturedCount(initial ? String(initial.featuredCount ?? '') : '');
     setSpookCount(initial ? String(initial.spookCount ?? '') : '');
     setSideUnit(initial ? String(initial.sideUnit ?? '') : '');
@@ -125,6 +127,7 @@ export default function RollForm({
     setNameFeatured('');
     setResourceAmount('');
     setTicketAmount('');
+    setNotes('');
     setFeaturedCount('');
     setSpookCount('');
     setSideUnit('');
@@ -171,6 +174,7 @@ export default function RollForm({
       date: finalDateIso,
       resourceType,
       nameFeatured: nameFeatured || undefined,
+      notes: notes ? String(notes).slice(0, 200) : undefined,
     };
     
     // prefer parent handler if provided for separation of concerns, else dispatch directly
@@ -377,6 +381,20 @@ export default function RollForm({
                     onChangeText={setSideUnit}
                     returnKeyType="done"
                   />
+
+                  {/* Notes (multiline, optional, max 200 chars) */}
+                  <Text style={{ color: themeColors.text, marginTop: 8, marginBottom: 4, fontSize: getFontSize(16) }}>{t('gachaRolls.form.notes') || 'Notes'}</Text>
+                  <TextInput
+                    value={notes}
+                    onChangeText={(v) => setNotes(v.slice(0, 200))}
+                    placeholder={t('gachaRolls.form.notesPlaceholder') || 'Ajouter des précisions (max 200 caractères)'}
+                    placeholderTextColor={placeholderColor}
+                    multiline
+                    numberOfLines={4}
+                    maxLength={200}
+                    style={[styles.input, { minHeight: Math.max(80, getFontSize(80)), textAlignVertical: 'top', backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }]}
+                  />
+                  <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(12), textAlign: 'right' }}>{String(notes.length)}/200</Text>
 
                   {/* Date */}
                   <Text style={{ color: themeColors.text, marginBottom: 4, fontSize: getFontSize(16) }}>
