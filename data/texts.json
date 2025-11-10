@@ -958,5 +958,35 @@
     "en": "All fields available (including spooks, side units, items, notes).",
     "fr": "Tous les champs disponibles (y compris spooks, side units, objets, notes).",
     "jp": "すべてのフィールド（すり抜け、サイドユニット、アイテム、メモなど）。"
+  },
+  "gachaRolls.form.addImage": {
+    "en": "Add image",
+    "fr": "Ajouter une image",
+    "jp": "画像を追加"
+  },
+  "gachaRolls.form.removeImage": {
+    "en": "Remove image",
+    "fr": "Retirer l'image",
+    "jp": "画像を削除"
+  },
+  "home.favorite": {
+    "en": "Add favorite",
+    "fr": "Ajouter aux favoris",
+    "jp": "お気に入りに追加"
+  },
+  "home.unfavorite": {
+    "en": "Remove favorite",
+    "fr": "Retirer des favoris",
+    "jp": "お気に入りを解除"
+  },
+  "home.showFavorites": {
+    "en": "Show favorites",
+    "fr": "Afficher favoris",
+    "jp": "お気に入りを表示"
+  },
+  "home.showAll": {
+    "en": "Show all",
+    "fr": "Afficher tout",
+    "jp": "Tout afficher"
   }
 }

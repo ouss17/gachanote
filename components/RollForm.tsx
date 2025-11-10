@@ -4,8 +4,13 @@ import { addRoll, updateRoll } from '@/redux/slices/rollsSlice';
 import { RootState } from '@/redux/store';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Crypto from 'expo-crypto';
+import * as FileSystem from 'expo-file-system/legacy';
+import * as ImageManipulator from 'expo-image-manipulator';
+import * as ImagePicker from 'expo-image-picker';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
+  Alert,
+  Image,
   Keyboard,
   Modal,
   Platform,
@@ -15,7 +20,7 @@ import {
   TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
-  View,
+  View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
@@ -51,12 +56,10 @@ export default function RollForm({
   const today = new Date();
   const dispatch = useDispatch();
 
-  // derive theme / i18n / fontsize from store if not passed
   const themeMode = useSelector((s: RootState) => s.theme.mode);
   const themeColorsStore = Theme[themeMode as keyof typeof Theme];
   const themeColors = propThemeColors ?? themeColorsStore;
 
-  // match MoneyTab: placeholder color is lighter in dark/night mode
   const placeholderColor =
     themeMode === 'dark' || themeMode === 'night' ? '#E5E7EB' : themeColors.placeholder;
  
@@ -71,7 +74,6 @@ export default function RollForm({
   const texts = require('@/data/texts.json');
   const t = propT ?? ((key: string) => texts[key]?.[lang] || texts[key]?.fr || key);
 
-  // derive resourceType from gachaId if not provided
   function getResourceTypeFromGacha(id: string) {
     switch (id) {
       case 'dbl': return 'cc';
@@ -99,6 +101,8 @@ export default function RollForm({
   const [featuredItemsCount, setFeaturedItemsCount] = useState(initial ? String(initial.featuredItemsCount ?? '') : '');
   const [srItemsCount, setSrItemsCount] = useState(initial ? String(initial.srItemsCount ?? '') : '');
   const [sideUnit, setSideUnit] = useState(initial ? String(initial.sideUnit ?? '') : '');
+  const [imageUri, setImageUri] = useState<string | undefined>(initial?.imageUri);
+  const [thumbUri, setThumbUri] = useState<string | undefined>(initial?.thumbUri);
   const [date, setDate] = useState<Date>(initial ? new Date(initial.date) : today);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
@@ -117,6 +121,8 @@ export default function RollForm({
     setFeaturedItemsCount(initial ? String(initial.featuredItemsCount ?? '') : '');
     setSrItemsCount(initial ? String(initial.srItemsCount ?? '') : '');
     setSideUnit(initial ? String(initial.sideUnit ?? '') : '');
+    setImageUri(initial?.imageUri);
+    setThumbUri(initial?.thumbUri);
     setDate(initial ? new Date(initial.date) : today);
   }, [initial, visible]);
 
@@ -129,7 +135,6 @@ export default function RollForm({
     };
   }, [onModalVisibilityChange]);
 
-  // validation : au moins un des champs ressource / tickets / free pulls doit être renseigné (non vide)
   const hasResourceOrTicket = useMemo(() => {
     return (resourceAmount || '').toString().trim() !== '' ||
            (ticketAmount || '').toString().trim() !== '' ||
@@ -147,9 +152,18 @@ export default function RollForm({
     setFeaturedItemsCount('');
     setSrItemsCount('');
     setSideUnit('');
+    setImageUri(undefined);
+    setThumbUri(undefined);
     setDate(today);
   };
-
+ 
+  const idRef = useRef<string>(initial?.id ?? (typeof Crypto.randomUUID === 'function' ? Crypto.randomUUID() : `tmp_${Date.now()}`));
+  useEffect(() => {
+    if (visible) {
+      idRef.current = initial?.id ?? (typeof Crypto.randomUUID === 'function' ? Crypto.randomUUID() : `tmp_${Date.now()}`);
+    }
+  }, [initial, visible]);
+  
   const handleConfirm = async () => {
     if (!featuredCount || !date) {
       alert(t('gachaRolls.form.fillRequired') || 'Remplir le nombre de vedettes et la date.');
@@ -160,10 +174,8 @@ export default function RollForm({
       return;
     }
 
-    const id = initial?.id ?? (typeof Crypto.randomUUID === 'function' ? Crypto.randomUUID() : String(Date.now()));
+    const id = idRef.current;
 
-    // Build stored ISO datetime: keep time to avoid collisions for rolls on same date,
-    // but do not display the time in UI. For new roll use current time; for edit preserve original time when available.
     let finalDateIso = '';
     const now = new Date();
     if (initial && initial.date) {
@@ -187,6 +199,8 @@ export default function RollForm({
       freePulls: freePulls ? Number(freePulls) : undefined,
       featuredItemsCount: featuredItemsCount ? Number(featuredItemsCount) : undefined,
       srItemsCount: srItemsCount ? Number(srItemsCount) : undefined,
+      imageUri: imageUri ? imageUri : undefined,
+      thumbUri: thumbUri ? thumbUri : undefined,
       featuredCount: Number(featuredCount),
       spookCount: Number(spookCount || 0),
       sideUnit: Number(sideUnit || 0),
@@ -196,7 +210,6 @@ export default function RollForm({
       notes: notes ? String(notes).slice(0, 200) : undefined,
     };
     
-    // prefer parent handler if provided for separation of concerns, else dispatch directly
     if (typeof onSubmit === 'function') {
       onSubmit(roll);
     } else {
@@ -208,11 +221,115 @@ export default function RollForm({
     resetForm();
   };
 
+  const pickAndSaveImage = async ({ rollId, maxSize = 1600, quality = 0.8 } : { rollId: string, maxSize?: number, quality?: number }) => {
+    try {
+      const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!perm.granted) throw new Error('Permission denied');
+
+      const res: any = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 1,
+        allowsEditing: false,
+      });
+
+      const isCanceled = res?.canceled === true || res?.cancelled === true;
+      if (isCanceled) return null;
+
+      const pickedUri: string | undefined = res?.assets?.[0]?.uri ?? res?.uri ?? res?.output?.uri;
+      if (!pickedUri) return null;
+
+      let mainManip;
+      try {
+        mainManip = await ImageManipulator.manipulateAsync(
+          pickedUri,
+          [{ resize: { width: maxSize } }],
+          { compress: quality, format: ImageManipulator.SaveFormat.JPEG }
+        );
+      } catch (e) {
+        mainManip = { uri: pickedUri };
+      }
+
+      let thumbManip;
+      try {
+        thumbManip = await ImageManipulator.manipulateAsync(
+          pickedUri,
+          [{ resize: { width: 512 } }],
+          { compress: Math.max(0.45, quality - 0.25), format: ImageManipulator.SaveFormat.JPEG }
+        );
+      } catch (e) {
+        thumbManip = { uri: mainManip.uri };
+      }
+
+      const baseDir = ((FileSystem as any).documentDirectory ?? (FileSystem as any).cacheDirectory ?? '');
+      const mainUri = mainManip.uri;
+      const thumbUriLocal = thumbManip.uri;
+
+      if (!baseDir) {
+        console.warn('No persistent documentDirectory available, returning temp URIs');
+        return { imageUri: mainUri, thumbUri: thumbUriLocal };
+      }
+
+      const dir = `${baseDir}images/`;
+      try {
+        await FileSystem.makeDirectoryAsync(dir, { intermediates: true });
+      } catch (e) {
+      }
+
+      const baseName = `roll_${rollId}_${Date.now()}`;
+      const mainFilename = `${baseName}.jpg`;
+      const thumbFilename = `${baseName}_thumb.jpg`;
+      const mainDest = `${dir}${mainFilename}`;
+      const thumbDest = `${dir}${thumbFilename}`;
+
+      try {
+        await FileSystem.copyAsync({ from: mainUri, to: mainDest });
+        await FileSystem.copyAsync({ from: thumbUriLocal, to: thumbDest });
+        return { imageUri: mainDest, thumbUri: thumbDest };
+      } catch (e) {
+        console.warn('Failed to copy image to persistent storage, using temp URIs', e);
+        return { imageUri: mainUri, thumbUri: thumbUriLocal };
+      }
+    } catch (err: any) {
+      console.warn('pickAndSaveImage error', err);
+      return null;
+    }
+  };
+ 
+  const handlePickImage = async () => {
+    try {
+      const res = await pickAndSaveImage({ rollId: idRef.current });
+      if (!res) {
+        return;
+      }
+      try {
+        if (imageUri && imageUri !== res.imageUri) await FileSystem.deleteAsync(imageUri, { idempotent: true });
+        if (thumbUri && thumbUri !== res.thumbUri) await FileSystem.deleteAsync(thumbUri, { idempotent: true });
+      } catch (e) {
+        console.warn('Failed to delete previous image files', e);
+      }
+      setImageUri(res.imageUri);
+      setThumbUri(res.thumbUri);
+    } catch (e: any) {
+      console.warn('handlePickImage error', e);
+      Alert.alert(t('common.error') || 'Erreur', e?.message || String(e));
+    }
+  };
+
+  const handleRemoveImage = async () => {
+    try {
+      if (imageUri) await FileSystem.deleteAsync(imageUri, { idempotent: true });
+      if (thumbUri) await FileSystem.deleteAsync(thumbUri, { idempotent: true });
+    } catch (e) {
+      // ignore
+    }
+    setImageUri(undefined);
+    setThumbUri(undefined);
+  };
+
   return (
     <>
       <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          {/* tappable background to dismiss keyboard — positioned behind the ScrollView so the ScrollView receives gestures */}
           <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
             <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)' }} />
           </TouchableWithoutFeedback>
@@ -224,7 +341,7 @@ export default function RollForm({
               paddingBottom: Math.max(24, insets.bottom),
               alignItems: 'center',
             }}
-            keyboardShouldPersistTaps="always" // allow scrolling and taps even when keyboard is open
+            keyboardShouldPersistTaps="always" 
             showsVerticalScrollIndicator={false}
           >
             <View
@@ -236,7 +353,6 @@ export default function RollForm({
                 {initial ? t('gachaRolls.modal.editTitle') : t('gachaRolls.modal.addTitle')}
               </Text>
 
-              {/* Name featured — toujours visible même en mode compact */}
               <Text style={{ color: themeColors.text, marginBottom: 4, fontSize: getFontSize(16) }}>
                 {t('gachaRolls.form.nameFeatured')}
               </Text>
@@ -253,8 +369,28 @@ export default function RollForm({
                 onSubmitEditing={() => featuredCountRef.current?.focus()}
                 blurOnSubmit={false}
               />
+              <View style={{ marginTop: 8, marginBottom: 8, flexDirection: 'row', alignItems: 'center' }}>
+                <View style={{ marginRight: 12 }}>
+                  {thumbUri || imageUri ? (
+                    <Image source={{ uri: thumbUri ?? imageUri }} style={{ width: 72, height: 72, borderRadius: 8, backgroundColor: themeColors.background }} />
+                  ) : (
+                    <View style={{ width: 72, height: 72, borderRadius: 8, backgroundColor: themeColors.background, alignItems: 'center', justifyContent: 'center' }}>
+                      <Text style={{ color: themeColors.placeholder }}>IMG</Text>
+                    </View>
+                  )}
+                </View>
+                <View style={{ flex: 1 }}>
+                  <TouchableOpacity onPress={handlePickImage} style={{ marginBottom: 8 }}>
+                    <Text style={{ color: themeColors.primary, fontSize: getFontSize(16), fontWeight: '700' }}>{t('gachaRolls.form.addImage') || 'Ajouter une image'}</Text>
+                  </TouchableOpacity>
+                  {imageUri ? (
+                    <TouchableOpacity onPress={handleRemoveImage}>
+                      <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(13) }}>{t('gachaRolls.form.removeImage') || 'Retirer l\'image'}</Text>
+                    </TouchableOpacity>
+                  ) : null}
+                </View>
+              </View>
 
-              {/* Resource amount */}
               <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
                 <Text style={{ color: themeColors.text, marginRight: 4, fontSize: getFontSize(16) }}>
                   {t('gachaRolls.form.resourceAmount')} <Text style={{ color: '#FF3B30' }}>*</Text>

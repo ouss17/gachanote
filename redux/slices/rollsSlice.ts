@@ -11,6 +11,11 @@ export type Roll = {
   freePulls?: number;
   featuredItemsCount?: number; 
   srItemsCount?: number; 
+  // image URIs stockées localement (optionnel) :
+  // - thumbUri : miniature optimisée pour affichage en liste
+  // - imageUri : image complète (toujours conserver légère / compressée)
+  thumbUri?: string;
+  imageUri?: string;
   featuredCount: number;
   spookCount?: number;
   sideUnit?: number;
