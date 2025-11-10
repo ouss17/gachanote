@@ -31,6 +31,7 @@ type Props = {
   themeColors?: any; // optional: if not provided RollForm will derive from store
   t?: (k: string) => string; // optional: i18n function
   onModalVisibilityChange?: (v: boolean) => void;
+  compact?: boolean; // when true show only required fields (simple add mode)
 };
 
 export default function RollForm({
@@ -44,6 +45,7 @@ export default function RollForm({
   themeColors: propThemeColors,
   t: propT,
   onModalVisibilityChange,
+  compact = false,
 }: Props) {
   const insets = useSafeAreaInsets();
   const today = new Date();
@@ -127,11 +129,12 @@ export default function RollForm({
     };
   }, [onModalVisibilityChange]);
 
+  // validation : au moins un des champs ressource / tickets / free pulls doit être renseigné (non vide)
   const hasResourceOrTicket = useMemo(() => {
     return (resourceAmount || '').toString().trim() !== '' ||
            (ticketAmount || '').toString().trim() !== '' ||
            (freePulls || '').toString().trim() !== '';
-  }, [resourceAmount, ticketAmount]);
+  }, [resourceAmount, ticketAmount, freePulls]);
 
   const resetForm = () => {
     setNameFeatured('');
@@ -233,8 +236,10 @@ export default function RollForm({
                 {initial ? t('gachaRolls.modal.editTitle') : t('gachaRolls.modal.addTitle')}
               </Text>
 
-              {/* Name featured (first) */}
-              <Text style={{ color: themeColors.text, marginBottom: 4, fontSize: getFontSize(16) }}>{t('gachaRolls.form.nameFeatured')}</Text>
+              {/* Name featured — toujours visible même en mode compact */}
+              <Text style={{ color: themeColors.text, marginBottom: 4, fontSize: getFontSize(16) }}>
+                {t('gachaRolls.form.nameFeatured')}
+              </Text>
               <TextInput
                 ref={nameFeaturedRef}
                 accessibilityLabel={t('gachaRolls.form.nameFeatured')}
@@ -317,246 +322,262 @@ export default function RollForm({
               <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(12), marginBottom: 12 }}>
                 <Text style={{ color: '#FF3B30' }}>*</Text> {t('gachaRolls.form.resourceOrTicketsNote')}
               </Text>
+ 
+               {/* Featured count */}
+               <Text style={{ color: themeColors.text, marginBottom: 4, fontSize: getFontSize(16) }}>
+                 {t('gachaRolls.form.featuredCount')} <Text style={{ color: '#FF3B30' }}>*</Text>
+               </Text>
+               <TextInput
+                 ref={featuredCountRef}
+                 accessibilityLabel={t('gachaRolls.form.featuredCount')}
+                 style={[styles.input, { fontSize: getFontSize(16), backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }]
+                 }
+                 placeholder="Ex: 1"
+                 placeholderTextColor={placeholderColor}
+                 keyboardType="numeric"
+                 value={featuredCount}
+                 onChangeText={setFeaturedCount}
+                 returnKeyType="next"
+                 onSubmitEditing={() => spookCountRef.current?.focus()}
+                 blurOnSubmit={false}
+               />
 
-              {/* Featured count */}
-              <Text style={{ color: themeColors.text, marginBottom: 4, fontSize: getFontSize(16) }}>
-                {t('gachaRolls.form.featuredCount')} <Text style={{ color: '#FF3B30' }}>*</Text>
-              </Text>
-              <TextInput
-                ref={featuredCountRef}
-                accessibilityLabel={t('gachaRolls.form.featuredCount')}
-                style={[styles.input, { fontSize: getFontSize(16), backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }]
-                }
-                placeholder="Ex: 1"
-                placeholderTextColor={placeholderColor}
-                keyboardType="numeric"
-                value={featuredCount}
-                onChangeText={setFeaturedCount}
-                returnKeyType="next"
-                onSubmitEditing={() => spookCountRef.current?.focus()}
-                blurOnSubmit={false}
-              />
+               {/* Spook count + help */}
+               {!compact && (
+                 <>
+                   <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginTop: 8 }}>
+                     <Text style={{ color: themeColors.text, fontSize: getFontSize(16) }}>{t('gachaRolls.form.spookCount')}</Text>
+                     <TouchableOpacity
+                       onPress={() => setShowSpookInfo(true)}
+                       accessible
+                       accessibilityRole="button"
+                       accessibilityLabel={t('gachaRolls.spookHelpLabel') || 'Spook help'}
+                       style={{
+                         marginLeft: 8,
+                         marginTop: -Math.round(getFontSize(4)),
+                         width: Math.round(getFontSize(20)),
+                         height: Math.round(getFontSize(20)),
+                         borderRadius: Math.round(getFontSize(10)),
+                         backgroundColor: themeColors.primary,
+                         alignItems: 'center',
+                         justifyContent: 'center',
+                       }}
+                     >
+                       <Text style={{ color: '#fff', fontWeight: '700', fontSize: getFontSize(12) }}>?</Text>
+                     </TouchableOpacity>
+                   </View>
+                   <TextInput
+                     ref={spookCountRef}
+                     style={[
+                       styles.input,
+                       {
+                         fontSize: getFontSize(16),
+                         minHeight: Math.max(40, Math.round(getFontSize(40))),
+                         paddingVertical: Math.max(8, Math.round(getFontSize(6))),
+                         backgroundColor: themeColors.card,
+                         color: themeColors.text,
+                         borderColor: themeColors.border,
+                       },
+                     ]}
+                     placeholder="Ex: 0"
+                     placeholderTextColor={placeholderColor}
+                     keyboardType="numeric"
+                     value={spookCount}
+                     onChangeText={setSpookCount}
+                     returnKeyType="next"
+                     onSubmitEditing={() => sideUnitRef.current?.focus()}
+                     blurOnSubmit={false}
+                   />
+                 </>
+               )}
 
-              {/* Spook count + help */}
-              <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginTop: 8 }}>
-                <Text style={{ color: themeColors.text, fontSize: getFontSize(16) }}>{t('gachaRolls.form.spookCount')}</Text>
-                <TouchableOpacity
-                  onPress={() => setShowSpookInfo(true)}
-                  accessible
-                  accessibilityRole="button"
-                  accessibilityLabel={t('gachaRolls.spookHelpLabel') || 'Spook help'}
-                  style={{
-                    marginLeft: 8,
-                    marginTop: -Math.round(getFontSize(4)),
-                    width: Math.round(getFontSize(20)),
-                    height: Math.round(getFontSize(20)),
-                    borderRadius: Math.round(getFontSize(10)),
-                    backgroundColor: themeColors.primary,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Text style={{ color: '#fff', fontWeight: '700', fontSize: getFontSize(12) }}>?</Text>
-                </TouchableOpacity>
-              </View>
-              <TextInput
-                ref={spookCountRef}
-                style={[
-                  styles.input,
-                  {
-                    fontSize: getFontSize(16),
-                    minHeight: Math.max(40, Math.round(getFontSize(40))),
-                    paddingVertical: Math.max(8, Math.round(getFontSize(6))),
-                    backgroundColor: themeColors.card,
-                    color: themeColors.text,
-                    borderColor: themeColors.border,
-                  },
-                ]}
-                placeholder="Ex: 0"
-                placeholderTextColor={placeholderColor}
-                keyboardType="numeric"
-                value={spookCount}
-                onChangeText={setSpookCount}
-                returnKeyType="next"
-                onSubmitEditing={() => sideUnitRef.current?.focus()}
-                blurOnSubmit={false}
-              />
+               {/* Side unit + help */}
+               {!compact && (
+                 <>
+                   <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginTop: 8 }}>
+                     <Text style={{ color: themeColors.text, fontSize: getFontSize(16) }}>{t('gachaRolls.form.sideUnitCount')}</Text>
+                     <TouchableOpacity
+                       onPress={() => setShowSideUnitInfo(true)}
+                       accessible
+                       accessibilityRole="button"
+                       accessibilityLabel={t('gachaRolls.sideUnitHelpLabel') || 'Side unit help'}
+                       style={{
+                         marginLeft: 8,
+                         marginTop: -Math.round(getFontSize(4)),
+                         width: Math.round(getFontSize(20)),
+                         height: Math.round(getFontSize(20)),
+                         borderRadius: Math.round(getFontSize(10)),
+                         backgroundColor: themeColors.primary,
+                         alignItems: 'center',
+                         justifyContent: 'center',
+                       }}
+                     >
+                       <Text style={{ color: '#fff', fontWeight: '700', fontSize: getFontSize(12) }}>?</Text>
+                     </TouchableOpacity>
+                   </View>
+                   <TextInput
+                     ref={sideUnitRef}
+                     style={[
+                       styles.input,
+                       {
+                         fontSize: getFontSize(16),
+                         minHeight: Math.max(40, Math.round(getFontSize(40))),
+                         paddingVertical: Math.max(8, Math.round(getFontSize(6))),
+                         backgroundColor: themeColors.card,
+                         color: themeColors.text,
+                         borderColor: themeColors.border,
+                       },
+                     ]}
+                     placeholder="Ex: 0"
+                     placeholderTextColor={placeholderColor}
+                     keyboardType="numeric"
+                     value={sideUnit}
+                     onChangeText={setSideUnit}
+                     returnKeyType="done"
+                   />
+                 </>
+               )}
 
-              {/* Side unit + help */}
-              <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginTop: 8 }}>
-                <Text style={{ color: themeColors.text, fontSize: getFontSize(16) }}>{t('gachaRolls.form.sideUnitCount')}</Text>
-                <TouchableOpacity
-                  onPress={() => setShowSideUnitInfo(true)}
-                  accessible
-                  accessibilityRole="button"
-                  accessibilityLabel={t('gachaRolls.sideUnitHelpLabel') || 'Side unit help'}
-                  style={{
-                    marginLeft: 8,
-                    marginTop: -Math.round(getFontSize(4)),
-                    width: Math.round(getFontSize(20)),
-                    height: Math.round(getFontSize(20)),
-                    borderRadius: Math.round(getFontSize(10)),
-                    backgroundColor: themeColors.primary,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Text style={{ color: '#fff', fontWeight: '700', fontSize: getFontSize(12) }}>?</Text>
-                </TouchableOpacity>
-              </View>
-              <TextInput
-                ref={sideUnitRef}
-                style={[
-                  styles.input,
-                  {
-                    fontSize: getFontSize(16),
-                    minHeight: Math.max(40, Math.round(getFontSize(40))),
-                    paddingVertical: Math.max(8, Math.round(getFontSize(6))),
-                    backgroundColor: themeColors.card,
-                    color: themeColors.text,
-                    borderColor: themeColors.border,
-                  },
-                ]}
-                placeholder="Ex: 0"
-                placeholderTextColor={placeholderColor}
-                keyboardType="numeric"
-                value={sideUnit}
-                onChangeText={setSideUnit}
-                returnKeyType="done"
-              />
+               {/* Items (objets) with help */}
+               {!compact && (
+                 <>
+                   <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginTop: 8 }}>
+                     <Text style={{ color: themeColors.text, marginBottom: 4, fontSize: getFontSize(16) }}>
+                       {t('gachaRolls.form.featuredItems') || 'Objets vedette'}
+                     </Text>
+                     <TouchableOpacity
+                       onPress={() => setShowItemsInfo(true)}
+                       accessible
+                       accessibilityRole="button"
+                       accessibilityLabel={t('gachaRolls.itemsHelpLabel') || 'Items help'}
+                       style={{
+                         marginLeft: 8,
+                         marginTop: -Math.round(getFontSize(4)),
+                         width: Math.round(getFontSize(20)),
+                         height: Math.round(getFontSize(20)),
+                         borderRadius: Math.round(getFontSize(10)),
+                         backgroundColor: themeColors.primary,
+                         alignItems: 'center',
+                         justifyContent: 'center',
+                       }}
+                     >
+                       <Text style={{ color: '#fff', fontWeight: '700', fontSize: getFontSize(12) }}>?</Text>
+                     </TouchableOpacity>
+                   </View>
+                   <TextInput
+                     value={featuredItemsCount}
+                     onChangeText={(v) => setFeaturedItemsCount(v.replace(/[^0-9]/g, ''))}
+                     placeholder={t('gachaRolls.form.featuredItemsPlaceholder') || 'Ex: 1'}
+                     placeholderTextColor={placeholderColor}
+                     keyboardType="numeric"
+                     style={[styles.input, { fontSize: getFontSize(16), backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }]}
+                   />
 
-              {/* Items (objets) with help */}
-              <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginTop: 8 }}>
-                <Text style={{ color: themeColors.text, marginBottom: 4, fontSize: getFontSize(16) }}>
-                  {t('gachaRolls.form.featuredItems') || 'Objets vedette'}
-                </Text>
-                <TouchableOpacity
-                  onPress={() => setShowItemsInfo(true)}
-                  accessible
-                  accessibilityRole="button"
-                  accessibilityLabel={t('gachaRolls.itemsHelpLabel') || 'Items help'}
-                  style={{
-                    marginLeft: 8,
-                    marginTop: -Math.round(getFontSize(4)),
-                    width: Math.round(getFontSize(20)),
-                    height: Math.round(getFontSize(20)),
-                    borderRadius: Math.round(getFontSize(10)),
-                    backgroundColor: themeColors.primary,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Text style={{ color: '#fff', fontWeight: '700', fontSize: getFontSize(12) }}>?</Text>
-                </TouchableOpacity>
-              </View>
-              <TextInput
-                value={featuredItemsCount}
-                onChangeText={(v) => setFeaturedItemsCount(v.replace(/[^0-9]/g, ''))}
-                placeholder={t('gachaRolls.form.featuredItemsPlaceholder') || 'Ex: 1'}
-                placeholderTextColor={placeholderColor}
-                keyboardType="numeric"
-                style={[styles.input, { fontSize: getFontSize(16), backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }]}
-              />
+                   <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginTop: 8 }}>
+                     <Text style={{ color: themeColors.text, marginBottom: 4, fontSize: getFontSize(16) }}>
+                       {t('gachaRolls.form.srItems') || 'Objets SR'}
+                     </Text>
+                     <TouchableOpacity
+                       onPress={() => setShowItemsInfo(true)}
+                       accessible
+                       accessibilityRole="button"
+                       accessibilityLabel={t('gachaRolls.itemsHelpLabel') || 'Items help'}
+                       style={{
+                         marginLeft: 8,
+                         marginTop: -Math.round(getFontSize(4)),
+                         width: Math.round(getFontSize(20)),
+                         height: Math.round(getFontSize(20)),
+                         borderRadius: Math.round(getFontSize(10)),
+                         backgroundColor: themeColors.primary,
+                         alignItems: 'center',
+                         justifyContent: 'center',
+                       }}
+                     >
+                       <Text style={{ color: '#fff', fontWeight: '700', fontSize: getFontSize(12) }}>?</Text>
+                     </TouchableOpacity>
+                   </View>
+                   <TextInput
+                     value={srItemsCount}
+                     onChangeText={(v) => setSrItemsCount(v.replace(/[^0-9]/g, ''))}
+                     placeholder={t('gachaRolls.form.srItemsPlaceholder') || 'Ex: 2'}
+                     placeholderTextColor={placeholderColor}
+                     keyboardType="numeric"
+                     style={[styles.input, { fontSize: getFontSize(16), backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }]}
+                   />
+                 </>
+               )}
 
-              <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginTop: 8 }}>
-                <Text style={{ color: themeColors.text, marginBottom: 4, fontSize: getFontSize(16) }}>
-                  {t('gachaRolls.form.srItems') || 'Objets SR'}
-                </Text>
-                <TouchableOpacity
-                  onPress={() => setShowItemsInfo(true)}
-                  accessible
-                  accessibilityRole="button"
-                  accessibilityLabel={t('gachaRolls.itemsHelpLabel') || 'Items help'}
-                  style={{
-                    marginLeft: 8,
-                    marginTop: -Math.round(getFontSize(4)),
-                    width: Math.round(getFontSize(20)),
-                    height: Math.round(getFontSize(20)),
-                    borderRadius: Math.round(getFontSize(10)),
-                    backgroundColor: themeColors.primary,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Text style={{ color: '#fff', fontWeight: '700', fontSize: getFontSize(12) }}>?</Text>
-                </TouchableOpacity>
-              </View>
-              <TextInput
-                value={srItemsCount}
-                onChangeText={(v) => setSrItemsCount(v.replace(/[^0-9]/g, ''))}
-                placeholder={t('gachaRolls.form.srItemsPlaceholder') || 'Ex: 2'}
-                placeholderTextColor={placeholderColor}
-                keyboardType="numeric"
-                style={[styles.input, { fontSize: getFontSize(16), backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }]}
-              />
+               {/* Notes (multiline, optional, max 200 chars) */}
+               {!compact && (
+                 <>
+                   <Text style={{ color: themeColors.text, marginTop: 8, marginBottom: 4, fontSize: getFontSize(16) }}>{t('gachaRolls.form.notes') || 'Notes'}</Text>
+                   <TextInput
+                     value={notes}
+                     onChangeText={(v) => setNotes(v.slice(0, 200))}
+                     placeholder={t('gachaRolls.form.notesPlaceholder') || 'Ajouter des précisions (max 200 caractères)'}
+                     placeholderTextColor={placeholderColor}
+                     multiline
+                     numberOfLines={4}
+                     maxLength={200}
+                     style={[styles.input, { minHeight: Math.max(80, getFontSize(80)), textAlignVertical: 'top', backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }]}
+                   />
+                   <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(12), textAlign: 'right' }}>{String(notes.length)}/200</Text>
+                 </>
+               )}
 
-              {/* Notes (multiline, optional, max 200 chars) */}
-              <Text style={{ color: themeColors.text, marginTop: 8, marginBottom: 4, fontSize: getFontSize(16) }}>{t('gachaRolls.form.notes') || 'Notes'}</Text>
-              <TextInput
-                value={notes}
-                onChangeText={(v) => setNotes(v.slice(0, 200))}
-                placeholder={t('gachaRolls.form.notesPlaceholder') || 'Ajouter des précisions (max 200 caractères)'}
-                placeholderTextColor={placeholderColor}
-                multiline
-                numberOfLines={4}
-                maxLength={200}
-                style={[styles.input, { minHeight: Math.max(80, getFontSize(80)), textAlignVertical: 'top', backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }]}
-              />
-              <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(12), textAlign: 'right' }}>{String(notes.length)}/200</Text>
+               {/* Date */}
+               <Text style={{ color: themeColors.text, marginBottom: 4, fontSize: getFontSize(16) }}>
+                 {t('common.date')} <Text style={{ color: '#FF3B30' }}>*</Text>
+               </Text>
+               <TouchableOpacity
+                 style={[styles.input, { justifyContent: 'center', backgroundColor: themeColors.card, borderColor: themeColors.border }]}
+                 onPress={() => setShowDatePicker(true)}
+                 activeOpacity={0.7}
+                 accessibilityRole="button"
+                 accessible
+                 accessibilityLabel={t('common.date')}
+                 accessibilityHint="Open date picker"
+               >
+                 <Text style={{ color: themeColors.text, fontSize: getFontSize(16) }}>
+                   {date.toLocaleDateString(lang === 'en' ? 'en-US' : lang === 'jap' ? 'ja-JP' : 'fr-FR')}
+                 </Text>
+               </TouchableOpacity>
+               {showDatePicker && (
+                 <DateTimePicker
+                   value={date}
+                   mode="date"
+                   display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                   onChange={(_, selectedDate) => {
+                     setShowDatePicker(false);
+                     if (selectedDate && selectedDate <= today) setDate(selectedDate);
+                   }}
+                   maximumDate={today}
+                 />
+               )}
 
-              {/* Date */}
-              <Text style={{ color: themeColors.text, marginBottom: 4, fontSize: getFontSize(16) }}>
-                {t('common.date')} <Text style={{ color: '#FF3B30' }}>*</Text>
-              </Text>
-              <TouchableOpacity
-                style={[styles.input, { justifyContent: 'center', backgroundColor: themeColors.card, borderColor: themeColors.border }]}
-                onPress={() => setShowDatePicker(true)}
-                activeOpacity={0.7}
-                accessibilityRole="button"
-                accessible
-                accessibilityLabel={t('common.date')}
-                accessibilityHint="Open date picker"
-              >
-                <Text style={{ color: themeColors.text, fontSize: getFontSize(16) }}>
-                  {date.toLocaleDateString(lang === 'en' ? 'en-US' : lang === 'jap' ? 'ja-JP' : 'fr-FR')}
-                </Text>
-              </TouchableOpacity>
-              {showDatePicker && (
-                <DateTimePicker
-                  value={date}
-                  mode="date"
-                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                  onChange={(_, selectedDate) => {
-                    setShowDatePicker(false);
-                    if (selectedDate && selectedDate <= today) setDate(selectedDate);
-                  }}
-                  maximumDate={today}
-                />
-              )}
+               {/* Buttons */}
+               <TouchableOpacity
+                 style={[styles.addBtn, { backgroundColor: themeColors.primary, opacity: (!featuredCount || !hasResourceOrTicket) ? 0.6 : 1 }]}
+                 onPress={handleConfirm}
+                 accessibilityRole="button"
+                 accessible
+                 accessibilityLabel={initial ? t('common.edit') : t('common.add')}
+                 activeOpacity={0.85}
+                 disabled={!featuredCount || !hasResourceOrTicket}
+               >
+                 <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>
+                   {initial ? t('common.edit') : t('common.add')}
+                 </Text>
+               </TouchableOpacity>
 
-              {/* Buttons */}
-              <TouchableOpacity
-                style={[styles.addBtn, { backgroundColor: themeColors.primary, opacity: (!featuredCount || !hasResourceOrTicket) ? 0.6 : 1 }]}
-                onPress={handleConfirm}
-                accessibilityRole="button"
-                accessible
-                accessibilityLabel={initial ? t('common.edit') : t('common.add')}
-                activeOpacity={0.85}
-                disabled={!featuredCount || !hasResourceOrTicket}
-              >
-                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>
-                  {initial ? t('common.edit') : t('common.add')}
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={{ marginTop: 16 }}
-                onPress={() => {
-                  onClose();
-                }}
-              >
-                <Text style={{ color: themeColors.primary, textAlign: 'center', fontSize: getFontSize(16) }}>{t('common.cancel')}</Text>
-              </TouchableOpacity>
+               <TouchableOpacity
+                 style={{ marginTop: 16 }}
+                 onPress={() => {
+                   onClose();
+                 }}
+               >
+                 <Text style={{ color: themeColors.primary, textAlign: 'center', fontSize: getFontSize(16) }}>{t('common.cancel')}</Text>
+               </TouchableOpacity>
             </View>
           </ScrollView>
         </View>

@@ -928,5 +928,35 @@
     "en": "Items help",
     "fr": "Aide Objets",
     "jp": "アイテムヘルプ"
+  },
+  "gachaRolls.addModeTitle": {
+    "en": "Add roll (mode)",
+    "fr": "Ajouter un tirage (mode)",
+    "jp": "ガチャ追加モード"
+  },
+  "gachaRolls.addModeMessage": {
+    "en": "Choose how you want to add the roll",
+    "fr": "Choisir le mode d'ajout",
+    "jp": "追加方法を選択してください"
+  },
+  "gachaRolls.addMode.simple": {
+    "en": "Simple",
+    "fr": "Simple",
+    "jp": "シンプル"
+  },
+  "gachaRolls.addMode.full": {
+    "en": "Full",
+    "fr": "Complet",
+    "jp": "詳細"
+  },
+  "gachaRolls.addMode.simpleDesc":{
+    "en": "Only the essential fields (resource, featured, date).",
+    "fr": "Seulement les champs essentiels (ressource, vedette, date).",
+    "jp": "必須項目のみ（リソース、ピックアップ、日付）。"
+  },
+  "gachaRolls.addMode.fullDesc":{
+    "en": "All fields available (including spooks, side units, items, notes).",
+    "fr": "Tous les champs disponibles (y compris spooks, side units, objets, notes).",
+    "jp": "すべてのフィールド（すり抜け、サイドユニット、アイテム、メモなど）。"
   }
 }
