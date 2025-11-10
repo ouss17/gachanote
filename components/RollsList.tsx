@@ -29,7 +29,9 @@ export default function RollsList({ rolls, getFontSize, onEdit, onDelete, t, the
       renderItem={({ item }) => {
         const resAmt = Number(item.resourceAmount ?? 0);
         const resType = item.resourceType ?? '';
-        const ticketAmt = (item.ticketAmount != null) ? Number(item.ticketAmount) : (resType === 'ticket' ? Number(item.resourceAmount ?? 0) : 0);
+        const freePullsAmt = Number(item.freePulls ?? 0);
+        const baseTicketAmt = (item.ticketAmount != null) ? Number(item.ticketAmount) : (resType === 'ticket' ? Number(item.resourceAmount ?? 0) : 0);
+        const ticketAmt = baseTicketAmt + freePullsAmt;
 
         const hasResourceNonTicket = !!resType && resType !== 'ticket' && resAmt > 0;
         const hasTicketsOnly = ticketAmt > 0 && !hasResourceNonTicket;
@@ -64,25 +66,57 @@ export default function RollsList({ rolls, getFontSize, onEdit, onDelete, t, the
               </Text>
 
               <View style={{ marginTop: 6 }}>
-                {hasBoth ? (
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Text style={{ color: themeColors.text, fontSize: getFontSize(15) }}>
-                      {t('common.resource')} : <Text style={{ fontWeight: 'bold' }}>{resAmt} {String(resType).toUpperCase()}</Text>
-                    </Text>
-                    <Text style={{ color: themeColors.text, fontSize: getFontSize(15), marginLeft: 12 }}>
-                      {t('common.tickets') || 'Tickets'} : <Text style={{ fontWeight: 'bold' }}>{ticketAmt}</Text>
-                    </Text>
-                  </View>
-                ) : hasTicketsOnly ? (
-                  <Text style={{ color: themeColors.text, fontSize: getFontSize(15) }}>
-                    {t('common.resource')} : <Text style={{ fontWeight: 'bold' }}>{ticketAmt} {t('common.tickets') || 'Tickets'}</Text>
-                  </Text>
-                ) : hasResourceNonTicket ? (
-                  <Text style={{ color: themeColors.text, fontSize: getFontSize(15) }}>
-                    {t('common.resource')} : <Text style={{ fontWeight: 'bold' }}>{resAmt} {String(resType).toUpperCase()}</Text>
-                  </Text>
-                ) : null}
-              </View>
+                {(() => {
+                  const resourceProvided = !!resType && resType !== 'ticket' && resAmt > 0;
+                  const ticketProvided = baseTicketAmt > 0;
+                  const freeProvided = freePullsAmt > 0;
+
+                  if (resourceProvided && !ticketProvided && !freeProvided) {
+                    return (
+                      <Text style={{ color: themeColors.text, fontSize: getFontSize(15) }}>
+                        {t('common.resource')} : <Text style={{ fontWeight: 'bold' }}>{resAmt} {String(resType).toUpperCase()}</Text>
+                      </Text>
+                    );
+                  }
+
+                  if (ticketProvided && !resourceProvided && !freeProvided) {
+                    return (
+                      <Text style={{ color: themeColors.text, fontSize: getFontSize(15) }}>
+                        {t('common.tickets') || 'Tickets'} : <Text style={{ fontWeight: 'bold' }}>{String(baseTicketAmt)}</Text>
+                      </Text>
+                    );
+                  }
+
+                  if (freeProvided && !resourceProvided && !ticketProvided) {
+                    return (
+                      <Text style={{ color: themeColors.text, fontSize: getFontSize(15) }}>
+                        {t('gachaRolls.form.freePullsShort') || 'Tirages gratuits'} : <Text style={{ fontWeight: 'bold' }}>{String(freePullsAmt)}</Text>
+                      </Text>
+                    );
+                  }
+
+                  // multiple types present => show each present (resource / tickets / free pulls)
+                  return (
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      {resourceProvided && (
+                        <Text style={{ color: themeColors.text, fontSize: getFontSize(15) }}>
+                          {t('common.resource')} : <Text style={{ fontWeight: 'bold' }}>{resAmt} {String(resType).toUpperCase()}</Text>
+                        </Text>
+                      )}
+                      {ticketProvided && (
+                        <Text style={{ color: themeColors.text, fontSize: getFontSize(15), marginLeft: resourceProvided ? 12 : 0 }}>
+                          {t('common.tickets') || 'Tickets'} : <Text style={{ fontWeight: 'bold' }}>{String(baseTicketAmt)}</Text>
+                        </Text>
+                      )}
+                      {freeProvided && (
+                        <Text style={{ color: themeColors.text, fontSize: getFontSize(15), marginLeft: (resourceProvided || ticketProvided) ? 12 : 0 }}>
+                          {t('gachaRolls.form.freePullsShort') || 'Tirages gratuits'} : <Text style={{ fontWeight: 'bold' }}>{String(freePullsAmt)}</Text>
+                        </Text>
+                      )}
+                    </View>
+                  );
+                })()}
+               </View>
 
               <Text style={{ color: themeColors.text, fontSize: getFontSize(15) }}>
                 {t('common.featured')} : <Text style={{ fontWeight: 'bold' }}>{item.featuredCount}</Text>
@@ -101,6 +135,8 @@ export default function RollsList({ rolls, getFontSize, onEdit, onDelete, t, the
                   {item.notes}
                 </Text>
               ) : null}
+
+              {/* free pulls now shown next to tickets above; no duplicated line here */}
 
               <View style={{ flexDirection: 'row', marginTop: 8, justifyContent: 'flex-end', gap: 8 }}>
                 <TouchableOpacity

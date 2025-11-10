@@ -98,21 +98,24 @@ export default function StatsTab({
       acc.sideUnit += Number(r.sideUnit ?? 0);
       // tickets can be explicit (ticketAmount) or encoded as resource when resourceType === 'ticket'
       acc.tickets += Number(r.ticketAmount ?? 0) + (r.resourceType === 'ticket' ? Number(r.resourceAmount ?? 0) : 0);
+      // free pulls (compte comme des tickets/pulls mais affiché séparément)
+      acc.freePulls += Number(r.freePulls ?? 0);
       return acc;
     },
-    { resource: 0, featured: 0, spook: 0, sideUnit: 0, tickets: 0 }
+    { resource: 0, featured: 0, spook: 0, sideUnit: 0, tickets: 0, freePulls: 0 }
   );
 
-  const ticketsCount = aggregated.tickets;
+  const ticketsCount = aggregated.tickets; // only explicit tickets (and resourceType==='ticket' converted)
+  const freePullsCount = aggregated.freePulls;
   const resourceCount = aggregated.resource;
-  const totalSpend = resourceCount + ticketsCount;
+  const totalSpend = resourceCount + ticketsCount + freePullsCount;
 
   // Convert resources to number of pulls using multiCost (multi = 10 pulls)
   const { cost: multiCost } = getMultiCost(String(gachaId));
   const singleCost = multiCost > 0 ? multiCost / 10 : 0;
   const pullsFromResources = singleCost > 0 ? Math.floor(resourceCount / singleCost) : 0;
   // 1 ticket = 1 pull
-  const totalPulls = pullsFromResources + ticketsCount;
+  const totalPulls = pullsFromResources + ticketsCount + freePullsCount;
 
   // getMultiCost moved here so multiCount is computed from aggregated stats
   function getMultiCost(gachaId: string) {
@@ -188,6 +191,21 @@ export default function StatsTab({
           }
           color={themeColors.card}
           borderColor="#4A90E2"
+          selected={false}
+          fontSize={getFontSize(20)}
+          labelFontSize={getFontSize(13)}
+        />
+
+        {/* Free pulls (affiché à côté des tickets). Comptés comme 1 pull chacun. */}
+        <StatCircle
+          label={t('gachaRolls.form.freePullsShort') || 'Tirages gratuits'}
+          value={
+            showStatsPercent.tickets && totalPulls > 0
+              ? `${((freePullsCount / totalPulls) * 100).toFixed(2)}%`
+              : freePullsCount.toString()
+          }
+          color={themeColors.card}
+          borderColor="#007AFF"
           selected={false}
           fontSize={getFontSize(20)}
           labelFontSize={getFontSize(13)}

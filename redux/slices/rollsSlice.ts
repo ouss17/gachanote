@@ -8,6 +8,7 @@ export type Roll = {
   gachaId: string;
   resourceAmount: number;
   ticketAmount?: number;
+  freePulls?: number; // nombre de tirages gratuits (comptés comme 1 pull chacun)
   featuredCount: number;
   spookCount?: number;
   sideUnit?: number;

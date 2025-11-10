@@ -878,5 +878,20 @@
     "en": "Delete this roll?",
     "fr": "Supprimer ce tirage ?",
     "jp": "このガチャ結果を削除しますか？"
+  },
+  "gachaRolls.form.freePulls": {
+    "en": "Free pulls (in‑game free attempts)",
+    "fr": "Tirages gratuits",
+    "jp": "無料ガチャ回数"
+  },
+  "gachaRolls.form.freePullsHint": {
+    "en": "Free pulls",
+    "fr": "Tirages gratuits",
+    "jp": "無料ガチャ"
+  },
+  "gachaRolls.form.freePullsShort": {
+    "en": "Free pulls",
+    "fr": "Tirages gratuits",
+    "jp": "無料回数"
   }
 }
