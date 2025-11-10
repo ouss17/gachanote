@@ -1,6 +1,6 @@
 import { Theme } from '@/constants/Themes';
 import { computeAllRates } from '@/lib/StatsUtils';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useSelector } from 'react-redux';
 
 /**
@@ -136,141 +136,153 @@ export default function StatsTab({
 
 
   return (
-    <View
-      accessible={true}
-      accessibilityLabel={t('gachaRolls.stats.title')}
-      style={{
+    <ScrollView
+      style={{ flex: 1 }}
+      contentContainerStyle={{
         padding: 24,
-        borderRadius: 16,
-        backgroundColor: themeColors.card,
-        marginBottom: 24,
-        alignItems: 'center'
+        alignItems: 'center',
+        paddingBottom: 80,
       }}
+      showsVerticalScrollIndicator={true}
     >
-      <Text accessibilityRole="header" style={{ color: themeColors.text, fontSize: getFontSize(18), fontWeight: 'bold', marginBottom: 12 }}>
-        {t('gachaRolls.stats.title')}
-      </Text>
-      <View style={{
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginVertical: 32,
-        rowGap: 24,
-        columnGap: 0,
-        maxWidth: 400,
-        alignSelf: 'center',
-      }}>
-        <StatCircle
-          label={`${t('gachaRolls.form.resourceAmount')}\n(${resourceType.toUpperCase()})`}
-          value={resourceCount.toString()}
-          color={themeColors.card}
-          borderColor={themeColors.primary}
-          fontSize={getFontSize(20)}
-          labelFontSize={getFontSize(13)}
-          selected={false}
-        />
-
-        <StatCircle
-          label={t('common.tickets') || 'Tickets'}
-          value={
-            showStatsPercent.tickets && totalPulls > 0
-              ? `${((ticketsCount / totalPulls) * 100).toFixed(2)}%`
-              : ticketsCount.toString()
-          }
-          color={themeColors.card}
-          borderColor="#4A90E2"
-          selected={false}
-          fontSize={getFontSize(20)}
-          labelFontSize={getFontSize(13)}
-        />
-
-        <StatCircle
-          label={t('gachaRolls.form.freePullsShort') || 'Tirages gratuits'}
-          value={
-            showStatsPercent.tickets && totalPulls > 0
-              ? `${((freePullsCount / totalPulls) * 100).toFixed(2)}%`
-              : freePullsCount.toString()
-          }
-          color={themeColors.card}
-          borderColor="#007AFF"
-          selected={false}
-          fontSize={getFontSize(20)}
-          labelFontSize={getFontSize(13)}
-        />
-
-        <StatCircle
-          label={t('common.featured')}
-          value={
-            showStatsPercent.featured && totalPulls > 0
-              ? `${((aggRates?.featuredRate ?? 0) * 100).toFixed(2)}%`
-              : aggregated.featured.toString()
-          }
-          color={themeColors.card}
-          borderColor="#FF9500"
-          onPress={() =>
-            setShowStatsPercent((s: any) => ({ ...s, featured: !s.featured }))
-          }
-          selected={!!showStatsPercent.featured}
-          fontSize={getFontSize(20)}
-          labelFontSize={getFontSize(13)}
-        />
-        <StatCircle
-          label={t('common.spook')}
-          value={
-            showStatsPercent.spook && totalPulls > 0
-              ? `${((aggRates?.spookRate ?? 0) * 100).toFixed(2)}%`
-              : aggregated.spook.toString()
-          }
-          color={themeColors.card}
-          borderColor="#00B894"
-          onPress={() =>
-            setShowStatsPercent((s: any) => ({ ...s, spook: !s.spook }))
-          }
-          selected={!!showStatsPercent.spook}
-          fontSize={getFontSize(20)}
-          labelFontSize={getFontSize(13)}
-        />
-        <StatCircle
-          label={t('common.sideUnits')}
-          value={
-            showStatsPercent.sideUnit && totalPulls > 0
-              ? `${((aggRates?.sideUnitRate ?? 0) * 100).toFixed(2)}%`
-              : String(aggregated.sideUnit ?? 0)
-          }
-          color={themeColors.card}
-          borderColor="#6C47FF"
-          onPress={() =>
-            setShowStatsPercent((s: any) => ({ ...s, sideUnit: !s.sideUnit }))
-          }
-          selected={!!showStatsPercent.sideUnit}
-          fontSize={getFontSize(20)}
-          labelFontSize={getFontSize(13)}
-        />
-      </View>
-      {/* Affichage du total d'argent dépensé */}
-      <View style={{
-        marginTop: 24,
-        alignItems: 'center',
-        backgroundColor: themeColors.background,
-        borderRadius: 12,
-        padding: 16,
-        width: '100%',
-        maxWidth: 320,
-      }}>
-        <Text style={{ color: themeColors.text, fontWeight: 'bold', fontSize: getFontSize(16) }}>
-          {t('gachaRolls.stats.moneySpent')}
+      <View
+        accessible={true}
+        accessibilityLabel={t('gachaRolls.stats.title')}
+        style={{
+          width: '100%',
+          maxWidth: 420,
+          borderRadius: 16,
+          backgroundColor: themeColors.card,
+          marginBottom: 24,
+          alignItems: 'center',
+          padding: 24,
+        }}
+      >
+        <Text accessibilityRole="header" style={{ color: themeColors.text, fontSize: getFontSize(18), fontWeight: 'bold', marginBottom: 12 }}>
+          {t('gachaRolls.stats.title')}
         </Text>
-        <Text
-          accessible={true}
-          accessibilityRole="text"
-          accessibilityLabel={`${totalMoney.toLocaleString('fr-FR')} ${currency}`}
-          style={{ color: themeColors.text, fontSize: getFontSize(22), fontWeight: 'bold', marginTop: 8 }}
-        >
-          {totalMoney.toLocaleString('fr-FR')} {currency}
-        </Text>
+        <View style={{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+          alignItems: 'center',
+          marginVertical: 32,
+          rowGap: 24,
+          columnGap: 0,
+          maxWidth: 400,
+          alignSelf: 'center',
+        }}>
+          <StatCircle
+            label={`${t('gachaRolls.form.resourceAmount')}\n(${resourceType.toUpperCase()})`}
+            value={resourceCount.toString()}
+            color={themeColors.card}
+            borderColor={themeColors.primary}
+            fontSize={getFontSize(20)}
+            labelFontSize={getFontSize(13)}
+            selected={false}
+          />
+
+          <StatCircle
+            label={t('common.tickets') || 'Tickets'}
+            value={
+              showStatsPercent.tickets && totalPulls > 0
+                ? `${((ticketsCount / totalPulls) * 100).toFixed(2)}%`
+                : ticketsCount.toString()
+            }
+            color={themeColors.card}
+            borderColor="#4A90E2"
+            selected={false}
+            fontSize={getFontSize(20)}
+            labelFontSize={getFontSize(13)}
+          />
+
+          <StatCircle
+            label={t('gachaRolls.form.freePullsShort') || 'Tirages gratuits'}
+            value={
+              showStatsPercent.tickets && totalPulls > 0
+                ? `${((freePullsCount / totalPulls) * 100).toFixed(2)}%`
+                : freePullsCount.toString()
+            }
+            color={themeColors.card}
+            borderColor="#007AFF"
+            selected={false}
+            fontSize={getFontSize(20)}
+            labelFontSize={getFontSize(13)}
+          />
+
+          <StatCircle
+            label={t('common.featured')}
+            value={
+              showStatsPercent.featured && totalPulls > 0
+                ? `${((aggRates?.featuredRate ?? 0) * 100).toFixed(2)}%`
+                : aggregated.featured.toString()
+            }
+            color={themeColors.card}
+            borderColor="#FF9500"
+            onPress={() =>
+              setShowStatsPercent((s: any) => ({ ...s, featured: !s.featured }))
+            }
+            selected={!!showStatsPercent.featured}
+            fontSize={getFontSize(20)}
+            labelFontSize={getFontSize(13)}
+          />
+          <StatCircle
+            label={t('common.spook')}
+            value={
+              showStatsPercent.spook && totalPulls > 0
+                ? `${((aggRates?.spookRate ?? 0) * 100).toFixed(2)}%`
+                : aggregated.spook.toString()
+            }
+            color={themeColors.card}
+            borderColor="#00B894"
+            onPress={() =>
+              setShowStatsPercent((s: any) => ({ ...s, spook: !s.spook }))
+            }
+            selected={!!showStatsPercent.spook}
+            fontSize={getFontSize(20)}
+            labelFontSize={getFontSize(13)}
+          />
+          <StatCircle
+            label={t('common.sideUnits')}
+            value={
+              showStatsPercent.sideUnit && totalPulls > 0
+                ? `${((aggRates?.sideUnitRate ?? 0) * 100).toFixed(2)}%`
+                : String(aggregated.sideUnit ?? 0)
+            }
+            color={themeColors.card}
+            borderColor="#6C47FF"
+            onPress={() =>
+              setShowStatsPercent((s: any) => ({ ...s, sideUnit: !s.sideUnit }))
+            }
+            selected={!!showStatsPercent.sideUnit}
+            fontSize={getFontSize(20)}
+            labelFontSize={getFontSize(13)}
+          />
+        </View>
+        {/* Affichage du total d'argent dépensé */}
+        <View style={{
+          marginTop: 24,
+          alignItems: 'center',
+          backgroundColor: themeColors.background,
+          borderRadius: 12,
+          padding: 16,
+          width: '100%',
+          maxWidth: 320,
+        }}>
+          <Text style={{ color: themeColors.text, fontWeight: 'bold', fontSize: getFontSize(16) }}>
+            {t('gachaRolls.stats.moneySpent')}
+          </Text>
+          <Text
+            accessible={true}
+            accessibilityRole="text"
+            accessibilityLabel={`${totalMoney.toLocaleString('fr-FR')} ${currency}`}
+            style={{ color: themeColors.text, fontSize: getFontSize(22), fontWeight: 'bold', marginTop: 8 }}
+          >
+            {totalMoney.toLocaleString('fr-FR')} {currency}
+          </Text>
+        </View>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 

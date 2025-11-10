@@ -50,8 +50,11 @@ export const rollsSlice = createSlice({
     removeRoll(state, action: PayloadAction<string>) {
       state.rolls = state.rolls.filter(r => r.id !== action.payload);
     },
+    resetRolls(state) {
+      state.rolls = [];
+    }
   },
 });
 
-export const { addRoll, removeRoll, updateRoll } = rollsSlice.actions;
+export const { addRoll, removeRoll, updateRoll, resetRolls } = rollsSlice.actions;
 export default rollsSlice.reducer;
