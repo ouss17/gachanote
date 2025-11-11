@@ -1,6 +1,7 @@
 import { Theme } from '@/constants/Themes';
+import { GACHAS } from '@/data/gachas';
 import { computeAllRates } from '@/lib/StatsUtils';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useSelector } from 'react-redux';
 
 /**
@@ -42,6 +43,9 @@ export default function StatsTab({
   const texts = require('@/data/texts.json');
   let lang = useSelector((state: any) => state.nationality.country) || 'fr';
   const t = (key: string) => texts[key]?.[lang] || texts[key]?.fr || key;
+
+  // find gacha meta for header image
+  const selectedGacha = GACHAS.find(g => g.id === String(gachaId)) ?? null;
 
   const StatCircle = ({
     label,
@@ -159,6 +163,15 @@ export default function StatsTab({
       }}
       showsVerticalScrollIndicator={true}
     >
+      {/* gacha banner image (centered, no name) */}
+      {selectedGacha ? (
+        <View style={{ width: '100%', alignItems: 'center', marginBottom: 5 }}>
+          <Image
+            source={selectedGacha.logo}
+            style={{ width: 160, maxWidth: 420, height: 80, resizeMode: 'contain' }}
+          />
+        </View>
+      ) : null}
       <View
         accessible={true}
         accessibilityLabel={t('gachaRolls.stats.title')}

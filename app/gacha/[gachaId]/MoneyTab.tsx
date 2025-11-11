@@ -1,9 +1,10 @@
 import { Theme } from '@/constants/Themes';
+import { GACHAS } from '@/data/gachas';
 import { addMoney, removeMoney } from '@/redux/slices/moneySlice';
 import { RootState } from '@/redux/store';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useMemo, useState } from 'react';
-import { FlatList, Modal, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { FlatList, Image, Modal, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 /**
@@ -98,6 +99,8 @@ export default function MoneyTab({
   let lang = useSelector((state: any) => state.nationality.country) || 'fr';
   const texts = require('@/data/texts.json');
   const t = (key: string) => texts[key]?.[lang] || texts[key]?.fr || key;
+  // gacha meta for header logo
+  const selectedGacha = GACHAS.find(g => g.id === String(gachaId)) ?? null;
 
   return (
     <View
@@ -105,6 +108,15 @@ export default function MoneyTab({
       accessible={true}
       accessibilityLabel={t('money.add') + ' screen' || 'Money tab'}
     >
+      {/* Gacha logo above date filters */}
+      {selectedGacha ? (
+        <View style={{ width: '100%', alignItems: 'center', marginBottom: 12 }}>
+          <Image
+            source={selectedGacha.logo}
+            style={{ width: 160, height: 80, resizeMode: 'contain' }}
+          />
+        </View>
+      ) : null}
       {/* Filtres de dates, affichés seulement s'il y a au moins une entrée pour ce gacha */}
       {hasAnyEntry && (
         <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 16, alignItems: 'center' }}>
