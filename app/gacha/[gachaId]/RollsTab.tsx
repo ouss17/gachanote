@@ -1,10 +1,11 @@
 import RollForm from '@/components/RollForm';
 import RollsList from '@/components/RollsList';
 import { Theme } from '@/constants/Themes';
+import { GACHAS } from '@/data/gachas';
 import type { Roll } from '@/redux/slices/rollsSlice';
 import { addRoll, removeRoll, updateRoll } from '@/redux/slices/rollsSlice';
 import React, { useState } from 'react';
-import { Modal, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Image, Modal, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 /**
@@ -89,8 +90,21 @@ export default function RollsTab({
   }
   const resourceType = propResourceType ?? (gachaId ? getResourceTypeFromGacha(String(gachaId)) : 'gemmes');
 
+  // find gacha meta (logo + name) for header display
+  const selectedGacha = GACHAS.find(g => g.id === String(gachaId)) ?? null;
+
   return (
     <View style={{ flex: 1 }}>
+      {/* Gacha header (logo centered + name) */}
+      {selectedGacha ? (
+        <View style={{ alignItems: 'center', marginBottom: 5 }}>
+          <Image
+            source={selectedGacha.logo}
+            style={{ width: 160, height: 80, resizeMode: 'contain' }}
+          />
+        </View>
+      ) : null}
+
       {/* Search */}
       {rolls.length > 0 && (
         <TextInput

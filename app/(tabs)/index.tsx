@@ -57,7 +57,6 @@ export default function HomeScreen() {
     g.name.toLowerCase().includes(search.toLowerCase()) || g.tags.some(tag => tag.toLowerCase().includes(search.toLowerCase()))
   );
 
-  // If user wants only favorites, filter accordingly
   const displayedGachas = showOnlyFavorites ? filteredGachas.filter(g => favorites.has(g.id)) : filteredGachas;
 
   const onboardingSeen = useSelector((state: RootState) => state.onboarding.seen);
@@ -119,7 +118,7 @@ export default function HomeScreen() {
           ]}
           accessible={true}
           accessibilityLabel={t('home.searchPlaceholder')}
-          accessibilityHint={t('simulationsTab.searchPlaceholder') /* closest hint available */}
+          accessibilityHint={t('simulationsTab.searchPlaceholder')}
         />
         {search.length > 0 && (
           <TouchableOpacity
@@ -221,7 +220,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 4,
   },
-  // item container: no internal padding so left logo area can span full height
   gachaItem: {
     flexDirection: 'row',
     alignItems: 'stretch',
@@ -229,27 +227,23 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 16,
     marginBottom: 12,
-    overflow: 'hidden', // ensure left bg doesn't overflow rounded corners
+    overflow: 'hidden',
   },
-  // left "logo" area that fills the item height
   logoContainer: {
     width: 88,
     backgroundColor: '#2d166398',
     alignItems: 'center',
     justifyContent: 'center',
-    // round only left corners to match item's radius
     borderTopLeftRadius: 16,
     borderBottomLeftRadius: 16,
-    padding: 6, // small padding around the image
+    padding: 6, 
   },
-  // image is centered inside logoContainer and sized with percentages so bg is visible
   logo: {
     width: '100%',
     height: '100%',
     borderRadius: 8,
     backgroundColor: 'transparent',
   },
-  // right area contains title / info and provides padding
   infoContainer: {
     flex: 1,
     paddingVertical: 14,
@@ -266,12 +260,11 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   clearIcon: {
-    // optional adjustments
   },
   starButton: {
     position: 'absolute',
-    top: 8,
-    right: 12,
+    top: 3,
+    right: 6,
     padding: 6,
     borderRadius: 20,
   },

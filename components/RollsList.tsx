@@ -81,7 +81,16 @@ export default function RollsList({ rolls, getFontSize, onEdit, onDelete, t, the
 
                   <View style={{ paddingHorizontal: 4 }}>
                     {item.nameFeatured ? (
-                      <Text style={{ fontWeight: 'bold', marginBottom: 8, fontSize: getFontSize(20), color: themeColors.text }}>
+                      <Text
+                        style={{
+                          fontWeight: 'bold',
+                          marginBottom: 8,
+                          fontSize: getFontSize(25),
+                          color: themeColors.text,
+                          textAlign: 'center',
+                          alignSelf: 'stretch'
+                        }}
+                      >
                         {item.nameFeatured}
                       </Text>
                     ) : null}
@@ -173,7 +182,16 @@ export default function RollsList({ rolls, getFontSize, onEdit, onDelete, t, the
                 /* no image: render content without any image or placeholder */
                 <View style={{ paddingHorizontal: 4 }}>
                   {item.nameFeatured ? (
-                    <Text style={{ fontWeight: 'bold', marginBottom: 8, fontSize: getFontSize(18), color: themeColors.text }}>
+                    <Text
+                      style={{
+                        fontWeight: 'bold',
+                        marginBottom: 8,
+                        fontSize: getFontSize(25),
+                        color: themeColors.text,
+                        textAlign: 'center',
+                        alignSelf: 'stretch'
+                      }}
+                    >
                       {item.nameFeatured}
                     </Text>
                   ) : null}

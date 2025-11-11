@@ -245,8 +245,8 @@ const Settings = () => {
           {t('settings.general.title')}
         </Text>
         {/* Langue */}
-        <View style={styles.row}>
-          <Text style={[styles.label, { color: themeColors.text, fontSize: getFontSize(16) }]}>
+        <View style={[styles.row, { flexDirection: 'column', alignItems: 'flex-start' }]}>
+          <Text style={{ color: themeColors.text, fontSize: getFontSize(16), marginBottom: 8 }}>
             {t('settings.language')}
           </Text>
           <View style={{ flexDirection: 'row' }}>
@@ -267,6 +267,7 @@ const Settings = () => {
                     alignItems: 'center',
                     minWidth: 48,
                     justifyContent: 'center',
+                    marginRight: 6,
                   },
                 ]}
                 onPress={() => dispatch(setNationality({ country: flag.country }))} >
@@ -287,10 +288,10 @@ const Settings = () => {
             ))}
           </View>
         </View>
-        {/* --- DEVISE --- */}
-        <View style={styles.row}>
-          <Text style={[styles.label, { color: themeColors.text, fontSize: getFontSize(16) }]}
-          >
+ 
+         {/* --- DEVISE --- */}
+        <View style={[styles.row, { flexDirection: 'column', alignItems: 'flex-start' }]}>
+          <Text style={{ color: themeColors.text, fontSize: getFontSize(16), marginBottom: 8 }}>
             {t('settings.currency')}
           </Text>
           <View style={{ flexDirection: 'row' }}>
@@ -311,6 +312,7 @@ const Settings = () => {
                     alignItems: 'center',
                     minWidth: 48,
                     justifyContent: 'center',
+                    marginRight: 6,
                   },
                 ]}
                 onPress={() => dispatch(setDevise({ currency: cur.currency }))} >
@@ -329,9 +331,10 @@ const Settings = () => {
             ))}
           </View>
         </View>
-        {/* Thème */}
-        <View style={styles.row}>
-          <Text style={[styles.label, { color: themeColors.text, fontSize: getFontSize(16) }]}>{t('settings.theme')}</Text>
+ 
+         {/* Thème */}
+        <View style={[styles.row, { flexDirection: 'column', alignItems: 'flex-start' }]}>
+          <Text style={{ color: themeColors.text, fontSize: getFontSize(16), marginBottom: 8 }}>{t('settings.theme')}</Text>
           <View style={{ flexDirection: 'row' }}>
             {themeModes.map(mode => (
               <TouchableOpacity
@@ -350,6 +353,7 @@ const Settings = () => {
                     alignItems: 'center',
                     justifyContent: 'center',
                     minWidth: 48,
+                    marginRight: 6,
                   },
                 ]}
                 onPress={() => dispatch(setTheme(mode.key as 'light' | 'dark' | 'night'))}
@@ -364,10 +368,11 @@ const Settings = () => {
             ))}
           </View>
         </View>
-        {/* Taille de police */}
-        <View style={styles.row}>
-          <Text style={[styles.label, { color: themeColors.text, fontSize: getFontSize(16) }]}>{t('settings.fontSize')}</Text>
-          <View style={{ flexDirection: 'row' }}>
+ 
+         {/* Taille de police */}
+        <View style={[styles.row, { flexDirection: 'column', alignItems: 'flex-start' }]}>
+          <Text style={{ color: themeColors.text, fontSize: getFontSize(16), marginBottom: 8 }}>{t('settings.fontSize')}</Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
             {FONT_SIZES_LOCALIZED.map(size => {
               const isCompact = fontSize === 'large';
               const chipColumn = narrowHeight;
@@ -386,6 +391,8 @@ const Settings = () => {
                     justifyContent: 'center',
                     paddingHorizontal: isCompact ? 10 : 14,
                     paddingVertical: chipColumn ? 8 : 7,
+                    marginRight: 8,
+                    marginBottom: 6,
                   }]}
                   onPress={() => dispatch(setFontSize(size.key as 'small' | 'normal' | 'large'))}
                 >
