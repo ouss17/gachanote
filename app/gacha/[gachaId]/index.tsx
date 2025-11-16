@@ -1,5 +1,6 @@
 import { Theme } from '@/constants/Themes';
 import { GACHAS } from '@/data/gachas';
+import { makeSelectMoneyEntriesByGacha } from '@/redux/selectors';
 import { RootState } from '@/redux/store';
 import { AntDesign } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -68,10 +69,9 @@ export default function GachaRollsScreen() {
   const insets = useSafeAreaInsets();
 
 
-  // Sélectionne les entrées d'argent pour ce gacha
-  const moneyEntries = useSelector((state: RootState) =>
-    state.money.entries.filter(e => e.gachaId === gachaId)
-  );
+  // Sélectionne les entrées d'argent pour ce gacha (memoizé pour éviter le warning)
+  const selectMoneyForGacha = useMemo(() => makeSelectMoneyEntriesByGacha(), []);
+  const moneyEntries = useSelector((state: RootState) => selectMoneyForGacha(state, String(gachaId)));
   const currency = useSelector((state: RootState) => state.devise.currency);
 
   // Calcul du total d'argent dépensé pour ce gacha
