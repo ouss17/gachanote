@@ -10,10 +10,10 @@ Write-Host "Lancement du build local Android..."
 docker run --rm -it `
   -v ${PWD}:/app `
   -w /app `
-  expo-builder bash -c "rm -rf node_modules package-lock.json && npm cache clean --force && npm install && npx expo prebuild --clean && eas build -p android --local"
+  expo-builder bash -c "rm -rf node_modules package-lock.json && npm cache clean --force && npm install && npx expo prebuild --clean && eas build -p android --profile preview --local"
 
 
 Write-Host "Build terminé ! Vérifie le dossier dist/ ou build/ pour ton .aab"
 
 # Lancer le script avec :
-# .\build-android.ps1
+# .\build-android2.ps1
