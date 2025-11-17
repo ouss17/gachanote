@@ -55,7 +55,7 @@ export function computePullsForRoll(roll: Roll, gachaId: string) {
   if ((roll.resourceType ?? '') === 'ticket') {
     resourcePulls = Number(roll.resourceAmount ?? 0);
   } else if (singleCost > 0) {
-    resourcePulls = Number(roll.resourceAmount ?? 0) / singleCost; // float
+    resourcePulls = Number(roll.resourceAmount ?? 0) / singleCost;
   }
 
   const totalPulls = tickets + freePulls + resourcePulls;
@@ -83,7 +83,6 @@ export function computeRatesForRoll(roll: Roll, gachaId: string) {
     sideUnitRate: sideUnit / totalPulls,
     featuredItemsRate: featuredItems / totalPulls,
     srItemsRate: srItems / totalPulls,
-    // counts bruts
     featuredCount: featured,
     spookCount: spook,
     sideUnitCount: sideUnit,
@@ -117,7 +116,6 @@ export function computeAllRates(rolls: Roll[], gachaId: string) {
       sideUnitRate: totals.sideUnit / totals.pulls,
       featuredItemsRate: totals.featuredItems / totals.pulls,
       srItemsRate: totals.srItems / totals.pulls,
-      // counts bruts disponibles si besoin
       featuredCount: totals.featured,
       spookCount: totals.spook,
       sideUnitCount: totals.sideUnit,

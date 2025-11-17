@@ -1,5 +1,6 @@
 import ExportDataButton from '@/components/ExportDataButton';
 import ExportGachaButton from '@/components/ExportGachaButton';
+import FeedbackModal from '@/components/FeedbackModal';
 import { Theme } from '@/constants/Themes';
 import { setDevise } from '@/redux/slices/deviseSlice';
 import { addMoney, resetMoney } from '@/redux/slices/moneySlice';
@@ -14,7 +15,7 @@ import { Feather } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import React, { useState } from 'react';
-import { Alert, Image, Modal, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { Alert, Image, Modal, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import DemoScreen from '../DemoScreen';
 
@@ -41,7 +42,7 @@ const Settings = () => {
   const dispatch = useDispatch();
   const [showDemo, setShowDemo] = useState(false);
   const { height: windowHeight } = useWindowDimensions();
-  const narrowHeight = windowHeight <= 459; // <=459px : placer le label au-dessus des chips
+  const narrowHeight = windowHeight <= 459;
   const theme = useSelector((state: RootState) => state.theme.mode);
   const themeColors = Theme[theme as keyof typeof Theme];
   const nationality = useSelector((state: RootState) => state.nationality.country);
@@ -55,17 +56,13 @@ const Settings = () => {
   const banners = useSelector((state: RootState) => state.simulations.banners);
   const [showImportExport, setShowImportExport] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
-  const [importText, setImportText] = useState('');
-  const [feedbackText, setFeedbackText] = useState('');
-
-  // Fonction utilitaire pour la taille de police
+  
   const getFontSize = (base: number) => {
     if (fontSize === 'small') return base * 0.85;
     if (fontSize === 'large') return base * 1.25;
     return base;
   };
 
-  // Reset data
   const handleReset = () => {
     Alert.alert(
       'Confirmation',
@@ -86,7 +83,6 @@ const Settings = () => {
     );
   };
 
-  // Export/Import (placeholders)
   const handleImportFile = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
@@ -100,21 +96,17 @@ const Settings = () => {
       const content = await FileSystem.readAsStringAsync(uri, { encoding: 'utf8' });
       const data = JSON.parse(content);
 
-      // Récupère les tableaux à l'intérieur des slices
       const rollsArray = data.rolls?.rolls ?? [];
       const moneyArray = data.money?.entries ?? [];
       const simulationsArray = data.simulations?.banners ?? [];
 
-      // Vérifie qu'au moins une donnée est présente
       if (!Array.isArray(rollsArray) && !Array.isArray(moneyArray) && !Array.isArray(simulationsArray)) {
         Alert.alert('Erreur', "Le fichier n'est pas au format attendu (au moins une des clés 'rolls', 'money', 'simulations' doit contenir un tableau).");
         return;
       }
 
-      // LOG pour debug
       console.log('Import JSON:', { rollsArray, moneyArray, simulationsArray });
 
-      // Import rolls
       let importedRolls = 0;
       if (Array.isArray(rollsArray)) {
         const existingRollIds = new Set(rolls.map(r => r.id));
@@ -123,7 +115,6 @@ const Settings = () => {
         importedRolls = newRolls.length;
       }
 
-      // Import money
       let importedMoney = 0;
       if (Array.isArray(moneyArray)) {
         const existingMoneyIds = new Set(moneyEntries.map(e => e.id));
@@ -132,7 +123,6 @@ const Settings = () => {
         importedMoney = newMoney.length;
       }
 
-      // Import simulations
       let importedSimulations = 0;
       if (Array.isArray(simulationsArray)) {
         const existingBannerIds = new Set(banners.map(b => b.id));
@@ -141,7 +131,6 @@ const Settings = () => {
             dispatch(addBanner(banner));
             importedSimulations++;
           } else {
-            // Bannière déjà présente, on ajoute seulement les rolls non présents
             const existingBanner = banners.find(b => b.id === banner.id);
             const existingRollIds = new Set(existingBanner?.rolls.map(r => r.id));
             const newRolls = banner.rolls.filter((r: any) => !existingRollIds.has(r.id));
@@ -165,53 +154,6 @@ const Settings = () => {
     } catch (e) {
       console.log('Import error:', e);
       Alert.alert('Erreur', "Le fichier n'est pas un JSON valide ou une erreur est survenue.");
-    }
-  };
-
-  // Endpoint Vercel (replace par ton URL déployée)
-  const FEEDBACK_ENDPOINT = 'https://back-mail-three.vercel.app/api/sendFeedback';
-  const [sendingFeedback, setSendingFeedback] = useState(false);
-
-  // fetch avec timeout typé correctement (retourne Promise<Response>)
-  const fetchWithTimeout = async (url: string, opts: RequestInit | undefined, timeout = 8000): Promise<Response> => {
-    const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), timeout);
-    try {
-      const response = await fetch(url, { ...opts, signal: controller.signal });
-      return response;
-    } finally {
-      clearTimeout(id);
-    }
-  };
-
-  const handleSendFeedback = async () => {
-    if (!feedbackText || feedbackText.trim().length === 0) {
-      Alert.alert('Vide', 'Merci de saisir un message avant l\'envoi.');
-      return;
-    }
-
-    setSendingFeedback(true);
-    try {
-      const res = await fetchWithTimeout(FEEDBACK_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        // n'envoyer QUE le texte du feedback pour garder l'anonymat côté client
-        body: JSON.stringify({ feedback: feedbackText }),
-      }, 10000);
-
-      if (!res.ok) {
-        const errText = await res.text().catch(() => res.statusText);
-        throw new Error(errText || 'Erreur lors de l\'envoi');
-      }
-
-      setFeedbackText('');
-      setShowFeedbackModal(false);
-      Alert.alert('Merci', 'Ton feedback a bien été envoyé (anonyme).');
-    } catch (e) {
-      console.error('Send feedback error', e);
-      Alert.alert('Erreur', 'Impossible d\'envoyer le feedback. Vérifie ta connexion ou réessaie plus tard.');
-    } finally {
-      setSendingFeedback(false);
     }
   };
 
@@ -240,11 +182,9 @@ const Settings = () => {
       accessibilityLabel={t('settings.general.title') || 'Settings'}
     >
       <View style={{ padding: 20 }}>
-        {/* Section Paramètres généraux */}
         <Text style={[styles.sectionTitle, { color: themeColors.primary, fontSize: getFontSize(18) }]}>
           {t('settings.general.title')}
         </Text>
-        {/* Langue */}
         <View style={[styles.row, { flexDirection: 'column', alignItems: 'flex-start' }]}>
           <Text style={{ color: themeColors.text, fontSize: getFontSize(16), marginBottom: 8 }}>
             {t('settings.language')}
@@ -289,7 +229,6 @@ const Settings = () => {
           </View>
         </View>
  
-         {/* --- DEVISE --- */}
         <View style={[styles.row, { flexDirection: 'column', alignItems: 'flex-start' }]}>
           <Text style={{ color: themeColors.text, fontSize: getFontSize(16), marginBottom: 8 }}>
             {t('settings.currency')}
@@ -332,7 +271,6 @@ const Settings = () => {
           </View>
         </View>
  
-         {/* Thème */}
         <View style={[styles.row, { flexDirection: 'column', alignItems: 'flex-start' }]}>
           <Text style={{ color: themeColors.text, fontSize: getFontSize(16), marginBottom: 8 }}>{t('settings.theme')}</Text>
           <View style={{ flexDirection: 'row' }}>
@@ -369,7 +307,6 @@ const Settings = () => {
           </View>
         </View>
  
-         {/* Taille de police */}
         <View style={[styles.row, { flexDirection: 'column', alignItems: 'flex-start' }]}>
           <Text style={{ color: themeColors.text, fontSize: getFontSize(16), marginBottom: 8 }}>{t('settings.fontSize')}</Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
@@ -396,7 +333,6 @@ const Settings = () => {
                   }]}
                   onPress={() => dispatch(setFontSize(size.key as 'small' | 'normal' | 'large'))}
                 >
-                  {/* Sur petits écrans, afficher le label au-dessus de l'exemple pour éviter le wrapping */}
                   {chipColumn ? (
                     <>
                       <Text style={{ color: fontSize === size.key ? themeColors.background : themeColors.text, fontSize: getFontSize(12), marginBottom: 6 }}>
@@ -488,7 +424,6 @@ const Settings = () => {
           />
         </View>
 
-        {/* Section Données & Confidentialité */}
         <Text style={[styles.sectionTitle, { color: themeColors.primary, marginTop: 32, fontSize: getFontSize(18) }]}>{t('settings.dataPrivacy.title')}</Text>
         <View style={styles.row}>
           <TouchableOpacity
@@ -511,7 +446,6 @@ const Settings = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Section Feedback */}
         <Text style={[styles.sectionTitle, { color: themeColors.primary, marginTop: 32, fontSize: getFontSize(18) }]}>{t('settings.feedback.title')}</Text>
         <View style={styles.row}>
           <TouchableOpacity style={styles.linkBtn} onPress={() => setShowFeedbackModal(true)}>
@@ -519,7 +453,6 @@ const Settings = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Move "Voir la démo" under Vibrations (visually below) */}
         <View style={{ marginTop: 8 }}>
           <TouchableOpacity
             style={[styles.linkBtn, { backgroundColor: 'transparent' }]}
@@ -532,14 +465,11 @@ const Settings = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Demo modal (replay onboarding) */}
         <Modal visible={showDemo} animationType="slide" transparent={true}>
-          {/* Fond blanc pour cacher complètement les éléments en dessous */}
           <View style={{ flex: 1, backgroundColor: '#fff' }}>
             <View style={{ flex: 1 }}>
               <DemoScreen onFinish={() => {
-                // mark onboarding as seen and close demo
-                try { dispatch(setOnboardingSeen()); } catch (e) { /* ignore */ }
+                try { dispatch(setOnboardingSeen()); } catch (e) {  }
                 setShowDemo(false);
               }} />
             </View>
@@ -601,62 +531,13 @@ const Settings = () => {
         </Modal>
 
         {/* Modal Feedback */}
-        <Modal visible={showFeedbackModal} animationType="slide" transparent>
-          <TouchableOpacity
-            activeOpacity={1}
-            style={{
-              flex: 1,
-              backgroundColor: 'rgba(0,0,0,0.5)',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-            onPress={() => setShowFeedbackModal(false)}
-          >
-            <TouchableOpacity
-              activeOpacity={1}
-              style={{
-                backgroundColor: themeColors.card,
-                padding: 24,
-                borderRadius: 16,
-                width: '90%',
-                maxHeight: '80%',
-              }}
-              onPress={() => {}} // Empêche la propagation du clic à l'extérieur
-            >
-              <Text style={{ fontWeight: 'bold', fontSize: getFontSize(18), color: themeColors.primary, marginBottom: 12 }}>
-                {t('settings.feedback.sendAnonymous')}
-              </Text>
-              <TextInput
-                accessibilityLabel={t('settings.feedback.placeholder')}
-                accessible={true}
-                style={[
-                  styles.input,
-                  {
-                    fontSize: getFontSize(16),
-                    minHeight: getFontSize(120), // hauteur de base du "textarea"
-                    paddingTop: 12,
-                  },
-                ]}
-                placeholder={t('settings.feedback.placeholder')}
-                placeholderTextColor={themeColors.placeholder || '#888'}
-                multiline={true}
-                numberOfLines={6}
-                textAlignVertical="top" // important pour Android
-                value={feedbackText}
-                onChangeText={setFeedbackText}
-              />
-              <TouchableOpacity
-                style={styles.validateBtn}
-                onPress={handleSendFeedback}
-              >
-                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>{t('settings.send')}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={{ marginTop: 16 }} onPress={() => setShowFeedbackModal(false)}>
-                <Text style={{ color: themeColors.primary, textAlign: 'center', fontSize: getFontSize(16) }}>{t('settings.close')}</Text>
-              </TouchableOpacity>
-            </TouchableOpacity>
-          </TouchableOpacity>
-        </Modal>
+        <FeedbackModal
+          visible={showFeedbackModal}
+          onClose={() => setShowFeedbackModal(false)}
+          getFontSize={getFontSize}
+          themeColors={themeColors}
+          t={t}
+        />
       </View>
     </ScrollView>
   );
