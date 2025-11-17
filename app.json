@@ -2,14 +2,15 @@
   "expo": {
     "name": "GachaNote",
     "slug": "gachanote",
-    "version": "1.0.0",
+    "version": "0.9.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon_full.png",
     "scheme": "gachanote",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.akhidevofficial.gachanote"
     },
     "android": {
       "adaptiveIcon": {

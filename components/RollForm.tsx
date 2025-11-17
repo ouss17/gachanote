@@ -166,11 +166,11 @@ export default function RollForm({
   
   const handleConfirm = async () => {
     if (!featuredCount || !date) {
-      alert(t('gachaRolls.form.fillRequired') || 'Remplir le nombre de vedettes et la date.');
+      Alert.alert(t('gachaRolls.form.fillRequired') || 'Remplir le nombre de vedettes et la date.');
       return;
     }
     if (!hasResourceOrTicket) {
-      alert(t('gachaRolls.form.fillResourceOrTicket') || 'Renseigner ressource ou tickets (au moins un).');
+      Alert.alert(t('gachaRolls.form.fillResourceOrTicket') || 'Renseigner ressource ou tickets (au moins un).');
       return;
     }
 
@@ -227,7 +227,10 @@ export default function RollForm({
       if (!perm.granted) throw new Error('Permission denied');
 
       const res: any = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        // runtime-safe fallback: some expo-image-picker versions export MediaType, others MediaTypeOptions.
+        mediaTypes: (ImagePicker as any).MediaType?.Images ??
+                    (ImagePicker as any).MediaTypeOptions?.Images ??
+                    'Images',
         quality: 1,
         allowsEditing: false,
       });
