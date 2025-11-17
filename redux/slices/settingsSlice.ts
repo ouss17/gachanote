@@ -5,6 +5,7 @@ type SettingsState = {
   sounds: boolean;
   vibrations: boolean;
   invertSwipe: boolean;
+  lastFeedbackAt: number | null;
 };
 
 const initialState: SettingsState = {
@@ -12,6 +13,7 @@ const initialState: SettingsState = {
   sounds: true,
   vibrations: true,
   invertSwipe: false,
+  lastFeedbackAt: null,
 };
 
 const settingsSlice = createSlice({
@@ -30,8 +32,11 @@ const settingsSlice = createSlice({
     setInvertSwipe: (state, action: PayloadAction<boolean>) => {
       state.invertSwipe = action.payload;
     },
+    setLastFeedbackAt: (state, action: PayloadAction<number | null>) => {
+      state.lastFeedbackAt = action.payload;
+    },
   },
 });
 
-export const { setFontSize, setSounds, setVibrations, setInvertSwipe } = settingsSlice.actions;
+export const { setFontSize, setSounds, setVibrations, setInvertSwipe, setLastFeedbackAt } = settingsSlice.actions;
 export default settingsSlice.reducer;

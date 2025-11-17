@@ -988,5 +988,90 @@
     "en": "Show all",
     "fr": "Afficher tout",
     "jp": "Tout afficher"
+  },
+  "settings.feedback.type.general": {
+    "en": "Question / Comment",
+    "fr": "Question / Commentaire",
+    "jp": "質問 / コメント"
+  },
+  "settings.feedback.type.bug": {
+    "en": "Bug",
+    "fr": "Bug",
+    "jp": "バグ"
+  },
+  "settings.feedback.type.add_game": {
+    "en": "Add game",
+    "fr": "Ajouter un jeu",
+    "jp": "ゲームを追加"
+  },
+  "settings.feedback.addGamePlaceholder": {
+     "en": "Request format: ADD_GAME: <Game Name> \nExample: ADD_GAME: Epic Gacha",
+    "fr": "Format attendu : ADD_GAME: <Nom du jeu> \nExemple : ADD_GAME: Epic Gacha",
+    "jp": "依頼形式：ADD_GAME: <ゲーム名> \n例：ADD_GAME: Epic Gacha"
+  },
+  "settings.feedback.cooldownTitle": {
+    "en": "Too soon",
+    "fr": "Attendez",
+    "jp": "時間をおいてください"
+  },
+  "settings.feedback.cooldownMessage": {
+    "en": "You can send feedback again in ~{hours} hour(s).",
+    "fr": "Vous pouvez renvoyer un feedback dans ~{hours} heure(s).",
+    "jp": "{hours}時間後に再送信できます。"
+  },
+  "settings.feedback.cooldownInline": {
+    "en": "You already sent feedback recently — try again in ~{hours} hour(s).",
+    "fr": "Vous avez déjà envoyé un feedback récemment — réessayez dans ~{hours} heure(s).",
+    "jp": "最近フィードバックを送信しています。{hours}時間後にお試しください。"
+  },
+  "settings.feedback.emptyTitle": {
+    "en": "Empty",
+    "fr": "Vide",
+    "jp": "空です"
+  },
+  "settings.feedback.emptyMessage": {
+    "en": "Please type a message before sending.",
+    "fr": "Merci de saisir un message avant l'envoi.",
+    "jp": "送信する前にメッセージを入力してください。"
+  },
+  "settings.feedback.invalidFormatTitle": {
+    "en": "Invalid format",
+    "fr": "Format invalide",
+    "jp": "無効な形式"
+  },
+  "settings.feedback.invalidFormatMessage": {
+    "en": "To request a game, start your message with \"ADD_GAME: <Game Name>\" (e.g. \"ADD_GAME: Epic Gacha\").",
+    "fr": "Pour demander l'ajout d'un jeu, commencez votre message par \"ADD_GAME: <nom du jeu>\" (ex. \"ADD_GAME: Epic Gacha\").",
+    "jp": "ゲームの追加を依頼するには、メッセージを「ADD_GAME: <ゲーム名>」で始めてください（例：「ADD_GAME: Epic Gacha」）。"
+  },
+  "settings.feedback.tooShortTitle": {
+    "en": "Too short",
+    "fr": "Trop court",
+    "jp": "短すぎます"
+  },
+  "settings.feedback.tooShortMessage": {
+    "en": "Please provide at least {min} characters for questions/bugs to help reproduce/diagnose.",
+    "fr": "Merci de fournir au moins {min} caractères pour une demande de question/bug afin d'aider à reproduire/diagnostiquer.",
+    "jp": "質問やバグ報告には少なくとも{min}文字を入力してください。"
+  },
+  "settings.feedback.sendErrorTitle": {
+    "en": "Error",
+    "fr": "Erreur",
+    "jp": "エラー"
+  },
+  "settings.feedback.sendError": {
+    "en": "Unable to send feedback. Check your connection and try again later.",
+    "fr": "Impossible d'envoyer le feedback. Vérifie ta connexion ou réessaie plus tard.",
+    "jp": "フィードバックを送信できません。接続を確認して、後でもう一度試してください。"
+  },
+  "settings.feedback.counter.ready": {
+    "en": "— ready to send",
+    "fr": "— prêt à envoyer",
+    "jp": "— 送信可能"
+  },
+  "settings.feedback.counter.missing": {
+    "en": "— {remaining} characters missing",
+    "fr": "— il en manque {remaining}",
+    "jp": "— 残り {remaining} 文字"
   }
 }
