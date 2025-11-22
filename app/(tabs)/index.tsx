@@ -1,6 +1,7 @@
 import { Theme } from '@/constants/Themes';
 import { GACHAS } from '@/data/gachas';
 import { setOnboardingSeen } from '@/redux/slices/onboardingSlice';
+import { setShowOnlyFavorites } from '@/redux/slices/settingsSlice';
 import { RootState } from '@/redux/store';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -26,7 +27,8 @@ export default function HomeScreen() {
 
   const [search, setSearch] = useState('');
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
-  const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
+  // read persisted showOnlyFavorites from redux
+  const showOnlyFavorites = useSelector((state: RootState) => state.settings.showOnlyFavorites);
   const STORAGE_KEY = '@gachanote:favorites';
 
   useEffect(() => {
@@ -39,6 +41,15 @@ export default function HomeScreen() {
         }
       } catch (e) {
       }
+    })();
+    // restore persisted showOnlyFavorites
+    (async () => {
+      try {
+        const v = await AsyncStorage.getItem('@gachanote:showOnlyFavorites');
+        if (v != null) {
+          dispatch(setShowOnlyFavorites(v === 'true'));
+        }
+      } catch (e) { /* ignore */ }
     })();
   }, []);
 
@@ -132,7 +143,11 @@ export default function HomeScreen() {
         )}
         {/* favorites filter toggle */}
         <TouchableOpacity
-          onPress={() => setShowOnlyFavorites(s => !s)}
+          onPress={async () => {
+            const next = !showOnlyFavorites;
+            dispatch(setShowOnlyFavorites(next));
+            try { await AsyncStorage.setItem('@gachanote:showOnlyFavorites', next ? 'true' : 'false'); } catch (e) { /* ignore */ }
+          }}
           accessibilityRole="button"
           accessibilityLabel={showOnlyFavorites ? t('home.showAll') || 'Show all' : t('home.showFavorites') || 'Show favorites'}
           style={{ marginLeft: 8, padding: 6 }}
