@@ -34,6 +34,25 @@ export default function RollsList({ rolls, getFontSize, onEdit, onDelete, t, the
         const sideUnitPct = rates ? (rates.sideUnitRate * 100).toFixed(2) : null;
         const featuredItemsPct = rates ? (rates.featuredItemsRate * 100).toFixed(2) : null;
         const srItemsPct = rates ? (rates.srItemsRate * 100).toFixed(2) : null;
+        // Hypothetical next-pull rates : computeRatesForRoll retourne `pulls` (total), on l'utilise explicitement
+        const totalPulls = typeof rates?.pulls === 'number' ? rates!.pulls : null;
+        const safeTotal = (totalPulls && totalPulls > 0) ? totalPulls : null;
+        const getCountFromRate = (rate: number | undefined, total: number) =>
+          typeof rate === 'number' ? Math.round(rate * total) : null;
+
+        let hypotheticalFeaturedPct: number | null = null;
+        let hypotheticalSideUnitPct: number | null = null;
+        let hypotheticalFeaturedItemPct: number | null = null;
+        if (rates && safeTotal != null) {
+          const featuredCount = (rates.featuredCount != null) ? rates.featuredCount : getCountFromRate(rates.featuredRate, safeTotal) ?? 0;
+          const sideUnitCount = (rates.sideUnitCount != null) ? rates.sideUnitCount : getCountFromRate(rates.sideUnitRate, safeTotal) ?? 0;
+          const featuredItemsCount = (rates.featuredItemsCount != null) ? rates.featuredItemsCount : getCountFromRate(rates.featuredItemsRate, safeTotal) ?? 0;
+
+          hypotheticalFeaturedPct = ((featuredCount + 1) / (safeTotal + 1)) * 100;
+          hypotheticalSideUnitPct = ((sideUnitCount + 1) / (safeTotal + 1)) * 100;
+          hypotheticalFeaturedItemPct = ((featuredItemsCount + 1) / (safeTotal + 1)) * 100;
+        }
+
         const resAmt = Number(item.resourceAmount ?? 0);
         const resType = item.resourceType ?? '';
         const freePullsAmt = Number(item.freePulls ?? 0);
@@ -150,6 +169,11 @@ export default function RollsList({ rolls, getFontSize, onEdit, onDelete, t, the
 
                     <Text style={{ color: themeColors.text, fontSize: getFontSize(15), marginTop: 8 }}>
                       {t('common.featured')} : <Text style={{ fontWeight: 'bold' }}>{String(item.featuredCount ?? 0)}</Text>{featuredPct ? ` (${featuredPct}%)` : ''}
+                      {hypotheticalFeaturedPct != null && (
+                        <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(13) }}> {' '}
+                          {(t('gachaRolls.hypothetical.ifNextInline') || 'si prochain tirage :')} <Text style={{ fontWeight: 'bold' }}>{`${hypotheticalFeaturedPct.toFixed(2)}%`}</Text>
+                        </Text>
+                      )}
                     </Text>
                     {(item.spookCount ?? 0) > 0 && (
                       <Text style={{ color: themeColors.text, fontSize: getFontSize(15) }}>
@@ -158,11 +182,21 @@ export default function RollsList({ rolls, getFontSize, onEdit, onDelete, t, the
                     )}
                     <Text style={{ color: themeColors.text, fontSize: getFontSize(15) }}>
                       {t('common.sideUnits')} : <Text style={{ fontWeight: 'bold' }}>{String(item.sideUnit ?? 0)}</Text>{sideUnitPct ? ` (${sideUnitPct}%)` : ''}
+                      {hypotheticalSideUnitPct != null && (
+                        <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(13) }}> {' '}
+                          {(t('gachaRolls.hypothetical.ifNextInline') || 'si prochain tirage :')} <Text style={{ fontWeight: 'bold' }}>{`${hypotheticalSideUnitPct.toFixed(2)}%`}</Text>
+                        </Text>
+                      )}
                     </Text>
 
                     {(item.featuredItemsCount ?? 0) > 0 && (
                       <Text style={{ color: themeColors.text, fontSize: getFontSize(15), marginTop: 4 }}>
                         {t('gachaRolls.form.featuredItems') || 'Objets vedette'} : <Text style={{ fontWeight: 'bold' }}>{String(item.featuredItemsCount)}</Text>{featuredItemsPct ? ` (${featuredItemsPct}%)` : ''}
+                        {hypotheticalFeaturedItemPct != null && (
+                          <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(13) }}> {' '}
+                            {(t('gachaRolls.hypothetical.ifNextInline') || 'si prochain tirage :')} <Text style={{ fontWeight: 'bold' }}>{`${hypotheticalFeaturedItemPct.toFixed(2)}%`}</Text>
+                          </Text>
+                        )}
                       </Text>
                     )}
                     {(item.srItemsCount ?? 0) > 0 && (
@@ -251,6 +285,11 @@ export default function RollsList({ rolls, getFontSize, onEdit, onDelete, t, the
 
                   <Text style={{ color: themeColors.text, fontSize: getFontSize(15), marginTop: 8 }}>
                     {t('common.featured')} : <Text style={{ fontWeight: 'bold' }}>{String(item.featuredCount ?? 0)}</Text>{featuredPct ? ` (${featuredPct}%)` : ''}
+                    {hypotheticalFeaturedPct != null && (
+                      <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(13) }}> {' '}
+                        {(t('gachaRolls.hypothetical.ifNextInline') || 'si prochain tirage :')} <Text style={{ fontWeight: 'bold' }}>{`${hypotheticalFeaturedPct.toFixed(2)}%`}</Text>
+                      </Text>
+                    )}
                   </Text>
                   {(item.spookCount ?? 0) > 0 && (
                     <Text style={{ color: themeColors.text, fontSize: getFontSize(15) }}>
@@ -259,11 +298,21 @@ export default function RollsList({ rolls, getFontSize, onEdit, onDelete, t, the
                   )}
                   <Text style={{ color: themeColors.text, fontSize: getFontSize(15) }}>
                     {t('common.sideUnits')} : <Text style={{ fontWeight: 'bold' }}>{String(item.sideUnit ?? 0)}</Text>{sideUnitPct ? ` (${sideUnitPct}%)` : ''}
+                    {hypotheticalSideUnitPct != null && (
+                      <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(13) }}> {' '}
+                        {(t('gachaRolls.hypothetical.ifNextInline') || 'si prochain tirage :')} <Text style={{ fontWeight: 'bold' }}>{`${hypotheticalSideUnitPct.toFixed(2)}%`}</Text>
+                      </Text>
+                    )}
                   </Text>
 
                   {(item.featuredItemsCount ?? 0) > 0 && (
                     <Text style={{ color: themeColors.text, fontSize: getFontSize(15), marginTop: 4 }}>
                       {t('gachaRolls.form.featuredItems') || 'Objets vedette'} : <Text style={{ fontWeight: 'bold' }}>{String(item.featuredItemsCount)}</Text>{featuredItemsPct ? ` (${featuredItemsPct}%)` : ''}
+                      {hypotheticalFeaturedItemPct != null && (
+                        <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(13) }}> {' '}
+                          {(t('gachaRolls.hypothetical.ifNextInline') || 'si prochain tirage :')} <Text style={{ fontWeight: 'bold' }}>{`${hypotheticalFeaturedItemPct.toFixed(2)}%`}</Text>
+                        </Text>
+                      )}
                     </Text>
                   )}
                   {(item.srItemsCount ?? 0) > 0 && (

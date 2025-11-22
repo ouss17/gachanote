@@ -1073,5 +1073,30 @@
     "en": "— {remaining} characters missing",
     "fr": "— il en manque {remaining}",
     "jp": "— 残り {remaining} 文字"
+  },
+  "gachaRolls.hypothetical.title": {
+    "en": "If the next pull was:",
+    "fr": "Si le prochain tirage était :",
+    "jp": "次のガチャがもし…"
+  },
+  "gachaRolls.hypothetical.featured": {
+    "en": "Featured",
+    "fr": "Vedette",
+    "jp": "ピックアップ"
+  },
+  "gachaRolls.hypothetical.sideUnit": {
+    "en": "Side unit",
+    "fr": "Side unit",
+    "jp": "サイドユニット"
+  },
+  "gachaRolls.hypothetical.featuredItem": {
+    "en": "Featured item",
+    "fr": "Objet vedette",
+    "jp": "ピックアップアイテム"
+  },
+   "gachaRolls.hypothetical.ifNextInline": {
+    "en": "if next pull:",
+    "fr": "si prochain tirage :",
+    "jp": "次のガチャの場合："
   }
 }
