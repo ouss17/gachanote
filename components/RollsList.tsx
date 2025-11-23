@@ -90,29 +90,44 @@ export default function RollsList({ rolls, getFontSize, onEdit, onDelete, t, the
             <View style={{ padding: 8, borderRadius: 8, borderWidth: 1, borderColor: themeColors.border, backgroundColor: themeColors.card }}>
               {imageUri ? (
                 <>
-                  <View style={{ borderRadius: 12, overflow: 'hidden', marginBottom: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: themeColors.background }}>
+                  <View style={{ borderRadius: 12, overflow: 'hidden', marginBottom: 10, backgroundColor: themeColors.background }}>
                     <Image
                       source={{ uri: imageUri }}
                       style={{ width: '100%', height: Math.round(getFontSize(160)) }}
-                      resizeMode="contain"
+                      resizeMode="cover"
                     />
+                    {item.nameFeatured ? (
+                      <View
+                        pointerEvents="none"
+                        style={{
+                          position: 'absolute',
+                          left: 0,
+                          right: 0,
+                          top: 0,
+                          bottom: 0,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          backgroundColor: 'rgba(0,0,0,0.35)',
+                          paddingHorizontal: 12,
+                        }}
+                      >
+                        <Text
+                          numberOfLines={2}
+                          ellipsizeMode="tail"
+                          style={{
+                            color: '#fff',
+                            fontWeight: 'bold',
+                            fontSize: getFontSize(24),
+                            textAlign: 'center',
+                          }}
+                        >
+                          {item.nameFeatured}
+                        </Text>
+                      </View>
+                    ) : null}
                   </View>
 
                   <View style={{ paddingHorizontal: 4 }}>
-                    {item.nameFeatured ? (
-                      <Text
-                        style={{
-                          fontWeight: 'bold',
-                          marginBottom: 8,
-                          fontSize: getFontSize(25),
-                          color: themeColors.text,
-                          textAlign: 'center',
-                          alignSelf: 'stretch'
-                        }}
-                      >
-                        {item.nameFeatured}
-                      </Text>
-                    ) : null}
 
                     <Text style={{ color: themeColors.text, fontSize: getFontSize(15) }}>
                       {t('common.date')} : <Text style={{ fontWeight: 'bold' }}>{new Date(item.date).toLocaleDateString()}</Text>
