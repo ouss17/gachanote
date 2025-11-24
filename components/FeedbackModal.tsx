@@ -64,8 +64,8 @@ export default function FeedbackModal({ visible, onClose, getFontSize, themeColo
 
     const trimmed = feedbackText.trim();
     if (feedbackType === 'add_game') {
-      const match = /^ADD_GAME:\s*(.+)/i.exec(trimmed);
-      if (!match || !match[1] || match[1].trim().length < 3) {
+      // user can type the game name directly; require a short minimal length
+      if (trimmed.length < 3) {
         Alert.alert(t('settings.feedback.invalidFormatTitle'), t('settings.feedback.invalidFormatMessage'));
         return;
       }
@@ -78,10 +78,13 @@ export default function FeedbackModal({ visible, onClose, getFontSize, themeColo
 
     setSendingFeedback(true);
     try {
+      // prepend machine-friendly prefix for easier routing in emails/logs
+      const PREFIX = feedbackType === 'add_game' ? 'ADD_GAME' : feedbackType === 'bug' ? 'BUG' : 'COMMENT';
+      const payloadFeedback = `${PREFIX}: ${trimmed}`;
       const res = await fetchWithTimeout(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ feedback: feedbackText, type: feedbackType }),
+        body: JSON.stringify({ feedback: payloadFeedback, type: feedbackType }),
       }, 10000);
 
       if (!res.ok) {

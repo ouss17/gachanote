@@ -14,6 +14,15 @@ import { useDispatch, useSelector } from 'react-redux';
 import DemoScreen from '../DemoScreen';
 
 export default function HomeScreen() {
+  // const clearAll = async () => {
+  //   try {
+  //     await AsyncStorage.clear();
+  //     console.log('Local storage vidé !');
+  //   } catch (e) {
+  //     console.error('Erreur lors du nettoyage', e);
+  //   }
+  // };
+  // clearAll();
   const router = useRouter();
   const theme = useSelector((state: RootState) => state.theme.mode);
   const dispatch = useDispatch();
