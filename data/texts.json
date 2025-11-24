@@ -1005,9 +1005,9 @@
     "jp": "ゲームを追加"
   },
   "settings.feedback.addGamePlaceholder": {
-     "en": "Request format: ADD_GAME: <Game Name> \nExample: ADD_GAME: Epic Gacha",
-    "fr": "Format attendu : ADD_GAME: <Nom du jeu> \nExemple : ADD_GAME: Epic Gacha",
-    "jp": "依頼形式：ADD_GAME: <ゲーム名> \n例：ADD_GAME: Epic Gacha"
+     "en": "Game name, resource type, currency, and any other relevant details.",
+    "fr": "Nom du jeu, type de ressource, devise, et tout autre détail pertinent.",
+    "jp": "ゲーム名、リソースの種類、通貨、その他関連する詳細。"
   },
   "settings.feedback.cooldownTitle": {
     "en": "Too soon",
