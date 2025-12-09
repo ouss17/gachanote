@@ -4,7 +4,7 @@ import { addMoney, removeMoney } from '@/redux/slices/moneySlice';
 import { RootState } from '@/redux/store';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useMemo, useState } from 'react';
-import { FlatList, Image, Modal, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, Image, Modal, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 /**
@@ -76,6 +76,13 @@ export default function MoneyTab({
    */
   const handleAdd = () => {
     if (!amount || !date) return;
+    // normalize comma to dot and parse
+    const normalized = amount.replace(/,/g, '.').trim();
+    const numeric = Number(normalized);
+    if (isNaN(numeric) || numeric <= 0) {
+      Alert.alert(t('money.form.invalidAmount') || 'Montant invalide', t('money.form.invalidAmountHint') || 'Merci de saisir un montant valide.');
+      return;
+    }
     // store full ISO datetime to keep uniqueness for same-day entries,
     // but UI still displays only the date part.
     const now = new Date();
@@ -84,7 +91,7 @@ export default function MoneyTab({
     dispatch(addMoney({
       id: Date.now().toString(),
       gachaId,
-      amount: Number(amount),
+      amount: numeric,
       date: storedDate.toISOString(),
     }));
     setShowModal(false);
@@ -308,7 +315,10 @@ export default function MoneyTab({
                  placeholder={`${t('money.form.amountPlaceholder')} (${currency})`}
                  keyboardType="numeric"
                  value={amount}
-                 onChangeText={setAmount}
+                 onChangeText={(text) => {
+                   // show point to the user by normalizing input live
+                   setAmount(text.replace(/,/g, '.'));
+                 }}
                  accessible={true}
                  accessibilityLabel={t('money.form.amountPlaceholder')}
                  accessibilityHint={`${currency}`}

@@ -90,7 +90,7 @@ export default function RollForm({
   const featuredCountRef = useRef<TextInput | null>(null);
   const spookCountRef = useRef<TextInput | null>(null);
   const sideUnitRef = useRef<TextInput | null>(null);
-
+ 
   const [nameFeatured, setNameFeatured] = useState(initial?.nameFeatured ?? '');
   const [resourceAmount, setResourceAmount] = useState(initial ? String(initial.resourceAmount ?? '') : '');
   const [ticketAmount, setTicketAmount] = useState(initial ? String(initial.ticketAmount ?? '') : '');
@@ -191,12 +191,13 @@ export default function RollForm({
       finalDateIso = newDate.toISOString();
     }
 
+    // when building the roll, parse numbers robustly
     const roll: Roll = {
       id,
       gachaId: String(gachaId),
-      resourceAmount: resourceAmount ? Number(resourceAmount) : 0,
-      ticketAmount: ticketAmount ? Number(ticketAmount) : undefined,
-      freePulls: freePulls ? Number(freePulls) : undefined,
+      resourceAmount: resourceAmount ? Number(String(resourceAmount).replace(/,/g, '.')) : 0,
+      ticketAmount: ticketAmount ? Number(String(ticketAmount).replace(/,/g, '.')) : undefined,
+      freePulls: freePulls ? Number(String(freePulls).replace(/,/g, '.')) : undefined,
       featuredItemsCount: featuredItemsCount ? Number(featuredItemsCount) : undefined,
       srItemsCount: srItemsCount ? Number(srItemsCount) : undefined,
       imageUri: imageUri ? imageUri : undefined,
@@ -329,6 +330,23 @@ export default function RollForm({
     setThumbUri(undefined);
   };
 
+  // normalize number input: convert commas to dots, allowFloat -> keep one dot
+  const normalizeNumberInput = (text: string, allowFloat = false) => {
+    if (!text && text !== '') return '';
+    const withDot = text.replace(/,/g, '.');
+    if (allowFloat) {
+      // keep only digits and dots, then ensure a single dot
+      let cleaned = withDot.replace(/[^0-9.]/g, '');
+      const parts = cleaned.split('.');
+      if (parts.length <= 1) return cleaned;
+      const head = parts.shift() || '';
+      const rest = parts.join('');
+      return `${head}.${rest}`;
+    }
+    // integer: keep digits only (commas removed)
+    return withDot.replace(/[^0-9]/g, '');
+  };
+
   return (
     <>
       <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
@@ -407,7 +425,7 @@ export default function RollForm({
                   placeholderTextColor={placeholderColor}
                   keyboardType="numeric"
                   value={resourceAmount}
-                  onChangeText={setResourceAmount}
+                  onChangeText={(v) => setResourceAmount(normalizeNumberInput(v, true))}
                   returnKeyType="next"
                 />
                 <Text style={{ marginLeft: 8, color: themeColors.text, fontWeight: 'bold', fontSize: getFontSize(16) }}>
@@ -428,7 +446,7 @@ export default function RollForm({
                     placeholderTextColor={placeholderColor}
                     keyboardType="numeric"
                     value={ticketAmount}
-                    onChangeText={setTicketAmount}
+                    onChangeText={(v) => setTicketAmount(normalizeNumberInput(v, false))}
                     returnKeyType="next"
                   />
                   <Text style={{ marginLeft: 8, color: themeColors.text, fontWeight: 'bold', fontSize: getFontSize(16) }}>
@@ -449,7 +467,7 @@ export default function RollForm({
                     placeholderTextColor={placeholderColor}
                     keyboardType="numeric"
                     value={freePulls}
-                    onChangeText={(v) => setFreePulls(v.replace(/[^0-9]/g, ''))}
+                    onChangeText={(v) => setFreePulls(normalizeNumberInput(v, false))}
                     returnKeyType="next"
                   />
                   <Text style={{ marginLeft: 8, color: themeColors.text, fontWeight: 'bold', fontSize: getFontSize(14) }}>
@@ -475,7 +493,7 @@ export default function RollForm({
                  placeholderTextColor={placeholderColor}
                  keyboardType="numeric"
                  value={featuredCount}
-                 onChangeText={setFeaturedCount}
+                 onChangeText={(v) => setFeaturedCount(normalizeNumberInput(v, false))}
                  returnKeyType="next"
                  onSubmitEditing={() => spookCountRef.current?.focus()}
                  blurOnSubmit={false}
@@ -522,7 +540,7 @@ export default function RollForm({
                      placeholderTextColor={placeholderColor}
                      keyboardType="numeric"
                      value={spookCount}
-                     onChangeText={setSpookCount}
+                     onChangeText={(v) => setSpookCount(normalizeNumberInput(v, false))}
                      returnKeyType="next"
                      onSubmitEditing={() => sideUnitRef.current?.focus()}
                      blurOnSubmit={false}
@@ -571,7 +589,7 @@ export default function RollForm({
                      placeholderTextColor={placeholderColor}
                      keyboardType="numeric"
                      value={sideUnit}
-                     onChangeText={setSideUnit}
+                     onChangeText={(v) => setSideUnit(normalizeNumberInput(v, false))}
                      returnKeyType="done"
                    />
                  </>
@@ -605,7 +623,7 @@ export default function RollForm({
                    </View>
                    <TextInput
                      value={featuredItemsCount}
-                     onChangeText={(v) => setFeaturedItemsCount(v.replace(/[^0-9]/g, ''))}
+                     onChangeText={(v) => setFeaturedItemsCount(normalizeNumberInput(v, false))}
                      placeholder={t('gachaRolls.form.featuredItemsPlaceholder') || 'Ex: 1'}
                      placeholderTextColor={placeholderColor}
                      keyboardType="numeric"
@@ -637,7 +655,7 @@ export default function RollForm({
                    </View>
                    <TextInput
                      value={srItemsCount}
-                     onChangeText={(v) => setSrItemsCount(v.replace(/[^0-9]/g, ''))}
+                     onChangeText={(v) => setSrItemsCount(normalizeNumberInput(v, false))}
                      placeholder={t('gachaRolls.form.srItemsPlaceholder') || 'Ex: 2'}
                      placeholderTextColor={placeholderColor}
                      keyboardType="numeric"
