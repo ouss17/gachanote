@@ -949,12 +949,12 @@
     "fr": "Complet",
     "jp": "詳細"
   },
-  "gachaRolls.addMode.simpleDesc":{
+  "gachaRolls.addMode.simpleDesc": {
     "en": "Only the essential fields (resource, featured, date).",
     "fr": "Seulement les champs essentiels (ressource, vedette, date).",
     "jp": "必須項目のみ（リソース、ピックアップ、日付）。"
   },
-  "gachaRolls.addMode.fullDesc":{
+  "gachaRolls.addMode.fullDesc": {
     "en": "All fields available (including spooks, side units, items, notes).",
     "fr": "Tous les champs disponibles (y compris spooks, side units, objets, notes).",
     "jp": "すべてのフィールド（すり抜け、サイドユニット、アイテム、メモなど）。"
@@ -1005,7 +1005,7 @@
     "jp": "ゲームを追加"
   },
   "settings.feedback.addGamePlaceholder": {
-     "en": "Game name, resource type, currency, and any other relevant details.",
+    "en": "Game name, resource type, currency, and any other relevant details.",
     "fr": "Nom du jeu, type de ressource, devise, et tout autre détail pertinent.",
     "jp": "ゲーム名、リソースの種類、通貨、その他関連する詳細。"
   },
@@ -1094,9 +1094,44 @@
     "fr": "Objet vedette",
     "jp": "ピックアップアイテム"
   },
-   "gachaRolls.hypothetical.ifNextInline": {
+  "gachaRolls.hypothetical.ifNextInline": {
     "en": "if next pull:",
     "fr": "si prochain tirage :",
     "jp": "次のガチャの場合："
+  },
+  "servers.global": {
+    "en": "Global",
+    "fr": "Global",
+    "jp": "グローバル"
+  },
+  "servers.jp": {
+    "en": "Japan",
+    "fr": "Japon",
+    "jp": "日本"
+  },
+  "servers.na": {
+    "en": "North America",
+    "fr": "Amérique (NA)",
+    "jp": "北米"
+  },
+  "servers.kr": {
+    "en": "Korea",
+    "fr": "Corée",
+    "jp": "韓国"
+  },
+  "servers.cn": {
+    "en": "China",
+    "fr": "Chine",
+    "jp": "中国"
+  },
+  "servers.all": {
+    "en": "All",
+    "fr": "Tous",
+    "jp": "すべて"
+  },
+  "statistiques.servers": {
+    "en": "Servers",
+    "fr": "Serveurs",
+    "jp": "サーバー"
   }
 }

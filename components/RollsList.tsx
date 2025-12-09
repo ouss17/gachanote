@@ -131,6 +131,7 @@ export default function RollsList({ rolls, getFontSize, onEdit, onDelete, t, the
 
                     <Text style={{ color: themeColors.text, fontSize: getFontSize(15) }}>
                       {t('common.date')} : <Text style={{ fontWeight: 'bold' }}>{new Date(item.date).toLocaleDateString()}</Text>
+                      <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(14), fontWeight: 'bold' }}> {' • '}{t(`servers.${item.server}`) || item.server}</Text>
                     </Text>
 
                     <View style={{ marginTop: 6 }}>
@@ -247,6 +248,7 @@ export default function RollsList({ rolls, getFontSize, onEdit, onDelete, t, the
 
                   <Text style={{ color: themeColors.text, fontSize: getFontSize(15) }}>
                     {t('common.date')} : <Text style={{ fontWeight: 'bold' }}>{new Date(item.date).toLocaleDateString()}</Text>
+                    <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(14), fontWeight: 'bold' }}> {' • '}{t(`servers.${item.server}`) || item.server}</Text>
                   </Text>
 
                   <View style={{ marginTop: 6 }}>

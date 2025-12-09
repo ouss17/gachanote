@@ -2,7 +2,7 @@
   "expo": {
     "name": "GachaNote",
     "slug": "gachanote",
-    "version": "0.9.5",
+    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon_full.png",
     "scheme": "gachanote",
@@ -37,7 +37,8 @@
         }
       ],
       "expo-font",
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-mail-composer"
     ],
     "experiments": {
       "typedRoutes": true

@@ -4,7 +4,7 @@ import { addMoney, removeMoney } from '@/redux/slices/moneySlice';
 import { RootState } from '@/redux/store';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useMemo, useState } from 'react';
-import { FlatList, Image, Modal, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, Image, Modal, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 /**
@@ -45,12 +45,26 @@ export default function MoneyTab({
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
+  // server selection for money entry
+  const gachaMeta = GACHAS.find(g => String(g.id) === String(gachaId));
+  const availableServers = Array.isArray(gachaMeta?.serverTags) && gachaMeta!.serverTags.length > 0 ? gachaMeta!.serverTags : ['global'];
+  const [server, setServer] = useState<string>(availableServers[0]);
 
   // États pour le filtrage par date
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
+  // Server filter (only servers that have entries for this gacha)
+  const serversForGacha = useMemo(() => {
+    const s = new Set<string>();
+    allEntries.forEach(e => {
+      if (!e) return;
+      s.add(e.server ?? 'global');
+    });
+    return Array.from(s);
+  }, [allEntries]);
+  const [selectedServer, setSelectedServer] = useState<string | null>(null); // null = all
 
   /**
    * Liste des entrées filtrées par période sélectionnée.
@@ -66,7 +80,9 @@ export default function MoneyTab({
         const end = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), 23, 59, 59, 999);
         beforeEnd = d <= end;
       }
-      return afterStart && beforeEnd;
+      // apply server filter if selected
+      const serverMatch = !selectedServer || String(e.server ?? 'global') === String(selectedServer);
+      return afterStart && beforeEnd && serverMatch;
     })
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
@@ -76,6 +92,13 @@ export default function MoneyTab({
    */
   const handleAdd = () => {
     if (!amount || !date) return;
+    // normalize comma to dot and parse
+    const normalized = amount.replace(/,/g, '.').trim();
+    const numeric = Number(normalized);
+    if (isNaN(numeric) || numeric <= 0) {
+      Alert.alert(t('money.form.invalidAmount') || 'Montant invalide', t('money.form.invalidAmountHint') || 'Merci de saisir un montant valide.');
+      return;
+    }
     // store full ISO datetime to keep uniqueness for same-day entries,
     // but UI still displays only the date part.
     const now = new Date();
@@ -84,7 +107,8 @@ export default function MoneyTab({
     dispatch(addMoney({
       id: Date.now().toString(),
       gachaId,
-      amount: Number(amount),
+      amount: numeric,
+      server,
       date: storedDate.toISOString(),
     }));
     setShowModal(false);
@@ -220,6 +244,52 @@ export default function MoneyTab({
           </TouchableOpacity>
         </View>
       )}
+      {/* Server filter chips (only servers that have money entries) */}
+      {serversForGacha.length > 0 && (
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 12, paddingHorizontal: 12 }}>
+          <TouchableOpacity
+            onPress={() => setSelectedServer(null)}
+            style={{
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+              borderRadius: 12,
+              marginRight: 8,
+              marginBottom: 8,
+              backgroundColor: !selectedServer ? themeColors.primary : themeColors.card,
+              borderWidth: !selectedServer ? 0 : 1,
+              borderColor: themeColors.border,
+            }}
+          >
+            <Text style={{ color: !selectedServer ? themeColors.background : themeColors.text, fontSize: getFontSize(13), fontWeight: !selectedServer ? '700' : '400' }}>
+              {t('servers.all') || 'All'}
+            </Text>
+          </TouchableOpacity>
+          {serversForGacha.map(srv => {
+            const label = t(`servers.${srv}`) || srv;
+            const isSelected = selectedServer === srv;
+            return (
+              <TouchableOpacity
+                key={srv}
+                onPress={() => setSelectedServer(isSelected ? null : srv)}
+                style={{
+                  paddingHorizontal: 10,
+                  paddingVertical: 6,
+                  borderRadius: 12,
+                  marginRight: 8,
+                  marginBottom: 8,
+                  backgroundColor: isSelected ? themeColors.primary : themeColors.card,
+                  borderWidth: isSelected ? 0 : 1,
+                  borderColor: themeColors.border,
+                }}
+              >
+                <Text style={{ color: isSelected ? themeColors.background : themeColors.text, fontSize: getFontSize(13), fontWeight: isSelected ? '700' : '400' }}>
+                  {label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      )}
       {/* Liste des montants enregistrés */}
       <FlatList
         data={moneyEntries}
@@ -230,15 +300,16 @@ export default function MoneyTab({
             accessibilityRole="text"
             accessibilityLabel={`${item.amount} ${currency} — ${new Date(item.date).toLocaleDateString(lang === 'en' ? 'en-US' : lang === 'jap' ? 'ja-JP' : 'fr-FR')}`}
             style={{
-             marginVertical: 8,
-             padding: 8,
-             borderWidth: 1,
-             borderRadius: 8,
-             borderColor: themeColors.border,
-             backgroundColor: themeColors.card,
-           }}>
+              marginVertical: 8,
+              padding: 8,
+              borderWidth: 1,
+              borderRadius: 8,
+              borderColor: themeColors.border,
+              backgroundColor: themeColors.card,
+            }}>
             <Text style={{ color: themeColors.text, fontSize: getFontSize(16) }}>
-              {item.amount} {currency} — {new Date(item.date).toLocaleDateString(lang === 'en' ? 'en-US' : lang === 'jap' ? 'ja-JP' : 'fr-FR')}
+              {item.amount} {currency} — <Text style={{ fontWeight: 'bold' }}>{new Date(item.date).toLocaleDateString(lang === 'en' ? 'en-US' : lang === 'jap' ? 'ja-JP' : 'fr-FR')}</Text>
+              <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(14), fontWeight: '700' }}> {' • '}{t(`servers.${item.server}`) || item.server}</Text>
             </Text>
             <TouchableOpacity
               onPress={() => dispatch(removeMoney(item.id))}
@@ -308,7 +379,10 @@ export default function MoneyTab({
                  placeholder={`${t('money.form.amountPlaceholder')} (${currency})`}
                  keyboardType="numeric"
                  value={amount}
-                 onChangeText={setAmount}
+                 onChangeText={(text) => {
+                   // show point to the user by normalizing input live
+                   setAmount(text.replace(/,/g, '.'));
+                 }}
                  accessible={true}
                  accessibilityLabel={t('money.form.amountPlaceholder')}
                  accessibilityHint={`${currency}`}
@@ -317,6 +391,35 @@ export default function MoneyTab({
                <Text style={{ marginLeft: 8, color: themeColors.text, fontWeight: 'bold', fontSize: getFontSize(16) }}>
                  {currency}
                </Text>
+             </View>
+             {/* Server selector (same style as RollForm / RollsTab chips) */}
+             <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 12 }}>
+               {availableServers.map(srv => {
+                 const label = t(`servers.${srv}`) || srv;
+                 const selected = srv === server;
+                 return (
+                   <TouchableOpacity
+                     key={srv}
+                     onPress={() => setServer(srv)}
+                     accessibilityRole="button"
+                     accessibilityState={{ selected }}
+                     style={{
+                       paddingHorizontal: 10,
+                       paddingVertical: 6,
+                       borderRadius: 12,
+                       marginRight: 8,
+                       marginBottom: 8,
+                       backgroundColor: selected ? themeColors.primary : themeColors.card,
+                       borderWidth: selected ? 0 : 1,
+                       borderColor: selected ? 'transparent' : themeColors.border,
+                     }}
+                   >
+                     <Text style={{ color: selected ? themeColors.background : themeColors.text, fontSize: getFontSize(13), fontWeight: selected ? '700' : '400' }}>
+                       {label}
+                     </Text>
+                   </TouchableOpacity>
+                 );
+               })}
              </View>
              {/* Champ date */}
              <Text style={{ color: themeColors.text, marginBottom: 4, fontSize: getFontSize(16) }}>

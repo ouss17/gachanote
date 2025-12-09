@@ -1,6 +1,10 @@
 import { Theme } from '@/constants/Themes';
 import { GACHAS } from '@/data/gachas';
 import { computeAllRates } from '@/lib/StatsUtils';
+import type { RootState } from '@/redux/store';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback, useMemo, useState } from 'react';
 import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useSelector } from 'react-redux';
 
@@ -98,7 +102,60 @@ export default function StatsTab({
   };
 
   const persistedRolls = useSelector((state: any) => state.rolls?.rolls ?? []);
-  const sourceRolls = Array.isArray(rolls) && rolls.length >= 0 ? rolls : persistedRolls.filter((r: any) => String(r.gachaId) === String(gachaId));
+  // base rolls for this gacha (before date filter)
+  const baseRolls = Array.isArray(rolls) && rolls.length >= 0
+    ? rolls
+    : persistedRolls.filter((r: any) => String(r.gachaId) === String(gachaId));
+
+  // Date filter state (local to this tab)
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
+  const [showStartPicker, setShowStartPicker] = useState(false);
+  const [showEndPicker, setShowEndPicker] = useState(false);
+  // Server filter (multi-select). Empty set = all servers
+  const [selectedServers, setSelectedServers] = useState<Set<string>>(new Set());
+  // servers present in baseRolls (only those with actual rolls)
+  const serversForGacha = useMemo(() => {
+    const s = new Set<string>();
+    baseRolls.forEach((r: any) => {
+      if (!r) return;
+      s.add(String(r.server ?? 'global'));
+    });
+    return Array.from(s);
+  }, [baseRolls]);
+
+  // Reset date filter when leaving this screen
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        setStartDate(null);
+        setEndDate(null);
+        setShowStartPicker(false);
+        setShowEndPicker(false);
+        // reset server selection when leaving
+        setSelectedServers(new Set());
+      };
+    }, [])
+  );
+
+  // apply server + date filter on top of baseRolls
+  const sourceRolls = baseRolls.filter((r: any) => {
+    // server filter
+    if (selectedServers && selectedServers.size > 0) {
+      const srv = String(r.server ?? 'global');
+      if (!selectedServers.has(srv)) return false;
+    }
+    // date filter
+    if (!startDate && !endDate) return true;
+    const d = new Date(r.date);
+    let afterStart = true, beforeEnd = true;
+    if (startDate) afterStart = d >= new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+    if (endDate) {
+      const end = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), 23, 59, 59, 999);
+      beforeEnd = d <= end;
+    }
+    return afterStart && beforeEnd;
+  });
 
   // raw aggregation kept for absolute counts (resource, tickets, freePulls, featured/spook/sideUnit)
   const aggregated = sourceRolls.reduce(
@@ -128,6 +185,27 @@ export default function StatsTab({
   const srItemsCount = Number(aggRates?.srItemsCount ?? 0);
   const featuredItemsRate = Number(aggRates?.featuredItemsRate ?? 0);
   const srItemsRate = Number(aggRates?.srItemsRate ?? 0);
+  // --- money total filtered by the same date range ---
+  const moneyEntriesForGacha = useSelector((state: RootState) => (state.money?.entries ?? []).filter((m: any) => String(m.gachaId) === String(gachaId)));
+  const filteredMoneyEntries = moneyEntriesForGacha.filter((e: any) => {
+    // server filter
+    if (selectedServers && selectedServers.size > 0) {
+      const srv = String(e.server ?? 'global');
+      if (!selectedServers.has(srv)) return false;
+    }
+    // date filter
+    if (!startDate && !endDate) return true;
+    const d = new Date(e.date);
+    let afterStart = true, beforeEnd = true;
+    if (startDate) afterStart = d >= new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+    if (endDate) {
+      const end = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), 23, 59, 59, 999);
+      beforeEnd = d <= end;
+    }
+    return afterStart && beforeEnd;
+  });
+  const filteredTotalMoney = filteredMoneyEntries.reduce((s: number, e: any) => s + Number(e.amount ?? 0), 0);
+
 
   function getMultiCost(gachaId: string) {
     switch (gachaId) {
@@ -154,193 +232,307 @@ export default function StatsTab({
 
 
   return (
-    <ScrollView
-      style={{ flex: 1 }}
-      contentContainerStyle={{
-        padding: 24,
-        alignItems: 'center',
-        paddingBottom: 80,
-      }}
-      showsVerticalScrollIndicator={true}
-    >
-      {/* gacha banner image (centered, no name) */}
-      {selectedGacha ? (
-        <View style={{ width: '100%', alignItems: 'center', marginBottom: 5 }}>
-          <Image
-            source={selectedGacha.logo}
-            style={{ width: 160, maxWidth: 420, height: 80, resizeMode: 'contain' }}
-          />
+    <View style={{ flex: 1 }}>
+      {/* Fixed date filter (always interactive) */}
+      <View style={{
+        width: '100%',
+        paddingHorizontal: 16,
+        paddingTop: 12,
+        paddingBottom: 8,
+        zIndex: 20,
+        backgroundColor: themeColors.background,
+        borderBottomWidth: 1,
+        borderBottomColor: themeColors.card,
+      }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+          <TouchableOpacity onPress={() => setShowStartPicker(true)} style={{ alignItems: 'center', marginRight: 12 }}>
+            <Text style={{ color: themeColors.text, fontSize: getFontSize(12) }}>{t('statistiques.startDate') || 'Start'}</Text>
+            <Text style={{ color: themeColors.primary, fontSize: getFontSize(13), marginTop: 6 }}>
+              {startDate ? startDate.toLocaleDateString() : (t('statistiques.choose') || 'Choose')}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => { setStartDate(null); }} style={{ padding: 6 }}>
+            <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(12) }}>{t('common.reset') || 'Reset'}</Text>
+          </TouchableOpacity>
+          <View style={{ width: 16 }} />
+          <TouchableOpacity onPress={() => setShowEndPicker(true)} style={{ alignItems: 'center', marginLeft: 12 }}>
+            <Text style={{ color: themeColors.text, fontSize: getFontSize(12) }}>{t('statistiques.endDate') || 'End'}</Text>
+            <Text style={{ color: themeColors.primary, fontSize: getFontSize(13), marginTop: 6 }}>
+              {endDate ? endDate.toLocaleDateString() : (t('statistiques.choose') || 'Choose')}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => { setEndDate(null); }} style={{ padding: 6, marginLeft: 8 }}>
+            <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(12) }}>{t('common.reset') || 'Reset'}</Text>
+          </TouchableOpacity>
         </View>
-      ) : null}
-      <View
-        accessible={true}
-        accessibilityLabel={t('gachaRolls.stats.title')}
-        style={{
-          width: '100%',
-          maxWidth: 420,
-          borderRadius: 16,
-          backgroundColor: themeColors.card,
-          marginBottom: 24,
-          alignItems: 'center',
-          padding: 24,
-        }}
-      >
-        <Text accessibilityRole="header" style={{ color: themeColors.text, fontSize: getFontSize(18), fontWeight: 'bold', marginBottom: 12 }}>
-          {t('gachaRolls.stats.title')}
-        </Text>
-        <View style={{
-          flexDirection: 'row',
-          flexWrap: 'wrap',
-          justifyContent: 'center',
-          alignItems: 'center',
-          marginVertical: 32,
-          rowGap: 24,
-          columnGap: 0,
-          maxWidth: 400,
-          alignSelf: 'center',
-        }}>
-          <StatCircle
-            label={`${t('gachaRolls.form.resourceAmount')}\n(${resourceType.toUpperCase()})`}
-            value={resourceCount.toString()}
-            color={themeColors.card}
-            borderColor={themeColors.primary}
-            fontSize={getFontSize(20)}
-            labelFontSize={getFontSize(13)}
-            selected={false}
+        {/* Date pickers (native) */}
+        {showStartPicker && (
+          <DateTimePicker
+            value={startDate || new Date()}
+            mode="date"
+            display="default"
+            onChange={(_, date) => {
+              setShowStartPicker(false);
+              if (date) setStartDate(date);
+            }}
+            maximumDate={endDate || new Date()}
           />
+        )}
+        {showEndPicker && (
+          <DateTimePicker
+            value={endDate || new Date()}
+            mode="date"
+            display="default"
+            onChange={(_, date) => {
+              setShowEndPicker(false);
+              if (date) setEndDate(date);
+            }}
+            minimumDate={startDate || undefined}
+          />
+        )}
 
-          <StatCircle
-            label={t('common.tickets') || 'Tickets'}
-            value={
-              showStatsPercent.tickets && totalPulls > 0
-                ? `${((ticketsCount / totalPulls) * 100).toFixed(2)}%`
-                : ticketsCount.toString()
-            }
-            color={themeColors.card}
-            borderColor="#4A90E2"
-            selected={false}
-            fontSize={getFontSize(20)}
-            labelFontSize={getFontSize(13)}
-          />
-
-          <StatCircle
-            label={t('gachaRolls.form.freePullsShort') || 'Tirages gratuits'}
-            value={
-              showStatsPercent.tickets && totalPulls > 0
-                ? `${((freePullsCount / totalPulls) * 100).toFixed(2)}%`
-                : freePullsCount.toString()
-            }
-            color={themeColors.card}
-            borderColor="#007AFF"
-            selected={false}
-            fontSize={getFontSize(20)}
-            labelFontSize={getFontSize(13)}
-          />
-
-          <StatCircle
-            label={t('common.featured')}
-            value={
-              showStatsPercent.featured && totalPulls > 0
-                ? `${((aggRates?.featuredRate ?? 0) * 100).toFixed(2)}%`
-                : aggregated.featured.toString()
-            }
-            color={themeColors.card}
-            borderColor="#FF9500"
-            onPress={() =>
-              setShowStatsPercent((s: any) => ({ ...s, featured: !s.featured }))
-            }
-            selected={!!showStatsPercent.featured}
-            fontSize={getFontSize(20)}
-            labelFontSize={getFontSize(13)}
-          />
-          <StatCircle
-            label={t('common.spook')}
-            value={
-              showStatsPercent.spook && totalPulls > 0
-                ? `${((aggRates?.spookRate ?? 0) * 100).toFixed(2)}%`
-                : aggregated.spook.toString()
-            }
-            color={themeColors.card}
-            borderColor="#00B894"
-            onPress={() =>
-              setShowStatsPercent((s: any) => ({ ...s, spook: !s.spook }))
-            }
-            selected={!!showStatsPercent.spook}
-            fontSize={getFontSize(20)}
-            labelFontSize={getFontSize(13)}
-          />
-          <StatCircle
-            label={t('common.sideUnits')}
-            value={
-              showStatsPercent.sideUnit && totalPulls > 0
-                ? `${((aggRates?.sideUnitRate ?? 0) * 100).toFixed(2)}%`
-                : String(aggregated.sideUnit ?? 0)
-            }
-            color={themeColors.card}
-            borderColor="#6C47FF"
-            onPress={() =>
-              setShowStatsPercent((s: any) => ({ ...s, sideUnit: !s.sideUnit }))
-            }
-            selected={!!showStatsPercent.sideUnit}
-            fontSize={getFontSize(20)}
-            labelFontSize={getFontSize(13)}
-          />
-
-          {/* Items (objets) : global count + toggle percent */}
-          <StatCircle
-            label={t('gachaRolls.form.featuredItems') || 'Objets vedette'}
-            value={
-              showStatsPercent.featuredItems && totalPulls > 0
-                ? `${(featuredItemsRate * 100).toFixed(2)}%`
-                : featuredItemsCount.toString()
-            }
-            color={themeColors.card}
-            borderColor="#FF5E3A"
-            onPress={() => setShowStatsPercent((s: any) => ({ ...s, featuredItems: !s.featuredItems }))}
-            selected={!!showStatsPercent.featuredItems}
-            fontSize={getFontSize(20)}
-            labelFontSize={getFontSize(13)}
-          />
-
-          <StatCircle
-            label={t('gachaRolls.form.srItems') || 'Objets SR'}
-            value={
-              showStatsPercent.srItems && totalPulls > 0
-                ? `${(srItemsRate * 100).toFixed(2)}%`
-                : srItemsCount.toString()
-            }
-            color={themeColors.card}
-            borderColor="#8E44FF"
-            onPress={() => setShowStatsPercent((s: any) => ({ ...s, srItems: !s.srItems }))}
-            selected={!!showStatsPercent.srItems}
-            fontSize={getFontSize(20)}
-            labelFontSize={getFontSize(13)}
-          />
-        </View>
-        {/* Affichage du total d'argent dépensé */}
-        <View style={{
-          marginTop: 24,
-          alignItems: 'center',
-          backgroundColor: themeColors.background,
-          borderRadius: 12,
-          padding: 16,
-          width: '100%',
-          maxWidth: 320,
-        }}>
-          <Text style={{ color: themeColors.text, fontWeight: 'bold', fontSize: getFontSize(16) }}>
-            {t('gachaRolls.stats.moneySpent')}
-          </Text>
-          <Text
-            accessible={true}
-            accessibilityRole="text"
-            accessibilityLabel={`${totalMoney.toLocaleString('fr-FR')} ${currency}`}
-            style={{ color: themeColors.text, fontSize: getFontSize(22), fontWeight: 'bold', marginTop: 8 }}
-          >
-            {totalMoney.toLocaleString('fr-FR')} {currency}
-          </Text>
-        </View>
+        {/* Server chips (multi-select) - placé sous le filtre de date pour rester fixe */}
+        {serversForGacha.length > 0 && (
+          <View style={{ marginTop: 10, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', paddingHorizontal: 4 }}>
+            <TouchableOpacity
+              onPress={() => setSelectedServers(new Set())}
+              style={{
+                paddingHorizontal: 10,
+                paddingVertical: 6,
+                borderRadius: 12,
+                marginRight: 8,
+                marginBottom: 8,
+                backgroundColor: selectedServers.size === 0 ? themeColors.primary : themeColors.card,
+                borderWidth: selectedServers.size === 0 ? 0 : 1,
+                borderColor: themeColors.border,
+              }}
+            >
+              <Text style={{ color: selectedServers.size === 0 ? themeColors.background : themeColors.text, fontSize: getFontSize(13), fontWeight: selectedServers.size === 0 ? '700' : '400' }}>
+                {t('servers.all') || 'All'}
+              </Text>
+            </TouchableOpacity>
+            {serversForGacha.map(srv => {
+              const isSelected = selectedServers.has(srv);
+              return (
+                <TouchableOpacity
+                  key={srv}
+                  onPress={() => {
+                    setSelectedServers(prev => {
+                      const next = new Set(prev);
+                      if (next.has(srv)) next.delete(srv); else next.add(srv);
+                      return next;
+                    });
+                  }}
+                  style={{
+                    paddingHorizontal: 10,
+                    paddingVertical: 6,
+                    borderRadius: 12,
+                    marginRight: 8,
+                    marginBottom: 8,
+                    backgroundColor: isSelected ? themeColors.primary : themeColors.card,
+                    borderWidth: isSelected ? 0 : 1,
+                    borderColor: themeColors.border,
+                  }}
+                >
+                  <Text style={{ color: isSelected ? themeColors.background : themeColors.text, fontSize: getFontSize(13), fontWeight: isSelected ? '700' : '400' }}>
+                    {t(`servers.${srv}`) || srv}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
       </View>
-    </ScrollView>
+
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{
+          padding: 24,
+          alignItems: 'center',
+          paddingBottom: 80,
+          paddingTop: 8, // spacing under fixed filter
+        }}
+        showsVerticalScrollIndicator={true}
+      >
+        {/* gacha banner image (centered, no name) */}
+        {selectedGacha ? (
+          <View style={{ width: '100%', alignItems: 'center', marginBottom: 5 }}>
+            <Image
+              source={selectedGacha.logo}
+              style={{ width: 160, maxWidth: 420, height: 80, resizeMode: 'contain' }}
+            />
+          </View>
+        ) : null}
+        <View
+          accessible={true}
+          accessibilityLabel={t('gachaRolls.stats.title')}
+          style={{
+            width: '100%',
+            maxWidth: 420,
+            borderRadius: 16,
+            backgroundColor: themeColors.card,
+            marginBottom: 24,
+            alignItems: 'center',
+            padding: 24,
+          }}
+        >
+          <Text accessibilityRole="header" style={{ color: themeColors.text, fontSize: getFontSize(18), fontWeight: 'bold', marginBottom: 12 }}>
+            {t('gachaRolls.stats.title')}
+          </Text>
+          <View style={{
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginVertical: 32,
+            rowGap: 24,
+            columnGap: 0,
+            maxWidth: 400,
+            alignSelf: 'center',
+          }}>
+            <StatCircle
+              label={`${t('gachaRolls.form.resourceAmount')}\n(${resourceType.toUpperCase()})`}
+              value={resourceCount.toString()}
+              color={themeColors.card}
+              borderColor={themeColors.primary}
+              fontSize={getFontSize(20)}
+              labelFontSize={getFontSize(13)}
+              selected={false}
+            />
+
+            <StatCircle
+              label={t('common.tickets') || 'Tickets'}
+              value={
+                showStatsPercent.tickets && totalPulls > 0
+                  ? `${((ticketsCount / totalPulls) * 100).toFixed(2)}%`
+                  : ticketsCount.toString()
+              }
+              color={themeColors.card}
+              borderColor="#4A90E2"
+              selected={false}
+              fontSize={getFontSize(20)}
+              labelFontSize={getFontSize(13)}
+            />
+
+            <StatCircle
+              label={t('gachaRolls.form.freePullsShort') || 'Tirages gratuits'}
+              value={
+                showStatsPercent.tickets && totalPulls > 0
+                  ? `${((freePullsCount / totalPulls) * 100).toFixed(2)}%`
+                  : freePullsCount.toString()
+              }
+              color={themeColors.card}
+              borderColor="#007AFF"
+              selected={false}
+              fontSize={getFontSize(20)}
+              labelFontSize={getFontSize(13)}
+            />
+
+            <StatCircle
+              label={t('common.featured')}
+              value={
+                showStatsPercent.featured && totalPulls > 0
+                  ? `${((aggRates?.featuredRate ?? 0) * 100).toFixed(2)}%`
+                  : aggregated.featured.toString()
+              }
+              color={themeColors.card}
+              borderColor="#FF9500"
+              onPress={() =>
+                setShowStatsPercent((s: any) => ({ ...s, featured: !s.featured }))
+              }
+              selected={!!showStatsPercent.featured}
+              fontSize={getFontSize(20)}
+              labelFontSize={getFontSize(13)}
+            />
+            <StatCircle
+              label={t('common.spook')}
+              value={
+                showStatsPercent.spook && totalPulls > 0
+                  ? `${((aggRates?.spookRate ?? 0) * 100).toFixed(2)}%`
+                  : aggregated.spook.toString()
+              }
+              color={themeColors.card}
+              borderColor="#00B894"
+              onPress={() =>
+                setShowStatsPercent((s: any) => ({ ...s, spook: !s.spook }))
+              }
+              selected={!!showStatsPercent.spook}
+              fontSize={getFontSize(20)}
+              labelFontSize={getFontSize(13)}
+            />
+            <StatCircle
+              label={t('common.sideUnits')}
+              value={
+                showStatsPercent.sideUnit && totalPulls > 0
+                  ? `${((aggRates?.sideUnitRate ?? 0) * 100).toFixed(2)}%`
+                  : String(aggregated.sideUnit ?? 0)
+              }
+              color={themeColors.card}
+              borderColor="#6C47FF"
+              onPress={() =>
+                setShowStatsPercent((s: any) => ({ ...s, sideUnit: !s.sideUnit }))
+              }
+              selected={!!showStatsPercent.sideUnit}
+              fontSize={getFontSize(20)}
+              labelFontSize={getFontSize(13)}
+            />
+
+            {/* Items (objets) : global count + toggle percent */}
+            <StatCircle
+              label={t('gachaRolls.form.featuredItems') || 'Objets vedette'}
+              value={
+                showStatsPercent.featuredItems && totalPulls > 0
+                  ? `${(featuredItemsRate * 100).toFixed(2)}%`
+                  : featuredItemsCount.toString()
+              }
+              color={themeColors.card}
+              borderColor="#FF5E3A"
+              onPress={() => setShowStatsPercent((s: any) => ({ ...s, featuredItems: !s.featuredItems }))}
+              selected={!!showStatsPercent.featuredItems}
+              fontSize={getFontSize(20)}
+              labelFontSize={getFontSize(13)}
+            />
+
+            <StatCircle
+              label={t('gachaRolls.form.srItems') || 'Objets SR'}
+              value={
+                showStatsPercent.srItems && totalPulls > 0
+                  ? `${(srItemsRate * 100).toFixed(2)}%`
+                  : srItemsCount.toString()
+              }
+              color={themeColors.card}
+              borderColor="#8E44FF"
+              onPress={() => setShowStatsPercent((s: any) => ({ ...s, srItems: !s.srItems }))}
+              selected={!!showStatsPercent.srItems}
+              fontSize={getFontSize(20)}
+              labelFontSize={getFontSize(13)}
+            />
+          </View>
+          {/* Affichage du total d'argent dépensé */}
+          <View style={{
+            marginTop: 24,
+            alignItems: 'center',
+            backgroundColor: themeColors.background,
+            borderRadius: 12,
+            padding: 16,
+            width: '100%',
+            maxWidth: 320,
+          }}>
+            <Text style={{ color: themeColors.text, fontWeight: 'bold', fontSize: getFontSize(16) }}>
+              {t('gachaRolls.stats.moneySpent')}
+            </Text>
+            <Text
+              accessible={true}
+              accessibilityRole="text"
+              accessibilityLabel={`${filteredTotalMoney.toLocaleString('fr-FR')} ${currency}`}
+              style={{ color: themeColors.text, fontSize: getFontSize(22), fontWeight: 'bold', marginTop: 8 }}
+            >
+              {filteredTotalMoney.toLocaleString('fr-FR')} {currency}
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
