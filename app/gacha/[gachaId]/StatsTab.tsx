@@ -4,7 +4,7 @@ import { computeAllRates } from '@/lib/StatsUtils';
 import type { RootState } from '@/redux/store';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useFocusEffect } from '@react-navigation/native';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useSelector } from 'react-redux';
 
@@ -112,6 +112,17 @@ export default function StatsTab({
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
+  // Server filter (multi-select). Empty set = all servers
+  const [selectedServers, setSelectedServers] = useState<Set<string>>(new Set());
+  // servers present in baseRolls (only those with actual rolls)
+  const serversForGacha = useMemo(() => {
+    const s = new Set<string>();
+    baseRolls.forEach((r: any) => {
+      if (!r) return;
+      s.add(String(r.server ?? 'global'));
+    });
+    return Array.from(s);
+  }, [baseRolls]);
 
   // Reset date filter when leaving this screen
   useFocusEffect(
@@ -121,12 +132,20 @@ export default function StatsTab({
         setEndDate(null);
         setShowStartPicker(false);
         setShowEndPicker(false);
+        // reset server selection when leaving
+        setSelectedServers(new Set());
       };
     }, [])
   );
 
-  // apply date filter on top of baseRolls
+  // apply server + date filter on top of baseRolls
   const sourceRolls = baseRolls.filter((r: any) => {
+    // server filter
+    if (selectedServers && selectedServers.size > 0) {
+      const srv = String(r.server ?? 'global');
+      if (!selectedServers.has(srv)) return false;
+    }
+    // date filter
     if (!startDate && !endDate) return true;
     const d = new Date(r.date);
     let afterStart = true, beforeEnd = true;
@@ -169,6 +188,12 @@ export default function StatsTab({
   // --- money total filtered by the same date range ---
   const moneyEntriesForGacha = useSelector((state: RootState) => (state.money?.entries ?? []).filter((m: any) => String(m.gachaId) === String(gachaId)));
   const filteredMoneyEntries = moneyEntriesForGacha.filter((e: any) => {
+    // server filter
+    if (selectedServers && selectedServers.size > 0) {
+      const srv = String(e.server ?? 'global');
+      if (!selectedServers.has(srv)) return false;
+    }
+    // date filter
     if (!startDate && !endDate) return true;
     const d = new Date(e.date);
     let afterStart = true, beforeEnd = true;
@@ -264,6 +289,58 @@ export default function StatsTab({
             }}
             minimumDate={startDate || undefined}
           />
+        )}
+
+        {/* Server chips (multi-select) - placé sous le filtre de date pour rester fixe */}
+        {serversForGacha.length > 0 && (
+          <View style={{ marginTop: 10, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', paddingHorizontal: 4 }}>
+            <TouchableOpacity
+              onPress={() => setSelectedServers(new Set())}
+              style={{
+                paddingHorizontal: 10,
+                paddingVertical: 6,
+                borderRadius: 12,
+                marginRight: 8,
+                marginBottom: 8,
+                backgroundColor: selectedServers.size === 0 ? themeColors.primary : themeColors.card,
+                borderWidth: selectedServers.size === 0 ? 0 : 1,
+                borderColor: themeColors.border,
+              }}
+            >
+              <Text style={{ color: selectedServers.size === 0 ? themeColors.background : themeColors.text, fontSize: getFontSize(13), fontWeight: selectedServers.size === 0 ? '700' : '400' }}>
+                {t('servers.all') || 'All'}
+              </Text>
+            </TouchableOpacity>
+            {serversForGacha.map(srv => {
+              const isSelected = selectedServers.has(srv);
+              return (
+                <TouchableOpacity
+                  key={srv}
+                  onPress={() => {
+                    setSelectedServers(prev => {
+                      const next = new Set(prev);
+                      if (next.has(srv)) next.delete(srv); else next.add(srv);
+                      return next;
+                    });
+                  }}
+                  style={{
+                    paddingHorizontal: 10,
+                    paddingVertical: 6,
+                    borderRadius: 12,
+                    marginRight: 8,
+                    marginBottom: 8,
+                    backgroundColor: isSelected ? themeColors.primary : themeColors.card,
+                    borderWidth: isSelected ? 0 : 1,
+                    borderColor: themeColors.border,
+                  }}
+                >
+                  <Text style={{ color: isSelected ? themeColors.background : themeColors.text, fontSize: getFontSize(13), fontWeight: isSelected ? '700' : '400' }}>
+                    {t(`servers.${srv}`) || srv}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         )}
       </View>
 

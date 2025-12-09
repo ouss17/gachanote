@@ -1,4 +1,5 @@
 import { Theme } from '@/constants/Themes';
+import { GACHAS } from '@/data/gachas';
 import type { Roll } from '@/redux/slices/rollsSlice';
 import { addRoll, updateRoll } from '@/redux/slices/rollsSlice';
 import { RootState } from '@/redux/store';
@@ -92,6 +93,10 @@ export default function RollForm({
   const sideUnitRef = useRef<TextInput | null>(null);
  
   const [nameFeatured, setNameFeatured] = useState(initial?.nameFeatured ?? '');
+  // server selection (from gacha.serverTags)
+  const gachaMeta = GACHAS.find(g => String(g.id) === String(gachaId));
+  const availableServers = Array.isArray(gachaMeta?.serverTags) && gachaMeta!.serverTags.length > 0 ? gachaMeta!.serverTags : ['global'];
+  const [server, setServer] = useState<string>(initial?.server ?? availableServers[0]);
   const [resourceAmount, setResourceAmount] = useState(initial ? String(initial.resourceAmount ?? '') : '');
   const [ticketAmount, setTicketAmount] = useState(initial ? String(initial.ticketAmount ?? '') : '');
   const [freePulls, setFreePulls] = useState(initial ? String(initial.freePulls ?? '') : '');
@@ -112,6 +117,7 @@ export default function RollForm({
 
   useEffect(() => {
     setNameFeatured(initial?.nameFeatured ?? '');
+    setServer(initial?.server ?? (gachaMeta?.serverTags?.[0] ?? availableServers[0]));
     setResourceAmount(initial ? String(initial.resourceAmount ?? '') : '');
     setTicketAmount(initial ? String(initial.ticketAmount ?? '') : '');
     setFreePulls(initial ? String(initial.freePulls ?? '') : '');
@@ -125,7 +131,7 @@ export default function RollForm({
     setThumbUri(initial?.thumbUri);
     setDate(initial ? new Date(initial.date) : today);
   }, [initial, visible]);
-
+ 
   useEffect(() => {
     const s = Keyboard.addListener('keyboardDidShow', () => onModalVisibilityChange?.(true));
     const h = Keyboard.addListener('keyboardDidHide', () => onModalVisibilityChange?.(false));
@@ -143,6 +149,7 @@ export default function RollForm({
 
   const resetForm = () => {
     setNameFeatured('');
+    setServer(gachaMeta?.serverTags?.[0] ?? availableServers[0]);
     setResourceAmount('');
     setTicketAmount('');
     setFreePulls('');
@@ -195,6 +202,7 @@ export default function RollForm({
     const roll: Roll = {
       id,
       gachaId: String(gachaId),
+      server: server,
       resourceAmount: resourceAmount ? Number(String(resourceAmount).replace(/,/g, '.')) : 0,
       ticketAmount: ticketAmount ? Number(String(ticketAmount).replace(/,/g, '.')) : undefined,
       freePulls: freePulls ? Number(String(freePulls).replace(/,/g, '.')) : undefined,
@@ -390,6 +398,37 @@ export default function RollForm({
                 onSubmitEditing={() => featuredCountRef.current?.focus()}
                 blurOnSubmit={false}
               />
+
+              {/* Server selector (from gacha.serverTags) */}
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 8, marginBottom: 8 }}>
+                {availableServers.map(srv => {
+                  const label = t(`servers.${srv}`) || srv;
+                  const selected = srv === server;
+                  return (
+                    <TouchableOpacity
+                      key={srv}
+                      onPress={() => setServer(srv)}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected }}
+                      style={{
+                        paddingHorizontal: 10,
+                        paddingVertical: 6,
+                        borderRadius: 12,
+                        marginRight: 8,
+                        marginBottom: 8,
+                        backgroundColor: selected ? themeColors.primary : themeColors.card,
+                        borderWidth: selected ? 0 : 1,
+                        borderColor: selected ? 'transparent' : themeColors.border,
+                      }}
+                    >
+                      <Text style={{ color: selected ? themeColors.background : themeColors.text, fontSize: getFontSize(13) }}>
+                        {label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+ 
               <View style={{ marginTop: 8, marginBottom: 8, flexDirection: 'row', alignItems: 'center' }}>
                 <View style={{ marginRight: 12 }}>
                   {thumbUri || imageUri ? (

@@ -4,7 +4,7 @@ import { Theme } from '@/constants/Themes';
 import { GACHAS } from '@/data/gachas';
 import type { Roll } from '@/redux/slices/rollsSlice';
 import { addRoll, removeRoll, updateRoll } from '@/redux/slices/rollsSlice';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Image, Modal, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -51,6 +51,23 @@ export default function RollsTab({
   const [showAddModeModal, setShowAddModeModal] = useState(false);
 
   const filtered = rolls.filter((r: Roll) => !query || (r.nameFeatured ?? '').toLowerCase().includes(query.trim().toLowerCase()));
+  // servers present among provided rolls for this gacha
+  const serversForGacha = useMemo(() => {
+    const s = new Set<string>();
+    (rolls || []).forEach((r: Roll) => {
+      if (!r) return;
+      if (String(r.gachaId) !== String(gachaId)) return;
+      s.add(r.server ?? 'global');
+    });
+    return Array.from(s);
+  }, [rolls, gachaId]);
+
+  const [selectedServer, setSelectedServer] = useState<string | null>(null); // null = all
+
+  const filteredByQueryAndServer = filtered.filter((r: Roll) => {
+    if (!selectedServer) return true;
+    return String(r.server ?? 'global') === String(selectedServer);
+  });
 
   const handleSubmit = (roll: any) => {
     if (editing && editing.id) {
@@ -125,8 +142,55 @@ export default function RollsTab({
         />
       )}
 
+      {/* Server filter chips (only servers that have rolls) */}
+      {serversForGacha.length > 0 && (
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 12 }}>
+          <TouchableOpacity
+            onPress={() => setSelectedServer(null)}
+            style={{
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+              borderRadius: 12,
+              marginRight: 8,
+              marginBottom: 8,
+              backgroundColor: !selectedServer ? themeColors.primary : themeColors.card,
+              borderWidth: !selectedServer ? 0 : 1,
+              borderColor: themeColors.border,
+            }}
+          >
+            <Text style={{ color: !selectedServer ? themeColors.background : themeColors.text, fontSize: getFontSize(13), fontWeight: !selectedServer ? '700' : '400' }}>
+              {t('servers.all') || 'All'}
+            </Text>
+          </TouchableOpacity>
+          {serversForGacha.map(srv => {
+            const label = t(`servers.${srv}`) || srv;
+            const isSelected = selectedServer === srv;
+            return (
+              <TouchableOpacity
+                key={srv}
+                onPress={() => setSelectedServer(isSelected ? null : srv)}
+                style={{
+                  paddingHorizontal: 10,
+                  paddingVertical: 6,
+                  borderRadius: 12,
+                  marginRight: 8,
+                  marginBottom: 8,
+                  backgroundColor: isSelected ? themeColors.primary : themeColors.card,
+                  borderWidth: isSelected ? 0 : 1,
+                  borderColor: themeColors.border,
+                }}
+              >
+                <Text style={{ color: isSelected ? themeColors.background : themeColors.text, fontSize: getFontSize(13), fontWeight: isSelected ? '700' : '400' }}>
+                  {label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      )}
+
       <RollsList
-        rolls={filtered}
+        rolls={filteredByQueryAndServer}
         getFontSize={getFontSize}
         onEdit={handleEdit}
         onDelete={(id: string) => dispatch(removeRoll(id))}

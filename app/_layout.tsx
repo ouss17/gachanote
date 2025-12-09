@@ -8,6 +8,7 @@ import { View } from 'react-native';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { migrateMissingServers } from '@/redux/migrations/migrateServers';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { persistor, store } from '../redux/store';
@@ -25,6 +26,7 @@ export default function RootLayout() {
   if (!loaded) {
     return null;
   }
+  migrateMissingServers(store.getState, store.dispatch).catch(() => {});
 
   return (
     <Provider store={store}>
