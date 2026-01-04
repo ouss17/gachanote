@@ -1133,5 +1133,100 @@
     "en": "Servers",
     "fr": "Serveurs",
     "jp": "サーバー"
+  },
+  "wishlist.title": {
+    "en": "Wishlist",
+    "fr": "Wishlist",
+    "jp": "ウィッシュリスト"
+  },
+  "wishlist.empty": {
+    "en": "No wishlist items for this gacha.",
+    "fr": "Aucun personnage en wishlist pour ce gacha.",
+    "jp": "このガチャにウィッシュリストはありません。"
+  },
+  "wishlist.modal.addTitle": {
+    "en": "Add to wishlist",
+    "fr": "Ajouter à la wishlist",
+    "jp": "ウィッシュリストに追加"
+  },
+  "wishlist.modal.editTitle": {
+    "en": "Edit wishlist",
+    "fr": "Modifier la wishlist",
+    "jp": "ウィッシュリストを編集"
+  },
+  "wishlist.modal.exactDate": {
+    "en": "Exact date",
+    "fr": "Date exacte",
+    "jp": "正確な日付"
+  },
+  "wishlist.modal.monthYearOnly": {
+    "en": "Month / Year only",
+    "fr": "Mois / Année seulement",
+    "jp": "月 / 年のみ"
+  },
+  "wishlist.modal.pastDateError": {
+    "en": "Release date cannot be earlier than today",
+    "fr": "La date de sortie ne peut pas être antérieure à aujourd'hui",
+    "jp": "公開日は今日以前にはできません"
+  },
+  "wishlist.modal.monthYearInvalid": {
+    "en": "Invalid month / year",
+    "fr": "Mois/année invalide",
+    "jp": "無効な月/年"
+  },
+  "wishlist.modal.namePlaceholder": {
+    "en": "Character name",
+    "fr": "Nom du personnage",
+    "jp": "キャラクター名"
+  },
+  "wishlist.modal.releaseDatePlaceholder": {
+    "en": "Release date (YYYY-MM-DD)",
+    "fr": "Date de sortie (YYYY-MM-DD)",
+    "jp": "公開日 (YYYY-MM-DD)"
+  },
+  "wishlist.modal.notesPlaceholder": {
+    "en": "Notes",
+    "fr": "Notes",
+    "jp": "メモ"
+  },
+  "wishlist.modal.priorityPlaceholder": {
+    "en": "Priority (1-5)",
+    "fr": "Priorité (1-5)",
+    "jp": "優先度 (1-5)"
+  },
+    "wishlist.pageTitle": {
+    "en": "Wishlist",
+    "fr": "Wishlist",
+    "jp": "ウィッシュリスト"
+  },
+  "wishlist.summary": {
+    "en": "List the characters you want from this gacha. Add release dates, notes and a priority to organize your targets.",
+    "fr": "Liste les personnages que tu veux pour ce gacha. Ajoute la date de sortie, des notes et une priorité pour organiser tes cibles.",
+    "jp": "このガチャで欲しいキャラクターを一覧化します。公開日、メモ、優先度を追加してターゲットを整理しましょう。"
+  },
+  "wishlist.released": {
+    "en": "Released",
+    "fr": "Sorti",
+    "jp": "配信済み"
+  },
+  "wishlist.filter.all": {
+    "en": "All",
+    "fr": "Tous",
+    "jp": "すべて"
+  },
+  "wishlist.filter.released": {
+    "en": "Released",
+    "fr": "Sorti",
+    "jp": "配信済み"
+  },
+  "wishlist.filter.upcoming": {
+    "en": "Upcoming",
+    "fr": "À venir",
+    "jp": "近日配信"
+  },
+  "common.error": {
+    "en": "Error",
+    "fr": "Erreur",
+    "jp": "エラー"
   }
 }

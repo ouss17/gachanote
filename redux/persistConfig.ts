@@ -10,6 +10,7 @@ export const persistConfig = {
   whitelist: [
     "rolls",
     "money",
+    "wishlist", // ajouté
     "nationality",
     "devise",
     "onboarding",
