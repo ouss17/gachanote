@@ -10,15 +10,17 @@ import rollsReducer, { addRoll } from './slices/rollsSlice';
 import settingsReducer from './slices/settingsSlice';
 import simulationsReducer from './slices/simulationsSlice';
 import themeReducer from './slices/themeSlice';
+import wishlistReducer from './slices/wishlistSlice';
 
 /**
  * Combine tous les reducers de l'application.
  */
 const rootReducer = combineReducers({
   rolls: rollsReducer,
+  money: moneyReducer,
+  wishlist: wishlistReducer,
   resourceEvents: resourceEventsReducer,
   theme: themeReducer,
-  money: moneyReducer,
   devise: deviseReducer,
   onboarding: onboardingReducer,
   simulations: simulationsReducer,
@@ -78,5 +80,5 @@ export const persistor = persistStore(store);
  * - RootState : type de l'état global Redux
  * - AppDispatch : type du dispatch Redux
  */
-export type RootState = ReturnType<typeof store.getState>;
+export type RootState = ReturnType<typeof rootReducer>;
 export type AppDispatch = typeof store.dispatch;

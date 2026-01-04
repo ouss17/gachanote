@@ -2,7 +2,7 @@ import { Theme } from '@/constants/Themes';
 import { GACHAS } from '@/data/gachas';
 import { makeSelectMoneyEntriesByGacha } from '@/redux/selectors';
 import { RootState } from '@/redux/store';
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -175,28 +175,49 @@ export default function GachaRollsScreen() {
        {/* Espace pour la barre de statut */}
        <View style={{ height: insets.top, backgroundColor: themeColors.background }} />
        <StatusBar style={isDark ? 'light' : 'dark'} />
- 
-       {/* Bouton retour */}
-       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+
+       {/* Bouton retour + titre + wishlist icon */}
+       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12, justifyContent: 'space-between' }}>
+         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+           <TouchableOpacity
+             onPress={() => router.back()}
+             accessibilityRole="button"
+             accessible={true}
+             accessibilityLabel={t('gachaRolls.back')}
+             style={{
+               padding: 8,
+               borderRadius: 8,
+               backgroundColor: themeColors.card,
+               marginRight: 8,
+             }}
+           >
+             <AntDesign name="arrow-left" size={getFontSize(24)} color={themeColors.text} />
+           </TouchableOpacity>
+           <Text accessibilityRole="header" style={{ color: themeColors.text, fontSize: getFontSize(18), fontWeight: 'bold' }}>
+             {t('gachaRolls.back')}
+           </Text>
+         </View>
+
+         {/* Wishlist icon — ouvre la page wishlist du gacha */}
          <TouchableOpacity
-           onPress={() => router.back()}
+           onPress={() => router.push(`/gacha/${gachaId}/wishlist`)}
            accessibilityRole="button"
            accessible={true}
-           accessibilityLabel={t('gachaRolls.back')}
+           accessibilityLabel={t('gachaRolls.openWishlist') || 'Wishlist'}
            style={{
+             flexDirection: 'row',
+             alignItems: 'center',
              padding: 8,
              borderRadius: 8,
              backgroundColor: themeColors.card,
-             marginRight: 8,
+             marginLeft: 8,
            }}
          >
-           <AntDesign name="arrow-left" size={getFontSize(24)} color={themeColors.text} />
+           <MaterialIcons name="bookmark-border" size={getFontSize(20)} color={themeColors.text} />
+           <Text style={{ marginLeft: 8, color: themeColors.text, fontSize: getFontSize(14) }}>Wishlist</Text>
          </TouchableOpacity>
-         <Text accessibilityRole="header" style={{ color: themeColors.text, fontSize: getFontSize(18), fontWeight: 'bold' }}>
-           {t('gachaRolls.back')}
-         </Text>
        </View>
- 
+
        {/* Menu d'onglets */}
        <View
          style={{ marginBottom: 16 }}
