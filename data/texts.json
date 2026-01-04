@@ -1228,5 +1228,25 @@
     "en": "Error",
     "fr": "Erreur",
     "jp": "エラー"
+  },
+    "settings.news.linkLabel": {
+    "en": "News",
+    "fr": "Notes du développeur",
+    "jp": "お知らせ"
+  },
+  "news.pageTitle": {
+    "en": "Release notes",
+    "fr": "Notes de mise à jour",
+    "jp": "リリースノート"
+  },
+  "news.empty": {
+    "en": "No news available.",
+    "fr": "Aucune nouveauté.",
+    "jp": "お知らせはありません。"
+  },
+  "news.markAllRead": {
+    "en": "Mark all read",
+    "fr": "Tout marquer comme lu",
+    "jp": "すべて既読にする"
   }
 }
