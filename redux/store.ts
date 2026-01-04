@@ -4,6 +4,7 @@ import { persistConfig } from './persistConfig';
 import deviseReducer from './slices/deviseSlice';
 import moneyReducer from './slices/moneySlice';
 import nationalityReducer from './slices/nationalitySlice';
+import newsReducer from './slices/newsSlice';
 import onboardingReducer from './slices/onboardingSlice';
 import resourceEventsReducer, { addEvent as addResourceEvent } from './slices/resourceEventsSlice';
 import rollsReducer, { addRoll } from './slices/rollsSlice';
@@ -16,6 +17,7 @@ import wishlistReducer from './slices/wishlistSlice';
  * Combine tous les reducers de l'application.
  */
 const rootReducer = combineReducers({
+  news: newsReducer,
   rolls: rollsReducer,
   money: moneyReducer,
   wishlist: wishlistReducer,

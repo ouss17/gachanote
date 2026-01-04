@@ -42,6 +42,7 @@ export default function RootLayout() {
               <Stack.Screen name="+not-found" options={{ headerShown: false }} />
               <Stack.Screen name="gacha/[gachaId]/index" options={{ headerShown: false }} />
               <Stack.Screen name="gacha/[gachaId]/wishlist" options={{ headerShown: false }} />
+              <Stack.Screen name="news/index" options={{ headerShown: false }} />
             </Stack>
             <StatusBar style="auto" />
           </View>

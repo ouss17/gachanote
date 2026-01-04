@@ -2,6 +2,7 @@ import ExportDataButton from '@/components/ExportDataButton';
 import ExportGachaButton from '@/components/ExportGachaButton';
 import FeedbackModal from '@/components/FeedbackModal';
 import { Theme } from '@/constants/Themes';
+import { NEWS } from '@/data/news';
 import { setDevise } from '@/redux/slices/deviseSlice';
 import { addMoney, resetMoney } from '@/redux/slices/moneySlice';
 import { setNationality } from '@/redux/slices/nationalitySlice';
@@ -14,6 +15,7 @@ import { RootState } from '@/redux/store';
 import { Feather } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Image, Modal, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
@@ -40,6 +42,7 @@ const themeModes = [
 
 const Settings = () => {
   const dispatch = useDispatch();
+  const router = useRouter();
   const [showDemo, setShowDemo] = useState(false);
   const { height: windowHeight } = useWindowDimensions();
   const narrowHeight = windowHeight <= 459;
@@ -54,6 +57,11 @@ const Settings = () => {
   const rolls = useSelector((state: RootState) => state.rolls.rolls);
   const moneyEntries = useSelector((state: RootState) => state.money.entries);
   const banners = useSelector((state: RootState) => state.simulations.banners);
+  // whether there is at least one static news item not marked seen
+  const hasUnread = useSelector((state: any) => {
+    const seen = state.news?.seenIds || [];
+    return NEWS.some(n => !seen.includes(n.id));
+  });
   const [showImportExport, setShowImportExport] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   
@@ -174,7 +182,7 @@ const Settings = () => {
     { country: 'en', label: 'English', icon: require('@/assets/flags/us.png') },
     { country: 'jp', label: '日本語', icon: require('@/assets/flags/jp.png') },
   ];
-
+ 
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: themeColors.background }}
@@ -426,25 +434,40 @@ const Settings = () => {
 
         <Text style={[styles.sectionTitle, { color: themeColors.primary, marginTop: 32, fontSize: getFontSize(18) }]}>{t('settings.dataPrivacy.title')}</Text>
         <View style={styles.row}>
+          {/* Link to News page */}
           <TouchableOpacity
-            accessibilityRole="button"
-            accessible={true}
-            accessibilityLabel={t('settings.importExport')}
-            style={styles.linkBtn}
-            onPress={() => setShowImportExport(true)}
-          >
-            <Text style={[styles.link, { color: themeColors.primary, fontSize: getFontSize(16) }]}>{t('settings.importExport')}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            accessibilityRole="button"
-            accessible={true}
-            accessibilityLabel={t('settings.reset')}
-            style={styles.linkBtn}
-            onPress={handleReset}
-          >
-            <Text style={[styles.link, { color: '#FF3B30', fontWeight: 'bold', fontSize: getFontSize(16) }]}>{t('settings.reset')}</Text>
-          </TouchableOpacity>
+             accessibilityRole="button"
+             accessible={true}
+             accessibilityLabel={t('settings.news.linkLabel') || 'News'}
+             style={[styles.linkBtn, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}
+             onPress={() => router.push({ pathname: '/news' } as any)}
+           >
+             <Text style={[styles.link, { color: themeColors.primary, fontSize: getFontSize(16) }]}>{t('settings.news.linkLabel') || 'News'}</Text>
+             {/* red dot if unread */}
+             {hasUnread ? <View style={{ width: 10, height: 10, borderRadius: 6, backgroundColor: '#FF3B30', marginLeft: 8, marginRight: 6 }} /> : null}
+           </TouchableOpacity>
         </View>
+
+         <View style={styles.row}>
+           <TouchableOpacity
+             accessibilityRole="button"
+             accessible={true}
+             accessibilityLabel={t('settings.importExport')}
+             style={styles.linkBtn}
+             onPress={() => setShowImportExport(true)}
+           >
+             <Text style={[styles.link, { color: themeColors.primary, fontSize: getFontSize(16) }]}>{t('settings.importExport')}</Text>
+           </TouchableOpacity>
+           <TouchableOpacity
+             accessibilityRole="button"
+             accessible={true}
+             accessibilityLabel={t('settings.reset')}
+             style={styles.linkBtn}
+             onPress={handleReset}
+           >
+             <Text style={[styles.link, { color: '#FF3B30', fontWeight: 'bold', fontSize: getFontSize(16) }]}>{t('settings.reset')}</Text>
+           </TouchableOpacity>
+         </View>
 
         <Text style={[styles.sectionTitle, { color: themeColors.primary, marginTop: 32, fontSize: getFontSize(18) }]}>{t('settings.feedback.title')}</Text>
         <View style={styles.row}>
@@ -497,7 +520,7 @@ const Settings = () => {
                 width: '90%',
                 maxHeight: '80%',
               }}
-              onPress={() => {}} // Empêche la propagation du clic à l'extérieur
+              onPress={() => {}} // prevent outside click propagation
             >
               <Text style={{ fontWeight: 'bold', fontSize: getFontSize(18), color: themeColors.primary, marginBottom: 12 }}>
                 {t('settings.importExport.title')}
@@ -515,10 +538,7 @@ const Settings = () => {
               <Text style={{ color: themeColors.text, marginTop: 16, marginBottom: 4, fontSize: getFontSize(15) }}>
                 {t('settings.importExport.importLabel')}
               </Text>
-              <TouchableOpacity
-                style={styles.validateBtn}
-                onPress={handleImportFile}
-              >
+              <TouchableOpacity style={styles.validateBtn} onPress={handleImportFile}>
                 <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: getFontSize(16) }}>
                   {t('settings.importExport.importButton')}
                 </Text>
@@ -576,9 +596,11 @@ const styles = StyleSheet.create({
     marginVertical: 4,
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 10,
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
     borderRadius: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
   },
   validateBtn: {
     backgroundColor: '#00B894',
