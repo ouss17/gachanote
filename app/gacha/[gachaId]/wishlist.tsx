@@ -63,6 +63,88 @@ export default function WishlistScreen() {
     setEditingItem(null);
   };
 
+  // priority color scale: from very hot (red/orange) to very cold (blue)
+  const hHot = 10;   // warm hue (red/orange)
+  const hCold = 220; // cold hue (blue)
+  const sat = 85;
+  const light = 55;
+  const hslToHex = (h: number, s: number, l: number) => {
+    s /= 100;
+    l /= 100;
+    const a = s * Math.min(l, 1 - l);
+    const f = (n: number) => {
+      const k = (n + h / 30) % 12;
+      const color = l - a * Math.max(-1, Math.min(k - 3, Math.min(9 - k, 1)));
+      return Math.round(255 * color).toString(16).padStart(2, '0');
+    };
+    return `#${f(0)}${f(8)}${f(4)}`;
+  };
+  const getPriorityColor = (p: number) => {
+    const idx = Math.max(1, Math.min(5, Number(p))) - 1;
+    const t = idx / 4; // 0..1
+    const hue = Math.round(hHot + (hCold - hHot) * t);
+    return hslToHex(hue, sat, light);
+  };
+ 
+  // parse release (YYYY-MM or full date) to timestamp for sorting
+  const parseReleaseTimestamp = (r?: string) => {
+    if (!r) return Infinity;
+    if (/^\d{4}-\d{2}$/.test(r)) {
+      const [y, m] = r.split('-').map(Number);
+      return new Date(y, m - 1, 1).getTime();
+    }
+    const d = new Date(r);
+    return isNaN(d.getTime()) ? Infinity : d.getTime();
+  };
+ 
+  // filtered + sorted list: by release date (earlier first). If same release date, fallback to addedAt (earlier first)
+  const filteredSorted = useMemo(() => {
+    const arr = list.filter(item => {
+      // search
+      if (query && !String(item.characterName ?? '').toLowerCase().includes(query.trim().toLowerCase())) return false;
+      // server
+      if (selectedServer && String(item.server ?? 'global') !== String(selectedServer)) return false;
+      // release filter
+      if (releasedFilter !== 'all') {
+        const r = item.releaseDate;
+        const isPast = (() => {
+          if (!r) return false;
+          if (/^\d{4}-\d{2}$/.test(r)) {
+            const [y, m] = r.split('-').map(Number);
+            const now = new Date();
+            const ny = now.getFullYear();
+            const nm = now.getMonth() + 1;
+            return y < ny || (y === ny && m < nm);
+          }
+          try {
+            const d = new Date(r);
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            return d < today;
+          } catch { return false; }
+        })();
+        if (releasedFilter === 'released' && !isPast) return false;
+        if (releasedFilter === 'upcoming' && isPast) return false;
+      }
+      return true;
+    });
+
+    arr.sort((a, b) => {
+      const ta = parseReleaseTimestamp(a.releaseDate);
+      const tb = parseReleaseTimestamp(b.releaseDate);
+      if (ta === tb) {
+        const aa = new Date(a.addedAt ?? 0).getTime();
+        const bb = new Date(b.addedAt ?? 0).getTime();
+        return aa - bb;
+      }
+      if (ta === Infinity) return 1;
+      if (tb === Infinity) return -1;
+      return ta - tb;
+    });
+
+    return arr;
+  }, [list, query, selectedServer, releasedFilter, lang]);
+
   return (
     <SafeAreaView style={{ flex: 1, paddingTop: insets.top, backgroundColor: themeColors.background }}>
       <View style={styles.header}>
@@ -177,58 +259,27 @@ export default function WishlistScreen() {
             );
           })}
         </View>
+        {/* priority legend (wrap on small screens) */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
+          {[1,2,3,4,5].map(p => (
+            <View key={p} style={{ flexDirection: 'row', alignItems: 'center', marginRight: 12, marginBottom: 8 }}>
+              <View style={{ width: 12, height: 12, borderRadius: 4, backgroundColor: getPriorityColor(p), marginRight: 8, borderWidth: 0.6, borderColor: themeColors.border }} />
+              <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(13) }}>{t(`wishlist.priority.${p}`) || `P${p}`}</Text>
+            </View>
+          ))}
+        </View>
       </View>
 
       {/* derive filtered list using search/server/release filters */}
       {/* helper: isReleasePast (same logic as renderItem) */}
       <FlatList
-        data={
-          list.filter(item => {
-            // search
-            if (query && !String(item.characterName ?? '').toLowerCase().includes(query.trim().toLowerCase())) return false;
-            // server
-            if (selectedServer && String(item.server ?? 'global') !== String(selectedServer)) return false;
-            // release filter
-            if (releasedFilter !== 'all') {
-              const r = item.releaseDate;
-              const isPast = (() => {
-                if (!r) return false;
-                if (/^\d{4}-\d{2}$/.test(r)) {
-                  const [y, m] = r.split('-').map(Number);
-                  const now = new Date();
-                  const ny = now.getFullYear();
-                  const nm = now.getMonth() + 1;
-                  return y < ny || (y === ny && m < nm);
-                }
-                try {
-                  const d = new Date(r);
-                  const today = new Date();
-                  today.setHours(0,0,0,0);
-                  return d < today;
-                } catch { return false; }
-              })();
-              if (releasedFilter === 'released' && !isPast) return false;
-              if (releasedFilter === 'upcoming' && isPast) return false;
-            }
-            return true;
-          })
-        }
+        data={filteredSorted}
         keyExtractor={(i: WishlistItem) => i.id}
         contentContainerStyle={{ padding: 12 }}
         ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 24, color: themeColors?.placeholder ?? '#666' }}>{t('wishlist.empty')}</Text>}
         renderItem={({ item }) => {
           const imgUri = (item as any).thumbUri ?? (item as any).imageUri ?? null;
           const pr = Number(item.priority ?? 0);
-          const getPriorityColor = (p: number) => {
-            switch (p) {
-              case 1: return '#FF3B30';
-              case 2: return '#FF9500';
-              case 3: return '#FFCC00';
-              case 4: return '#34C759';
-              case 5: return themeColors.primary ?? '#5856D6';
-              default: return themeColors.border;
-            }
-          };
           const priorityColor = getPriorityColor(pr);
 
           const formatRelease = (r?: string) => {
@@ -332,7 +383,7 @@ export default function WishlistScreen() {
         style={{
           position: 'absolute',
           right: 24,
-          bottom: 50,
+          bottom: 75,
           borderRadius: 32,
           width: 56,
           height: 56,
