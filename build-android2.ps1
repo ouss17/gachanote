@@ -15,5 +15,14 @@ docker run --rm -it `
 
 Write-Host "Build terminé ! Vérifie le dossier dist/ ou build/ pour ton .aab"
 
+# Déplacer les artefacts (.aab/.apk) vers un dossier ignoré par git
+$artifactDir = Join-Path $PWD 'android-artifacts'
+New-Item -ItemType Directory -Force -Path $artifactDir | Out-Null
+Get-ChildItem -Path $PWD -Recurse -Include *.aab,*.apk -ErrorAction SilentlyContinue |
+    ForEach-Object {
+        Move-Item -Path $_.FullName -Destination $artifactDir -Force
+        Write-Host "Déplacé: $($_.Name) -> $artifactDir"
+    }
+
 # Lancer le script avec :
 # .\build-android2.ps1
