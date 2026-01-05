@@ -10,9 +10,14 @@ export default function ExportGachaButton({ getFontSize, themeColors }: { getFon
   const rolls = useSelector((state: RootState) => state.rolls.rolls);
   const moneyEntries = useSelector((state: RootState) => state.money.entries);
   const banners = useSelector((state: RootState) => state.simulations.banners);
+  // include wishlist items so users can export wishlist-only gachas
+  const wishlistItems = useSelector((state: RootState) => (state.wishlist as any)?.items ?? (state.wishlist as any)?.list ?? []);
 
   // Liste unique des gachas présents dans les rolls
-  const gachaIds = Array.from(new Set(rolls.map(r => r.gachaId)));
+  const gachaIds = Array.from(new Set([
+    ...rolls.map(r => r.gachaId),
+    ...wishlistItems.map((w: any) => w.gachaId),
+  ]));
   const gachaList = gachaIds.map(id => ({
     id,
     name: `${id}`,
@@ -37,12 +42,14 @@ export default function ExportGachaButton({ getFontSize, themeColors }: { getFon
       const filteredRolls = rolls.filter(r => selected.includes(r.gachaId));
       const filteredMoney = moneyEntries.filter(e => selected.includes(e.gachaId));
       const filteredSimulations = banners.filter(b => selected.includes(b.gachaId));
+      const filteredWishlist = (wishlistItems || []).filter((w: any) => selected.includes(w.gachaId));
 
       // Format global : chaque slice est une clé, tableau dans une propriété
       const exportData = {
         rolls: { rolls: filteredRolls },
         money: { entries: filteredMoney },
         simulations: { banners: filteredSimulations },
+        wishlist: { items: filteredWishlist },
       };
 
       const json = JSON.stringify(exportData, null, 2);

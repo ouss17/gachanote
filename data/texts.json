@@ -1248,5 +1248,30 @@
     "en": "Mark all read",
     "fr": "Tout marquer comme lu",
     "jp": "すべて既読にする"
+  },
+  "wishlist.priority.1": {
+    "en": "Priority 1 — Very high",
+    "fr": "Priorité 1 — Très haute",
+    "jp": "優先度1 — 非常に高い"
+  },
+  "wishlist.priority.2": {
+    "en": "Priority 2 — High",
+    "fr": "Priorité 2 — Haute",
+    "jp": "優先度2 — 高い"
+  },
+  "wishlist.priority.3": {
+    "en": "Priority 3 — Medium",
+    "fr": "Priorité 3 — Moyenne",
+    "jp": "優先度3 — 中"
+  },
+  "wishlist.priority.4": {
+    "en": "Priority 4 — Low",
+    "fr": "Priorité 4 — Faible",
+    "jp": "優先度4 — 低い"
+  },
+  "wishlist.priority.5": {
+    "en": "Priority 5 — Very low",
+    "fr": "Priorité 5 — Très faible",
+    "jp": "優先度5 — 非常に低い"
   }
 }
