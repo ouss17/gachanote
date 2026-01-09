@@ -111,6 +111,54 @@ export default function RollForm({
   const [date, setDate] = useState<Date>(initial ? new Date(initial.date) : today);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
+  // inline editor overlay state (bring field to top while editing to avoid keyboard overlap)
+  const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [focusedValue, setFocusedValue] = useState<string>('');
+  const inlineInputRef = useRef<TextInput | null>(null);
+
+  useEffect(() => {
+    if (!focusedField) return;
+    // small delay to ensure modal is mounted before focusing (helps on Android/iOS)
+    const id = setTimeout(() => inlineInputRef.current?.focus(), 100);
+    return () => clearTimeout(id);
+  }, [focusedField]);
+ 
+  const openInlineEditor = (field: string, value: string) => {
+    setFocusedField(field);
+    setFocusedValue(value ?? '');
+  };
+
+  const commitInlineEditor = () => {
+    if (!focusedField) return;
+    switch (focusedField) {
+      case 'featuredCount':
+        setFeaturedCount(normalizeNumberInput(focusedValue, false));
+        break;
+      case 'spookCount':
+        setSpookCount(normalizeNumberInput(focusedValue, false));
+        break;
+      case 'sideUnit':
+        setSideUnit(normalizeNumberInput(focusedValue, false));
+        break;
+      case 'featuredItemsCount':
+        setFeaturedItemsCount(normalizeNumberInput(focusedValue, false));
+        break;
+      case 'srItemsCount':
+        setSrItemsCount(normalizeNumberInput(focusedValue, false));
+        break;
+      case 'notes':
+        setNotes(focusedValue.slice(0, 200));
+        break;
+      case 'nameFeatured':
+        setNameFeatured(focusedValue);
+        break;
+      default:
+        break;
+    }
+    setFocusedField(null);
+    setFocusedValue('');
+  };
+
   const [showSpookInfo, setShowSpookInfo] = useState(false);
   const [showSideUnitInfo, setShowSideUnitInfo] = useState(false);
   const [showItemsInfo, setShowItemsInfo] = useState(false);
@@ -385,19 +433,13 @@ export default function RollForm({
               <Text style={{ color: themeColors.text, marginBottom: 4, fontSize: getFontSize(16) }}>
                 {t('gachaRolls.form.nameFeatured')}
               </Text>
-              <TextInput
-                ref={nameFeaturedRef}
-                accessibilityLabel={t('gachaRolls.form.nameFeatured')}
-                style={[styles.input, { fontSize: getFontSize(16), backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }]
-                }
-                placeholder="Ex: Goku, Luffy, etc."
-                placeholderTextColor={placeholderColor}
-                value={nameFeatured}
-                onChangeText={setNameFeatured}
-                returnKeyType="next"
-                onSubmitEditing={() => featuredCountRef.current?.focus()}
-                blurOnSubmit={false}
-              />
+              <TouchableOpacity onPress={() => openInlineEditor('nameFeatured', nameFeatured)} activeOpacity={0.85} accessibilityRole="button">
+                <View style={[styles.input, { justifyContent: 'center', backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+                  <Text style={{ color: nameFeatured ? themeColors.text : placeholderColor, fontSize: getFontSize(16) }}>
+                    {nameFeatured !== '' ? nameFeatured : 'Ex: Goku, Luffy, etc.'}
+                  </Text>
+                </View>
+              </TouchableOpacity>
 
               {/* Server selector (from gacha.serverTags) */}
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 8, marginBottom: 8 }}>
@@ -523,20 +565,13 @@ export default function RollForm({
                <Text style={{ color: themeColors.text, marginBottom: 4, fontSize: getFontSize(16) }}>
                  {t('gachaRolls.form.featuredCount')} <Text style={{ color: '#FF3B30' }}>*</Text>
                </Text>
-               <TextInput
-                 ref={featuredCountRef}
-                 accessibilityLabel={t('gachaRolls.form.featuredCount')}
-                 style={[styles.input, { fontSize: getFontSize(16), backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }]
-                 }
-                 placeholder="Ex: 1"
-                 placeholderTextColor={placeholderColor}
-                 keyboardType="numeric"
-                 value={featuredCount}
-                 onChangeText={(v) => setFeaturedCount(normalizeNumberInput(v, false))}
-                 returnKeyType="next"
-                 onSubmitEditing={() => spookCountRef.current?.focus()}
-                 blurOnSubmit={false}
-               />
+               <TouchableOpacity onPress={() => openInlineEditor('featuredCount', featuredCount)} activeOpacity={0.85} accessibilityRole="button">
+                 <View style={[styles.input, { justifyContent: 'center', backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+                   <Text style={{ color: featuredCount ? themeColors.text : placeholderColor, fontSize: getFontSize(16) }}>
+                     {featuredCount !== '' ? featuredCount : (t('gachaRolls.form.featuredCountPlaceholder') || 'Ex: 1')}
+                   </Text>
+                 </View>
+               </TouchableOpacity>
 
                {/* Spook count + help */}
                {!compact && (
@@ -562,28 +597,13 @@ export default function RollForm({
                        <Text style={{ color: '#fff', fontWeight: '700', fontSize: getFontSize(12) }}>?</Text>
                      </TouchableOpacity>
                    </View>
-                   <TextInput
-                     ref={spookCountRef}
-                     style={[
-                       styles.input,
-                       {
-                         fontSize: getFontSize(16),
-                         minHeight: Math.max(40, Math.round(getFontSize(40))),
-                         paddingVertical: Math.max(8, Math.round(getFontSize(6))),
-                         backgroundColor: themeColors.card,
-                         color: themeColors.text,
-                         borderColor: themeColors.border,
-                       },
-                     ]}
-                     placeholder="Ex: 0"
-                     placeholderTextColor={placeholderColor}
-                     keyboardType="numeric"
-                     value={spookCount}
-                     onChangeText={(v) => setSpookCount(normalizeNumberInput(v, false))}
-                     returnKeyType="next"
-                     onSubmitEditing={() => sideUnitRef.current?.focus()}
-                     blurOnSubmit={false}
-                   />
+                   <TouchableOpacity onPress={() => openInlineEditor('spookCount', spookCount)} activeOpacity={0.85} accessibilityRole="button">
+                     <View style={[styles.input, { minHeight: Math.max(40, Math.round(getFontSize(40))), justifyContent: 'center', backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+                       <Text style={{ color: spookCount ? themeColors.text : placeholderColor, fontSize: getFontSize(16) }}>
+                         {spookCount !== '' ? spookCount : (t('gachaRolls.form.spookPlaceholder') || 'Ex: 0')}
+                       </Text>
+                     </View>
+                   </TouchableOpacity>
                  </>
                )}
 
@@ -611,26 +631,13 @@ export default function RollForm({
                        <Text style={{ color: '#fff', fontWeight: '700', fontSize: getFontSize(12) }}>?</Text>
                      </TouchableOpacity>
                    </View>
-                   <TextInput
-                     ref={sideUnitRef}
-                     style={[
-                       styles.input,
-                       {
-                         fontSize: getFontSize(16),
-                         minHeight: Math.max(40, Math.round(getFontSize(40))),
-                         paddingVertical: Math.max(8, Math.round(getFontSize(6))),
-                         backgroundColor: themeColors.card,
-                         color: themeColors.text,
-                         borderColor: themeColors.border,
-                       },
-                     ]}
-                     placeholder="Ex: 0"
-                     placeholderTextColor={placeholderColor}
-                     keyboardType="numeric"
-                     value={sideUnit}
-                     onChangeText={(v) => setSideUnit(normalizeNumberInput(v, false))}
-                     returnKeyType="done"
-                   />
+                   <TouchableOpacity onPress={() => openInlineEditor('sideUnit', sideUnit)} activeOpacity={0.85} accessibilityRole="button">
+                     <View style={[styles.input, { minHeight: Math.max(40, Math.round(getFontSize(40))), justifyContent: 'center', backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+                       <Text style={{ color: sideUnit ? themeColors.text : placeholderColor, fontSize: getFontSize(16) }}>
+                         {sideUnit !== '' ? sideUnit : (t('gachaRolls.form.sideUnitPlaceholder') || 'Ex: 0')}
+                       </Text>
+                     </View>
+                   </TouchableOpacity>
                  </>
                )}
 
@@ -660,14 +667,13 @@ export default function RollForm({
                        <Text style={{ color: '#fff', fontWeight: '700', fontSize: getFontSize(12) }}>?</Text>
                      </TouchableOpacity>
                    </View>
-                   <TextInput
-                     value={featuredItemsCount}
-                     onChangeText={(v) => setFeaturedItemsCount(normalizeNumberInput(v, false))}
-                     placeholder={t('gachaRolls.form.featuredItemsPlaceholder') || 'Ex: 1'}
-                     placeholderTextColor={placeholderColor}
-                     keyboardType="numeric"
-                     style={[styles.input, { fontSize: getFontSize(16), backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }]}
-                   />
+                   <TouchableOpacity onPress={() => openInlineEditor('featuredItemsCount', featuredItemsCount)} activeOpacity={0.85} accessibilityRole="button">
+                     <View style={[styles.input, { justifyContent: 'center', backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+                       <Text style={{ color: featuredItemsCount ? themeColors.text : placeholderColor, fontSize: getFontSize(16) }}>
+                         {featuredItemsCount !== '' ? featuredItemsCount : (t('gachaRolls.form.featuredItemsPlaceholder') || 'Ex: 1')}
+                       </Text>
+                     </View>
+                   </TouchableOpacity>
 
                    <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginTop: 8 }}>
                      <Text style={{ color: themeColors.text, marginBottom: 4, fontSize: getFontSize(16) }}>
@@ -692,14 +698,13 @@ export default function RollForm({
                        <Text style={{ color: '#fff', fontWeight: '700', fontSize: getFontSize(12) }}>?</Text>
                      </TouchableOpacity>
                    </View>
-                   <TextInput
-                     value={srItemsCount}
-                     onChangeText={(v) => setSrItemsCount(normalizeNumberInput(v, false))}
-                     placeholder={t('gachaRolls.form.srItemsPlaceholder') || 'Ex: 2'}
-                     placeholderTextColor={placeholderColor}
-                     keyboardType="numeric"
-                     style={[styles.input, { fontSize: getFontSize(16), backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }]}
-                   />
+                   <TouchableOpacity onPress={() => openInlineEditor('srItemsCount', srItemsCount)} activeOpacity={0.85} accessibilityRole="button">
+                     <View style={[styles.input, { justifyContent: 'center', backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+                       <Text style={{ color: srItemsCount ? themeColors.text : placeholderColor, fontSize: getFontSize(16) }}>
+                         {srItemsCount !== '' ? srItemsCount : (t('gachaRolls.form.srItemsPlaceholder') || 'Ex: 2')}
+                       </Text>
+                     </View>
+                   </TouchableOpacity>
                  </>
                )}
 
@@ -707,16 +712,13 @@ export default function RollForm({
                {!compact && (
                  <>
                    <Text style={{ color: themeColors.text, marginTop: 8, marginBottom: 4, fontSize: getFontSize(16) }}>{t('gachaRolls.form.notes') || 'Notes'}</Text>
-                   <TextInput
-                     value={notes}
-                     onChangeText={(v) => setNotes(v.slice(0, 200))}
-                     placeholder={t('gachaRolls.form.notesPlaceholder') || 'Ajouter des précisions (max 200 caractères)'}
-                     placeholderTextColor={placeholderColor}
-                     multiline
-                     numberOfLines={4}
-                     maxLength={200}
-                     style={[styles.input, { minHeight: Math.max(80, getFontSize(80)), textAlignVertical: 'top', backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }]}
-                   />
+                   <TouchableOpacity onPress={() => openInlineEditor('notes', notes)} activeOpacity={0.85} accessibilityRole="button">
+                     <View style={[styles.input, { minHeight: Math.max(80, getFontSize(80)), justifyContent: 'center', backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+                       <Text style={{ color: notes ? themeColors.text : placeholderColor, fontSize: getFontSize(16) }}>
+                         {notes !== '' ? notes : (t('gachaRolls.form.notesPlaceholder') || 'Ajouter des précisions (max 200 caractères)')}
+                       </Text>
+                     </View>
+                   </TouchableOpacity>
                    <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(12), textAlign: 'right' }}>{String(notes.length)}/200</Text>
                  </>
                )}
@@ -839,6 +841,43 @@ export default function RollForm({
                 <TouchableOpacity onPress={() => setShowItemsInfo(false)} style={{ marginTop: 12, alignSelf: 'center' }}>
                   <Text style={{ color: themeColors.primary, fontSize: getFontSize(16) }}>{t('common.ok') || 'OK'}</Text>
                 </TouchableOpacity>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+
+      {/* Inline editor overlay to bring the field above the keyboard */}
+      <Modal visible={!!focusedField} transparent animationType="fade" onRequestClose={commitInlineEditor}>
+        <TouchableWithoutFeedback onPress={commitInlineEditor}>
+          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-start', paddingTop: Math.max(24, insets.top), alignItems: 'center' }}>
+            <TouchableWithoutFeedback onPress={() => {}}>
+              <View style={{ width: '90%', backgroundColor: themeColors.card, borderRadius: 12, padding: 12 }}>
+                <Text style={{ color: themeColors.text, fontWeight: '700', marginBottom: 8, fontSize: getFontSize(16) }}>
+                  {t(`gachaRolls.form.${focusedField}`) || focusedField}
+                </Text>
+                <TextInput
+                  autoFocus
+                  ref={inlineInputRef}
+                  value={focusedValue}
+                  onChangeText={setFocusedValue}
+                  placeholder={focusedField === 'notes' ? (t('gachaRolls.form.notesPlaceholder') || '') : undefined}
+                  placeholderTextColor={placeholderColor}
+                  keyboardType={['spookCount', 'sideUnit', 'featuredItemsCount', 'srItemsCount'].includes(focusedField ?? '') ? 'numeric' : 'default'}
+                  multiline={focusedField === 'notes'}
+                  maxLength={focusedField === 'notes' ? 200 : undefined}
+                  onSubmitEditing={commitInlineEditor}
+                  blurOnSubmit={true}
+                  style={[styles.input, { minHeight: focusedField === 'notes' ? Math.max(120, getFontSize(120)) : undefined, backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }]}
+                />
+                <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 8 }}>
+                  <TouchableOpacity onPress={() => { setFocusedField(null); setFocusedValue(''); }} style={{ marginRight: 16 }}>
+                    <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(14) }}>{t('common.cancel') || 'Cancel'}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={commitInlineEditor}>
+                    <Text style={{ color: themeColors.primary, fontSize: getFontSize(14), fontWeight: '700' }}>{t('common.ok') || 'OK'}</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </TouchableWithoutFeedback>
           </View>

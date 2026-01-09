@@ -7,7 +7,7 @@ import * as Crypto from 'expo-crypto';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Alert, Dimensions, Image, Keyboard, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
@@ -105,6 +105,38 @@ export default function WishlistForm({ visible, onClose, onSubmit, initial, gach
     const h = Keyboard.addListener('keyboardDidHide', () => {});
     return () => { s.remove(); h.remove(); };
   }, []);
+
+  // Inline editor overlay (notes / priority)
+  const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [focusedValue, setFocusedValue] = useState<string>('');
+  const inlineInputRef = useRef<TextInput | null>(null);
+
+  useEffect(() => {
+    if (!focusedField) return;
+    const id = setTimeout(() => inlineInputRef.current?.focus(), 120);
+    return () => clearTimeout(id);
+  }, [focusedField]);
+
+  const openInlineEditor = (field: string, value: string) => {
+    setFocusedField(field);
+    setFocusedValue(value ?? '');
+  };
+
+  const commitInlineEditor = () => {
+    if (!focusedField) return;
+    switch (focusedField) {
+      case 'notes':
+        setNotes(String(focusedValue).slice(0, 500));
+        break;
+      case 'priority':
+        setPriority(String(focusedValue).replace(/[^0-9]/g, '').slice(0, 2));
+        break;
+      default:
+        break;
+    }
+    setFocusedField(null);
+    setFocusedValue('');
+  };
 
   const pickAndSaveImage = async ({ id, maxSize = 1600, quality = 0.8 }: { id: string, maxSize?: number, quality?: number }) => {
     try {
@@ -357,24 +389,58 @@ export default function WishlistForm({ visible, onClose, onSubmit, initial, gach
               </View>
 
               <Text style={{ color: labelColor, marginBottom: 6 }}>{t('wishlist.modal.notesPlaceholder')}</Text>
-              <TextInput
-                placeholder={t('wishlist.modal.notesPlaceholder')}
-                value={notes}
-                onChangeText={setNotes}
-                multiline
-                style={[styles.input, { minHeight: 80, backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border, fontSize: getFontSize(16) }]}
-                placeholderTextColor={placeholderTextColor}
-              />
+              <TouchableOpacity onPress={() => openInlineEditor('notes', notes)} activeOpacity={0.85} accessibilityRole="button">
+                <View style={[styles.input, { minHeight: 80, justifyContent: 'center', backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+                  <Text style={{ color: notes ? themeColors.text : placeholderTextColor, fontSize: getFontSize(16) }}>
+                    {notes !== '' ? notes : (t('wishlist.modal.notesPlaceholder') || '')}
+                  </Text>
+                </View>
+              </TouchableOpacity>
 
               <Text style={{ color: labelColor, marginBottom: 6 }}>{t('wishlist.modal.priorityPlaceholder')}</Text>
-              <TextInput
-                placeholder={t('wishlist.modal.priorityPlaceholder') || 'Priority (1-5)'}
-                value={priority}
-                onChangeText={setPriority}
-                keyboardType="numeric"
-                style={[styles.input, { backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border, fontSize: getFontSize(16) }]}
-                placeholderTextColor={placeholderTextColor}
-              />
+              <TouchableOpacity onPress={() => openInlineEditor('priority', priority ?? '')} activeOpacity={0.85} accessibilityRole="button">
+                <View style={[styles.input, { justifyContent: 'center', backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+                  <Text style={{ color: priority ? themeColors.text : placeholderTextColor, fontSize: getFontSize(16) }}>
+                    {priority !== undefined && priority !== '' ? priority : (t('wishlist.modal.priorityPlaceholder') || 'Priority (1-5)')}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+
+              {/* Inline editor modal */}
+              <Modal visible={!!focusedField} transparent animationType="fade" onRequestClose={() => setFocusedField(null)}>
+                <TouchableWithoutFeedback onPress={commitInlineEditor}>
+                  <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-start', paddingTop: Math.max(24, insets.top), alignItems: 'center' }}>
+                    <TouchableWithoutFeedback onPress={() => {}}>
+                      <View style={{ width: '90%', backgroundColor: themeColors.card, borderRadius: 12, padding: 12 }}>
+                        <Text style={{ color: themeColors.text, fontWeight: '700', marginBottom: 8, fontSize: getFontSize(16) }}>
+                          {focusedField === 'notes' ? (t('wishlist.modal.notesPlaceholder') || 'Notes') : (t('wishlist.modal.priorityPlaceholder') || 'Priority')}
+                        </Text>
+                        <TextInput
+                          ref={inlineInputRef}
+                          value={focusedValue}
+                          onChangeText={setFocusedValue}
+                          placeholder={focusedField === 'notes' ? (t('wishlist.modal.notesPlaceholder') || '') : (t('wishlist.modal.priorityPlaceholder') || '')}
+                          placeholderTextColor={placeholderTextColor}
+                          keyboardType={focusedField === 'priority' ? 'numeric' : 'default'}
+                          multiline={focusedField === 'notes'}
+                          maxLength={focusedField === 'notes' ? 500 : 2}
+                          onSubmitEditing={commitInlineEditor}
+                          blurOnSubmit={true}
+                          style={[styles.input, { minHeight: focusedField === 'notes' ? Math.max(120, getFontSize(120)) : undefined, backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }]}
+                        />
+                        <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 8 }}>
+                          <TouchableOpacity onPress={() => { setFocusedField(null); setFocusedValue(''); }} style={{ marginRight: 16 }}>
+                            <Text style={{ color: themeColors.placeholder, fontSize: getFontSize(14) }}>{t('common.cancel') || 'Cancel'}</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity onPress={commitInlineEditor}>
+                            <Text style={{ color: themeColors.primary, fontSize: getFontSize(14), fontWeight: '700' }}>{t('common.ok') || 'OK'}</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    </TouchableWithoutFeedback>
+                  </View>
+                </TouchableWithoutFeedback>
+              </Modal>
 
               {/* Buttons styled like RollForm */}
               <TouchableOpacity

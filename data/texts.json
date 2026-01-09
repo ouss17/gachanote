@@ -334,15 +334,30 @@
     "fr": "Nom de la vedette",
     "jp": "ピックアップキャラ名"
   },
+  "gachaRolls.form.nameFeaturedPlaceholder": {
+    "en": "Ex: Goku, Luffy, etc.",
+    "fr": "Ex : Goku, Luffy, etc.",
+    "jp": "例：悟空、ルフィなど"
+  },
   "gachaRolls.form.featuredCount": {
     "en": "Number of featured",
     "fr": "Nombre de vedettes",
     "jp": "ピックアップ数"
   },
+  "gachaRolls.form.featuredCountPlaceholder": {
+    "en": "Ex: 1",
+    "fr": "Ex : 1",
+    "jp": "例：1"
+  },
   "gachaRolls.form.spookCount": {
     "en": "Number of spooks",
     "fr": "Nombre de spooks",
     "jp": "すり抜け数"
+  },
+  "gachaRolls.form.spookPlaceholder": {
+    "en": "Ex: 0",
+    "fr": "Ex : 0",
+    "jp": "例：0"
   },
   "gachaRolls.spookTitle": {
     "en": "What is a spook?",
@@ -364,10 +379,30 @@
     "fr": "Nombre de side units",
     "jp": "サイドユニット数"
   },
+  "gachaRolls.form.sideUnitPlaceholder": {
+    "en": "Ex: 0",
+    "fr": "Ex : 0",
+    "jp": "例：0"
+  },
   "gachaRolls.sideUnitTitle": {
     "en": "What is a side unit?",
     "fr": "Qu'est‑ce qu'une side unit ?",
     "jp": "サイドユニットとは？"
+  },
+  "gachaRolls.form.sideUnit": {
+    "en": "Number of side units",
+    "fr": "Nombre de side units",
+    "jp": "サイドユニット数"
+  },
+  "gachaRolls.form.featuredItemsCount":{
+    "en": "Number of featured items",
+    "fr": "Nombre d'objets vedettes",
+    "jp": "ピックアップアイテム数"
+  },
+  "gachaRolls.form.srItemsCount":{
+    "en": "Number of SR items",
+    "fr": "Nombre d'objets SR",
+    "jp": "SRアイテム数"
   },
   "gachaRolls.sideUnitDescription": {
     "en": "A \"side unit\" is a secondary or non‑featured rare draw you want to track separately from main featured or off‑banner (spook) pulls. Use it to record notable secondary results or targets that are not the primary featured units.",
