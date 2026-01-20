@@ -17,24 +17,44 @@ type Roll = {
 
 function getMultiCost(gachaId: string) {
   switch (gachaId) {
-    case 'dbl': return { cost: 1000 };
-    case 'fgo': return { cost: 30 };
-    case 'dokkan': return { cost: 50 };
-    case 'sevenDS': return { cost: 30 };
-    case 'opbr': return { cost: 50 };
-    case 'nikke': return { cost: 3000 };
-    case 'bbs': return { cost: 250 };
-    case 'bsr': return { cost: 10 };
-    case 'genshin': return { cost: 10 };
-    case 'hsr': return { cost: 10 };
-    case 'optc': return { cost: 50 };
-    case 'uma': return { cost: 1500 };
-    case 'ww': return { cost: 10 };
-    case 'zenlesszone': return { cost: 1600 };
-    case 'haikyufh': return { cost: 1500 };
-    case 'jjkpp': return { cost: 3000 };
-    case 'sdgundamgge': return { cost: 3000 };
-    default: return { cost: 0 };
+    case "dbl":
+      return { cost: 1000 };
+    case "fgo":
+      return { cost: 30 };
+    case "dokkan":
+      return { cost: 50 };
+    case "sevenDS":
+      return { cost: 30 };
+    case "opbr":
+      return { cost: 50 };
+    case "nikke":
+      return { cost: 3000 };
+    case "bbs":
+      return { cost: 250 };
+    case "bsr":
+      return { cost: 10 };
+    case "genshin":
+      return { cost: 10 };
+    case "hsr":
+      return { cost: 10 };
+    case "optc":
+      return { cost: 50 };
+    case "uma":
+      return { cost: 1500 };
+    case "ww":
+      return { cost: 10 };
+    case "zenlesszone":
+      return { cost: 1600 };
+    case "haikyufh":
+      return { cost: 1500 };
+    case "jjkpp":
+      return { cost: 3000 };
+    case "sdgundamgge":
+      return { cost: 3000 };
+    case "arknightsedfi":
+      return { cost: 5000 };
+    default:
+      return { cost: 0 };
   }
 }
 
@@ -52,7 +72,7 @@ export function computePullsForRoll(roll: Roll, gachaId: string) {
   const freePulls = Number(roll.freePulls ?? 0);
 
   let resourcePulls = 0;
-  if ((roll.resourceType ?? '') === 'ticket') {
+  if ((roll.resourceType ?? "") === "ticket") {
     resourcePulls = Number(roll.resourceAmount ?? 0);
   } else if (singleCost > 0) {
     resourcePulls = Number(roll.resourceAmount ?? 0) / singleCost;
@@ -95,32 +115,48 @@ export function computeRatesForRoll(roll: Roll, gachaId: string) {
  * Calculs par-roll et agrégés pour un tableau de rolls
  */
 export function computeAllRates(rolls: Roll[], gachaId: string) {
-  const perRoll = rolls.map(r => ({ id: r.id, rates: computeRatesForRoll(r, gachaId) }));
-  const totals = rolls.reduce((acc, r) => {
-    const { totalPulls } = computePullsForRoll(r, gachaId);
-    acc.pulls += totalPulls;
-    acc.featured += Number(r.featuredCount ?? 0);
-    acc.spook += Number(r.spookCount ?? 0);
-    acc.sideUnit += Number(r.sideUnit ?? 0);
-    acc.featuredItems += Number(r.featuredItemsCount ?? 0);
-    acc.srItems += Number(r.srItemsCount ?? 0);
-    return acc;
-  }, { pulls: 0, featured: 0, spook: 0, sideUnit: 0, featuredItems: 0, srItems: 0 });
+  const perRoll = rolls.map((r) => ({
+    id: r.id,
+    rates: computeRatesForRoll(r, gachaId),
+  }));
+  const totals = rolls.reduce(
+    (acc, r) => {
+      const { totalPulls } = computePullsForRoll(r, gachaId);
+      acc.pulls += totalPulls;
+      acc.featured += Number(r.featuredCount ?? 0);
+      acc.spook += Number(r.spookCount ?? 0);
+      acc.sideUnit += Number(r.sideUnit ?? 0);
+      acc.featuredItems += Number(r.featuredItemsCount ?? 0);
+      acc.srItems += Number(r.srItemsCount ?? 0);
+      return acc;
+    },
+    {
+      pulls: 0,
+      featured: 0,
+      spook: 0,
+      sideUnit: 0,
+      featuredItems: 0,
+      srItems: 0,
+    }
+  );
 
   return {
     perRoll,
-    aggregated: totals.pulls > 0 ? {
-      pulls: totals.pulls,
-      featuredRate: totals.featured / totals.pulls,
-      spookRate: totals.spook / totals.pulls,
-      sideUnitRate: totals.sideUnit / totals.pulls,
-      featuredItemsRate: totals.featuredItems / totals.pulls,
-      srItemsRate: totals.srItems / totals.pulls,
-      featuredCount: totals.featured,
-      spookCount: totals.spook,
-      sideUnitCount: totals.sideUnit,
-      featuredItemsCount: totals.featuredItems,
-      srItemsCount: totals.srItems,
-    } : null
+    aggregated:
+      totals.pulls > 0
+        ? {
+            pulls: totals.pulls,
+            featuredRate: totals.featured / totals.pulls,
+            spookRate: totals.spook / totals.pulls,
+            sideUnitRate: totals.sideUnit / totals.pulls,
+            featuredItemsRate: totals.featuredItems / totals.pulls,
+            srItemsRate: totals.srItems / totals.pulls,
+            featuredCount: totals.featured,
+            spookCount: totals.spook,
+            sideUnitCount: totals.sideUnit,
+            featuredItemsCount: totals.featuredItems,
+            srItemsCount: totals.srItems,
+          }
+        : null,
   };
 }

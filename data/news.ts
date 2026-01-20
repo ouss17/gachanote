@@ -13,11 +13,37 @@ export type NewsEntry = {
 
 export const NEWS: NewsEntry[] = [
   {
-    id: 'v2026.01.04',
+    id: "v2026.01.20",
     title: {
-      fr: 'Notes de mise à jour du 04/01/2026',
-      en: 'Release Notes of 04/01/2026',
-      jp: 'リリースノート 2026/01/04',
+      fr: "Notes de mise à jour du 20/01/2026",
+      en: "Release Notes of 01/20/2026",
+      jp: "リリースノート 2026/01/20",
+    },
+    body: {
+      fr:
+        "Merci d'utiliser GachaNote — nous continuons de travailler pour ajouter des fonctionnalités utiles et améliorer votre expérience.\n\n" +
+        "Ajout du support pour Arknights: Endfield\n\n" +
+        "Vous pouvez désormais suivre vos tirages pour Arknights: Endfield dans l'application.\n\n" +
+        "Une campagne de feedback sera bientôt lancée pour recueillir vos avis et votre satisfaction concernant l'application.",
+      en:
+        "Thank you for using GachaNote — we keep working to add useful features and improve your experience.\n\n" +
+        "Added support for Arknights: Endfield\n\n" +
+        "You can now track your pulls for Arknights: Endfield in the app.\n\n" +
+        "A feedback campaign will be launched soon to gather your opinions and satisfaction regarding the app.",
+      jp:
+        "GachaNoteをご利用いただきありがとうございます。より便利な機能を追加し、体験を改善するために継続的に取り組んでいます。\n\n" +
+        "Arknights: Endfieldのサポートを追加しました。\n\n" +
+        "アプリでArknights: Endfieldのガチャを追跡できるようになりました。\n\n" +
+        "アプリに関するご意見や満足度を収集するためのフィードバックキャンペーンがまもなく開始されます。",
+    },
+    date: "2026-01-20",
+  },
+  {
+    id: "v2026.01.04",
+    title: {
+      fr: "Notes de mise à jour du 04/01/2026",
+      en: "Release Notes of 04/01/2026",
+      jp: "リリースノート 2026/01/04",
     },
     body: {
       fr:
@@ -33,15 +59,15 @@ export const NEWS: NewsEntry[] = [
         "Wishlistページを追加しました。\n\n" +
         "将来入手したいキャラクターを保存するWishlist機能を追加しました。",
     },
-    date: '2026-01-04',
+    date: "2026-01-04",
   },
 
   {
-    id: 'v1.0.0',
+    id: "v1.0.0",
     title: {
-      fr: 'Notes de mise à jour du 09/12/2025',
-      en: 'Release Notes of 12/09/2025',
-      jp: 'リリースノート 2025/12/09',
+      fr: "Notes de mise à jour du 09/12/2025",
+      en: "Release Notes of 12/09/2025",
+      jp: "リリースノート 2025/12/09",
     },
     body: {
       fr:
@@ -60,15 +86,15 @@ export const NEWS: NewsEntry[] = [
         "修正：数字入力でカンマがドットのように扱われるようになりました。\n\n" +
         "ガチャ統計に日付フィルターを追加しました。",
     },
-    date: '2025-12-09',
+    date: "2025-12-09",
   },
 
   {
-    id: '0.9.9',
+    id: "0.9.9",
     title: {
-      fr: 'Notes de mise à jour du 24/11/2025',
-      en: 'Release Notes of 11/24/2025',
-      jp: 'リリースノート 2025/11/24',
+      fr: "Notes de mise à jour du 24/11/2025",
+      en: "Release Notes of 11/24/2025",
+      jp: "リリースノート 2025/11/24",
     },
     body: {
       fr:
@@ -96,7 +122,6 @@ export const NEWS: NewsEntry[] = [
         "- 「お気に入りのみ」モードの永続性の改善\n" +
         "- フィードバック送信時の制限を追加",
     },
-    date: '2025-11-24',
+    date: "2025-11-24",
   },
-  
 ];

@@ -14,7 +14,7 @@ export const GACHAS: Gacha[] = [
     logo: require("@/assets/logos/bbs.png"),
     resourceType: "orbs",
     tags: ["bleach", "bbs"],
-    serverTags: ["global", "jp"]
+    serverTags: ["global", "jp"],
   },
   {
     id: "bsr",
@@ -22,7 +22,7 @@ export const GACHAS: Gacha[] = [
     logo: require("@/assets/logos/bsr.png"),
     resourceType: "primalgem",
     tags: ["bleach", "bsr", "soulresonance"],
-    serverTags: ["global", "jp"]
+    serverTags: ["global", "jp"],
   },
   {
     id: "dbl",
@@ -30,7 +30,7 @@ export const GACHAS: Gacha[] = [
     logo: require("@/assets/logos/dbl.png"),
     resourceType: "cc",
     tags: ["dragonball", "dbz", "dbl", "db"],
-    serverTags: ["global", "jp"]
+    serverTags: ["global", "jp"],
   },
   {
     id: "dokkan",
@@ -38,7 +38,7 @@ export const GACHAS: Gacha[] = [
     logo: require("@/assets/logos/dokkan.png"),
     resourceType: "ds",
     tags: ["dragonball", "dbz", "db"],
-    serverTags: ["global", "jp"]
+    serverTags: ["global", "jp"],
   },
   {
     id: "fgo",
@@ -46,7 +46,7 @@ export const GACHAS: Gacha[] = [
     logo: require("@/assets/logos/fgo.png"),
     resourceType: "sq",
     tags: ["fgo", "grandorder"],
-    serverTags: ["na", "jp"]
+    serverTags: ["na", "jp"],
   },
   {
     id: "genshin",
@@ -54,7 +54,7 @@ export const GACHAS: Gacha[] = [
     logo: require("@/assets/logos/genshin.png"),
     resourceType: "primogems",
     tags: ["gi"],
-    serverTags: ["global"]
+    serverTags: ["global"],
   },
   {
     id: "hsr",
@@ -62,7 +62,7 @@ export const GACHAS: Gacha[] = [
     logo: require("@/assets/logos/hsr.png"),
     resourceType: "hyperspace",
     tags: ["hsr", "starrail"],
-    serverTags: ["global"]
+    serverTags: ["global"],
   },
   {
     id: "nikke",
@@ -70,7 +70,7 @@ export const GACHAS: Gacha[] = [
     logo: require("@/assets/logos/nikke.png"),
     resourceType: "gemmes",
     tags: ["nikke"],
-    serverTags: ["global", "kr", "jp", "na", "cn"]
+    serverTags: ["global", "kr", "jp", "na", "cn"],
   },
   {
     id: "opbounty",
@@ -78,7 +78,7 @@ export const GACHAS: Gacha[] = [
     logo: require("@/assets/logos/opbounty.png"),
     resourceType: "diamants",
     tags: ["onepiece", "op", "bountyrush", "opbr"],
-    serverTags: ["global"]
+    serverTags: ["global"],
   },
   {
     id: "optc",
@@ -86,7 +86,7 @@ export const GACHAS: Gacha[] = [
     logo: require("@/assets/logos/optc.png"),
     resourceType: "gems",
     tags: ["onepiece", "op", "optc", "treasurecruise"],
-    serverTags: ["global", "jp"]
+    serverTags: ["global", "jp"],
   },
   {
     id: "uma",
@@ -94,7 +94,7 @@ export const GACHAS: Gacha[] = [
     logo: require("@/assets/logos/uma.png"),
     resourceType: "carats",
     tags: ["umamusume", "prettyderby"],
-    serverTags: ["global", "jp"]
+    serverTags: ["global", "jp"],
   },
   {
     id: "ww",
@@ -102,7 +102,7 @@ export const GACHAS: Gacha[] = [
     logo: require("@/assets/logos/wuwa.png"),
     resourceType: "convenes",
     tags: ["wutheringwaves", "ww", "wuwa"],
-    serverTags: ["global"]
+    serverTags: ["global"],
   },
   {
     id: "zenlesszone",
@@ -110,7 +110,7 @@ export const GACHAS: Gacha[] = [
     logo: require("@/assets/logos/zzz.png"),
     resourceType: "polychromes",
     tags: ["zenlesszone", "zz"],
-    serverTags: ["global", "cn"]
+    serverTags: ["global", "cn"],
   },
   {
     id: "haikyufh",
@@ -118,7 +118,7 @@ export const GACHAS: Gacha[] = [
     logo: require("@/assets/logos/haikyufh.png"),
     resourceType: "diamonds",
     tags: ["haikyufh", "haikyuu", "flyhigh"],
-    serverTags: ["global", "jp"]
+    serverTags: ["global", "jp"],
   },
   {
     id: "jjkpp",
@@ -126,7 +126,7 @@ export const GACHAS: Gacha[] = [
     logo: require("@/assets/logos/jjkpp.png"),
     resourceType: "cubes",
     tags: ["jjkpp", "jujutsukaisen", "phantomparade"],
-    serverTags: ["global", "jp"]
+    serverTags: ["global", "jp"],
   },
   {
     id: "sdgundamgge",
@@ -134,6 +134,14 @@ export const GACHAS: Gacha[] = [
     logo: require("@/assets/logos/gundamgg.png"),
     resourceType: "diamonds",
     tags: ["sdgundam", "ggeneration", "eternal"],
-    serverTags: ["global", "jp"]
-  }
+    serverTags: ["global", "jp"],
+  },
+  {
+    id: "arknightsedfi",
+    name: "Arknights: Endfield",
+    logo: require("@/assets/logos/arknightsedfie.webp"),
+    resourceType: "oroberyl",
+    tags: ["arknights", "endfield", "edfi"],
+    serverTags: ["global"],
+  },
 ];
