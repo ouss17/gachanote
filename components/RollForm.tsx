@@ -866,8 +866,9 @@ export default function RollForm({
                   keyboardType={['spookCount', 'sideUnit', 'featuredItemsCount', 'srItemsCount'].includes(focusedField ?? '') ? 'numeric' : 'default'}
                   multiline={focusedField === 'notes'}
                   maxLength={focusedField === 'notes' ? 200 : undefined}
-                  onSubmitEditing={commitInlineEditor}
-                  blurOnSubmit={true}
+                  onSubmitEditing={focusedField === 'notes' ? undefined : commitInlineEditor}
+                  blurOnSubmit={focusedField === 'notes' ? false : true}
+                  returnKeyType={focusedField === 'notes' ? 'default' : 'done'}
                   style={[styles.input, { minHeight: focusedField === 'notes' ? Math.max(120, getFontSize(120)) : undefined, backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }]}
                 />
                 <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 8 }}>
