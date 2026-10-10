@@ -144,4 +144,12 @@ export const GACHAS: Gacha[] = [
     tags: ["arknights", "endfield", "edfi"],
     serverTags: ["global"],
   },
+  {
+    id: "narutoblazing",
+    name: "Naruto Blazing",
+    logo: require("@/assets/logos/narutoblazing.webp"),
+    resourceType: "ninja crystals",
+    tags: ["naruto", "blazing"],
+    serverTags: ["global", "jp"],
+  },
 ];

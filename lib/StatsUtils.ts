@@ -53,6 +53,8 @@ function getMultiCost(gachaId: string) {
       return { cost: 3000 };
     case "arknightsedfi":
       return { cost: 5000 };
+    case "narutoblazing":
+      return { cost: 50 };
     default:
       return { cost: 0 };
   }
@@ -137,7 +139,7 @@ export function computeAllRates(rolls: Roll[], gachaId: string) {
       sideUnit: 0,
       featuredItems: 0,
       srItems: 0,
-    }
+    },
   );
 
   return {

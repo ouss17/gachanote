@@ -774,6 +774,8 @@ function getBannerStats(banner: SimulationBanner) {
       case 'haikyufh': return { cost: 1500, label: '1500 diamonds', unit: 'multi' };
       case 'jjkpp': return { cost: 3000, label: '3000 cubes', unit: 'multi' };
       case 'sdgundamgge': return { cost: 3000, label: '3000 diamonds', unit: 'multi' };
+      case 'arknightsedfi': return { cost: 5000, label: '5000 oroberyls', unit: 'multi' };
+      case 'narutoblazing': return { cost: 50, label: '50 ninja crystals', unit: 'multi' };
       default: return { cost: 0, label: '', unit: '' };
     }
   }
